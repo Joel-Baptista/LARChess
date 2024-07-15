@@ -2,67 +2,50 @@
 #include "utils.h"
 #include <iostream>
 
-Board::Board() {
-    setupBoard();
+
+Board::Board(){
+    fen = start_fen;
 }
 
-void Board::setupBoard() {
-    board = {
-        {'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
-        {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
-        {'.', '.', '.', '.', '.', '.', '.', '.'},
-        {'.', '.', '.', '.', '.', '.', '.', '.'},
-        {'.', '.', '.', '.', '.', '.', '.', '.'},
-        {'.', '.', '.', '.', '.', '.', '.', '.'},
-        {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
-        {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
-    };
-}
+void Board::show(){
+    char c;
+    // Utilize only the fen's board part
+    std::string board_fen = fen.substr(0, fen.find_first_of(' ')); 
 
-void Board::print() const {
-    for (const auto& row : board) {
-        for (char piece : row) {
-            std::cout << piece << " ";
+    for(int i=0; i<board_fen.length(); i++){       
+        c = board_fen[i];
+        if (std::isalpha(c)){
+            std::cout  << " " << c << " ";
+        }else if(std::isdigit(c)){   
+            for (int j=0; j<int(c) - 48;j++){
+                std::cout << " . "; 
+            }
+        }else if(c=='/'){
+            std::cout << std::endl;
         }
-        std::cout << std::endl;
     }
+    std::cout << std::endl;
+};
+
+char Board::turn(){
+    char player = fen[fen.find_first_of(' ') + 1];
+    return player;
+
 }
 
-bool Board::makeMove(const Move& move) {
-    if (!isMoveValid(move)) return false;
+bool Board::castling_rights(char player, char side){
+    // Second and third occurance of space delimit castling rights
+    int idx1 = find_nth(fen, ' ', 2);
+    int idx2 = find_nth(fen, ' ', 3);
 
-    int fromRow = 8 - (move.getFrom()[1] - '0');
-    int fromCol = move.getFrom()[0] - 'a';
-    int toRow = 8 - (move.getTo()[1] - '0');
-    int toCol = move.getTo()[0] - 'a';
-
-    board[toRow][toCol] = board[fromRow][fromCol];
-    board[fromRow][fromCol] = ' ';
-    return true;
-}
-
-bool Board::isMoveValid(const Move& move) const {
-    int fromRow = 8 - (move.getFrom()[1] - '0');
-    int fromCol = move.getFrom()[0] - 'a';
-    int toRow = 8 - (move.getTo()[1] - '0');
-    int toCol = move.getTo()[0] - 'a';
-
-    if (!isWithinBounds(fromRow, fromCol) || !isWithinBounds(toRow, toCol)) {
-        return false;
+    std::string castling_fen = fen.substr(idx1 +1, idx2 - idx1 - 1); 
+    
+    for(int i=0; i < castling_fen.length(); i++){
+        if (tolower(player) == 'w' && toupper(side) == castling_fen[i]){
+            return true;
+        }else if(tolower(player) == 'b' && tolower(side) == castling_fen[i]){
+            return true;
+        }
     }
-
-    char piece = board[fromRow][fromCol];
-    if (piece == ' ') return false;
-
-    // Simple validation: move to an empty square or capture an opponent's piece
-    char target = board[toRow][toCol];
-    if (target == ' ' || (isupper(piece) != isupper(target))) {
-        return true;
-    }
-
     return false;
-}
-
-bool Board::isWithinBounds(int row, int col) const {
-    return row >= 0 && row < 8 && col >= 0 && col < 8;
 }

@@ -8,14 +8,14 @@
 class Board {
 public:
     Board();
-    void print() const;
-    bool makeMove(const Move& move);
-    bool isMoveValid(const Move& move) const;
+    std::string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    std::string fen;
+    void show();
+    char turn();
+    bool castling_rights(char player, char side);
 
 private:
-    std::vector<std::vector<char>> board;
-    void setupBoard();
-    bool isWithinBounds(int row, int col) const;
+
 };
 
 #endif // BOARD_H
