@@ -2,9 +2,15 @@
 #include "board.h"
 #include "move.h"
 
+
 int main() {
     Board board;
+
     std::cout << board.fen << "\n";
+    board.update_fen();
+    std::cout << board.fen << "\n";
+
+
 
     Move move("e2", "e4");
     board.make_move(move);
@@ -20,8 +26,7 @@ int main() {
     std::cout << board.fen << "\n";
     board.show();
 
-    
-    std::cout << board.castling_rights('w', 'k') << std::endl;
+    board.update_castling_rights_from_fen();
 
     return 0;
 }

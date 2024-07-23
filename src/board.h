@@ -12,12 +12,25 @@ public:
     std::string start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     std::string fen;
     std::array<std::array<int, 8>, 8> board;
+    int turn_player; // 0 for white, 1 for black
+    std::array<bool, 4> castling_rights = {false, false, false, false}; // 0 for white king side, 1 for white queen side, 2 for black king side, 3 for black queen side
+    std::string en_passant;
+    int halfmove_clock;
+    int fullmove_number;
+    
     void show();
     void reset();
-    char turn();
-    bool castling_rights(char player, char side);
-    void board_from_fen(const std::string& fen);
-    void fen_from_board(const std::array<std::array<int, 8>, 8> board);
+    
+    int update_turn_from_fen();
+    void update_castling_rights_from_fen();
+    void update_en_passant_from_fen();
+    void update_halfmove_clock_from_fen();
+    void update_fullmove_number_from_fen();
+    void update_fen();
+
+    // bool castling_rights(char player, char side);
+    void update_board_from_fen(const std::string& fen);
+    void update_fen_from_board(const std::array<std::array<int, 8>, 8> board);
 
     void make_move(Move move);
 
