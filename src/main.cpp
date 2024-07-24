@@ -6,27 +6,32 @@
 int main() {
     Board board;
 
-    std::cout << board.fen << "\n";
-    board.update_fen();
-    std::cout << board.fen << "\n";
+    std::vector<std::string> moves = {"e2e4", "e7e5", "g1f3", "b8c6", "f1c4", "g8f6", "d2d3", "d7d6", "c1e3", "c8d7", "e1g1", "e8g8"};    
 
-
-
-    Move move("e2", "e4");
-    board.make_move(move);
-
+    for (int i=0; i<moves.size(); i++){
+        Move move(moves[i].substr(0,2), moves[i].substr(2,2));
+        board.make_move(move);
     
-    for (int i=0; i<8; i++){
-        for (int j=0; j<8; j++){
-            std::cout << board.board[i][j] << " ";
-        }
-        std::cout << "\n";
+        // for (int i=0; i<8; i++){
+        //     for (int j=0; j<8; j++){
+        //         std::cout << board.board[i][j] << " ";
+        //     }
+        //     std::cout << "\n";
+        // }
+        board.show();
+
+        std::cout << "player turn: " << board.turn_player << "\n";
+        std::cout << "en passant: " << board.en_passant << "\n";
+        std::cout << "half move: " << board.halfmove_clock << "\n";
+        std::cout << "fullmove: " << board.fullmove_number << "\n";
+        std::cout << "castling rights: " << board.castling_rights[0] << board.castling_rights[1] << board.castling_rights[2] << board.castling_rights[3] << "\n";
+        
+
+        std::cout << board.get_fen() << "\n";
+        
     }
-
-    std::cout << board.fen << "\n";
-    board.show();
-
-    board.update_castling_rights_from_fen();
+    
+    // board.show();
 
     return 0;
 }

@@ -2,6 +2,26 @@
 #include "utils.h"
 #include <iostream>
 
+void Board::show_from_fen(){
+    char c;
+    // Utilize only the fen's board part
+    std::string board_fen = fen.substr(0, fen.find_first_of(' ')); 
+
+    for(int i=0; i<board_fen.length(); i++){       
+        c = board_fen[i];
+        if (std::isalpha(c)){
+            std::cout  << " " << c << " ";
+        }else if(std::isdigit(c)){   
+            for (int j=0; j<int(c) - 48;j++){
+                std::cout << " . "; 
+            }
+        }else if(c=='/'){
+            std::cout << std::endl;
+        }
+    }
+    std::cout << std::endl;
+};
+
 
 void Board::update_fen(){
     update_fen_from_board(board);
@@ -196,4 +216,19 @@ void Board::update_fullmove_number_from_fen(){
     int idxS = find_nth(fen, ' ', 5);
     int idxE = fen.length();
     fullmove_number = std::stoi(fen.substr(idxS + 1, idxE - idxS - 1));
+}
+
+std::string Board::get_fen(){
+    update_fen();
+    return fen;
+
+}
+void Board::set_fen(std::string new_fen){
+    fen = new_fen;
+    update_board_from_fen(fen);
+    update_turn_from_fen();
+    update_castling_rights_from_fen();
+    update_en_passant_from_fen();
+    update_halfmove_clock_from_fen();
+    update_fullmove_number_from_fen();
 }
