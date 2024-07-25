@@ -26,7 +26,7 @@ void Board::show_from_fen(){
 void Board::update_fen(){
     update_fen_from_board(board);
     fen += " ";
-    fen += (turn_player == 0) ? "w" : "b";
+    fen += (turn_player == 1) ? "w" : "b";
     fen += " ";
     fen += (castling_rights[0]) ? "K" : "";
     fen += (castling_rights[1]) ? "Q" : "";
@@ -195,7 +195,8 @@ void Board::update_fen_from_board(const std::array<std::array<int, 8>, 8> board)
 
 int Board::update_turn_from_fen(){
     char turn = fen[fen.find_first_of(' ') + 1];
-    return (turn == 'w') ? 0 : 1;
+    turn_player = (turn == 'w') ? 1 : -1;
+    return turn_player;
 }
 
 void Board::update_en_passant_from_fen(){
