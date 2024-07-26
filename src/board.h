@@ -20,6 +20,8 @@ public:
     int fullmove_number;
     std::unordered_map<std::string, std::vector<Move>> legal_moves;
     bool legal_moves_calculated = false;
+    bool player_in_check;
+    void is_player_in_check();
     
     void show();
     void reset();
@@ -40,7 +42,7 @@ public:
 
     void make_move(Move move);
     std::vector<Move> get_legal_moves(std::string square);
-    std::unordered_map<std::string, std::vector<Move>> get_all_legal_moves();
+    void get_all_legal_moves();
     
 
     enum Piece{
@@ -59,6 +61,17 @@ public:
         EMPTY = 0
     };
 
+    struct Pin{
+        bool is_pinned;
+        std::string enemy_square;
+        std::string king_square;
+        bool diagonal;
+        bool straight;
+    };
+
+    Pin is_pinned(int row, int col); // Returns if a piece is pinned, the direction of the pin is diagonal (if not, then it's a rook pin), and if the pin is absolute
+    Pin is_pinned(std::string square);
+
 private:
     std::string fen;
     std::vector<Move> get_pawn_moves(int row, int col);
@@ -66,7 +79,7 @@ private:
     std::vector<Move> get_bishop_moves(int row, int col);
     std::vector<Move> get_rook_moves(int row, int col);
     std::vector<Move> get_queen_moves(int row, int col);
-    std::vector<Move> get_king_moves(int row, int col);
+    std::vector<Move> get_king_moves(int row, int col);    
 
     std::array<std::array<int, 2>, 8> knight_moves = { // Clockwise 8 possible knight moves starting from bottom left
         {
@@ -113,4 +126,4 @@ private:
     };
 };
 
-#endif // BOARD_H
+#endif 

@@ -7,6 +7,7 @@
 
 class Move {
 public:
+    Move();
     Move(const std::string& from, const std::string& to);
     Move(const std::string& from, const std::string& to, const char& promotion);
     std::string getFrom() const;

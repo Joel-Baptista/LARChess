@@ -10,5 +10,14 @@ add_executable(ChessEngine
     src/utils.cpp
 )
 
+add_executable(game
+    game/main.cpp
+    src/board.cpp
+    src/move.cpp
+    src/utils.cpp
+)
+
+
+
 enable_testing()
 

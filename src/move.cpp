@@ -1,5 +1,10 @@
 #include "move.h"
 
+Move::Move(){
+    this->promotion = ' '; // No promotion by default
+    this->from = " ";
+    this->to = " ";
+}
 Move::Move(const std::string& from, const std::string& to) : from(from), to(to) {
     this->promotion = ' '; // No promotion by default
 }
