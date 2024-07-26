@@ -7,5 +7,6 @@ bool isupper(char c);
 int find_nth(std::string s, char c, int n);
 std::string coordinates_to_square(int row, int col);
 Square_Coordinates square_to_coordinates(std::string square);
+bool is_in_ray(std::string from, std::string to, std::string square);
 
 #endif // UTILS_H

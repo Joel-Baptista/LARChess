@@ -20,7 +20,6 @@ public:
     int fullmove_number;
     std::unordered_map<std::string, std::vector<Move>> legal_moves;
     bool legal_moves_calculated = false;
-    bool player_in_check;
     void is_player_in_check();
     
     void show();
@@ -68,6 +67,13 @@ public:
         bool diagonal;
         bool straight;
     };
+
+    struct Check{
+        bool is_check;
+        std::vector<std::string> squares;
+    };
+
+    Check player_checks;
 
     Pin is_pinned(int row, int col); // Returns if a piece is pinned, the direction of the pin is diagonal (if not, then it's a rook pin), and if the pin is absolute
     Pin is_pinned(std::string square);

@@ -146,10 +146,17 @@ void Board::make_move(Move move){
 void Board::get_all_legal_moves(){
     legal_moves = {};
 
+    is_player_in_check(); // Check if the player is in check and stores it in player_checks
+
+    for (int i=0; i<player_checks.squares.size(); i++){
+        std::cout << "Check by " << player_checks.squares[i] << "\n";
+    }
+
     for (int i=0; i<8; i++){
         for (int j=0; j<8; j++){
             std::string square = std::string(1, (char)('a' + j)) + (char)('8' - i);
             legal_moves[square] = get_legal_moves(square);
+
         }
     }
 }
@@ -216,6 +223,7 @@ std::vector<Move> Board::get_legal_moves(std::string square){
     
     return square_legal_moves;
 }
+
 std::vector<Move> Board::get_pawn_moves(int row, int col){
     std::vector<Move> moves = {};
 
@@ -272,6 +280,25 @@ std::vector<Move> Board::get_pawn_moves(int row, int col){
                 }
             }
         }
+    }
+
+
+    if (player_checks.is_check){ // If the player is in check, the pawn can only move to block the check
+        std::vector<Move> blocking_moves = {};
+        for (int i=0; i<moves.size(); i++){
+            bool blocks_check = true;
+
+            for (int j=0; j<player_checks.squares.size(); j++){
+                if (!is_in_ray(pin.king_square, player_checks.squares[j], moves[i].getTo())){
+                    blocks_check = false;
+                    break;
+                }
+            }
+            if (blocks_check){
+                blocking_moves.push_back(moves[i]);
+            }
+        }
+        moves = blocking_moves;
     }
 
     return moves;
@@ -339,7 +366,7 @@ std::vector<Move> Board::get_bishop_moves(int row, int col){
 
             if (new_row >= 0 && new_row < 8 && new_col >= 0 && new_col < 8){
                 if (board[new_row][new_col] * turn_player <= 0 &&
-                (!(pin.is_pinned == pin.diagonal) || diagonal == pin_diagonal)){ // Capture or empty square, or the piece is pinned in the direction of the move
+                ((!(pin.is_pinned == pin.diagonal) || diagonal == pin_diagonal) || !pin.is_pinned)){ // Capture or empty square, or the piece is pinned in the direction of the move
 
                     std::string s1 = coordinates_to_square(row, col);
                     std::string s2 = coordinates_to_square(new_row, new_col);
@@ -386,7 +413,7 @@ std::vector<Move> Board::get_rook_moves(int row, int col){
 
             if (new_row >= 0 && new_row < 8 && new_col >= 0 && new_col < 8){
                 if (board[new_row][new_col] * turn_player <= 0 &&
-                   (!(pin.is_pinned == pin.straight) || line == line_pin)){ // Capture or empty square, or the piece is pinned in the direction of the move
+                   ((!(pin.is_pinned == pin.straight) || line == line_pin) || !pin.is_pinned)){ // Capture or empty square, or the piece is pinned in the direction of the move
                     std::string s1 = coordinates_to_square(row, col);
                     std::string s2 = coordinates_to_square(new_row, new_col);
                     moves.push_back(Move(s1, s2));
@@ -442,12 +469,14 @@ std::vector<Move> Board::get_king_moves(int row, int col){
             }
         }
 
-        for (int j=0; j<4; j++){ // Check if there is a bishop or queen or pawn seeing that square (NOTE: The pawn is not a valid piece to see the king sometimes)
+        for (int j=0; j<4; j++){ // Check if there is a bishop or queen or pawn seeing that square
             for (int k=1; k<8; k++){
                 int bishop_row = new_row + k * bishop_moves[j][0];
                 int bishop_col = new_col + k * bishop_moves[j][1];
                 if (bishop_row >= 0 && bishop_row < 8 && bishop_col >= 0 && bishop_col < 8){
-                    if (board[bishop_row][bishop_col] * turn_player == -3 || board[bishop_row][bishop_col] * turn_player == -5 || (board[bishop_row][bishop_col] * turn_player == -1 && k == 1)){
+                    if (board[bishop_row][bishop_col] * turn_player == -3 || 
+                        board[bishop_row][bishop_col] * turn_player == -5 || 
+                        (board[bishop_row][bishop_col] * turn_player == -1 && k == 1 && bishop_moves[j][0] * turn_player < 0)){ // The pawn can only see the king if it's in the previous row
                         seen_diagonal = true;
                         std::string s = coordinates_to_square(bishop_row, bishop_col);
                         // std::cout << "Seen by bishop, queen or pawn " << s << "\n";
@@ -490,10 +519,68 @@ std::vector<Move> Board::get_king_moves(int row, int col){
         }
     }
 
-    std::cout << "Legal moves for " << moves.size() << " for " << coordinates_to_square(row, col) << "\n";
-    for (int i=0; i<moves.size(); i++){
-        std::cout << moves[i].getFrom() << moves[i].getTo() << "\n";
+    // Castling
+    if (!player_checks.is_check){
+        std::array<std::string, 4> castle_squares;
+        std::array<int, 4> castle_cols = {2, 3, 5, 6};
+        int castle_row = (turn_player == 1) ? 7 : 0;
+        for (int i=0; i<4; i++){
+            castle_squares[i] = coordinates_to_square(row, castle_cols[i]);
+        }
+        bool seen_by_knight_K = false;
+        bool seen_by_knight_Q = false;
+
+        bool seen_diagonal_K = false;
+        bool seen_diagonal_Q = false;
+
+        for (int i=0; castle_squares.size(); i++){
+            for (int j=0; j<8; j++){ // Check if there is a knight seeing that square
+                int knight_row = castle_row + knight_moves[j][0];
+                int knight_col = castle_cols[i] + knight_moves[j][1];
+                if (knight_row >= 0 && knight_row < 8 && knight_col >= 0 && knight_col < 8){
+                    if (board[knight_row][knight_col] * turn_player == -2 && i < 2){
+                        seen_by_knight_K = true; 
+                        break;
+                    }else if (board[knight_row][knight_col] * turn_player == -2 && i >= 2){
+                        seen_by_knight_Q = true; 
+                        break;
+                    }
+                }
+            }
+            for (int j=0; j<4; j++){ // Check if there is a bishop or queen or pawn seeing that square
+                for (int k=1; k<8; k++){
+                    int bishop_row = castle_row + k * bishop_moves[j][0];
+                    int bishop_col = castle_cols[i] + k * bishop_moves[j][1];
+                    if (bishop_row >= 0 && bishop_row < 8 && bishop_col >= 0 && bishop_col < 8){
+                        if (board[bishop_row][bishop_col] * turn_player == -3 || 
+                            board[bishop_row][bishop_col] * turn_player == -5 || 
+                            (board[bishop_row][bishop_col] * turn_player == -1 && k == 1 && bishop_moves[j][0] * turn_player < 0 &&
+                            i < 2)){ // The pawn can only see the king if it's in the previous row
+                            seen_diagonal_K = true;
+                            break;
+
+                        } else if (board[bishop_row][bishop_col] * turn_player == -3 || 
+                            board[bishop_row][bishop_col] * turn_player == -5 || 
+                            (board[bishop_row][bishop_col] * turn_player == -1 && k == 1 && bishop_moves[j][0] * turn_player < 0 &&
+                            i < 2)){ // The pawn can only see the king if it's in the previous row
+                            seen_diagonal_Q = true;
+                            break;
+
+                        }
+                        if (board[bishop_row][bishop_col] != EMPTY){
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
     }
+
+    // std::cout << "Legal moves for " << moves.size() << " for " << coordinates_to_square(row, col) << "\n";
+    // for (int i=0; i<moves.size(); i++){
+    //     std::cout << moves[i].getFrom() << moves[i].getTo() << "\n";
+    // }
 
     return moves;
 
@@ -501,9 +588,6 @@ std::vector<Move> Board::get_king_moves(int row, int col){
 }
 Board::Pin Board::is_pinned(int row, int col){
     
-    if (board[row][col] == 0){ // Can't be pinned if there is no piece
-        return {false, "", "", false, false};
-    }
 
     int king_row = -1; int king_col = -1;
 
@@ -519,6 +603,9 @@ Board::Pin Board::is_pinned(int row, int col){
 
     std::string king_square = coordinates_to_square(king_row, king_col);
 
+    if (board[row][col] == 0){ // Can't be pinned if there is no piece
+        return {false, "", king_square, false, false}; //Always return king_square
+    }
     int direction_col = (king_col - col);
     int direction_row = (king_row - row);
 
@@ -536,7 +623,7 @@ Board::Pin Board::is_pinned(int row, int col){
     // std::cout << "Is straight " << is_straight << "\n"; 
 
     if (!is_diagonal && !is_straight){ // The king is not in the same line as the piece
-        return {false, "", "", false, false};
+        return {false, "", king_square, false, false};
     }
 
     for (int i=1; i<8; i++){ // Search for enemy piece in the oposite direction of the king
@@ -563,12 +650,12 @@ Board::Pin Board::is_pinned(int row, int col){
             }
 
             if (board[new_row][new_col] * turn_player > 0){ // Find friendly piece
-                return {false, "", "", false, false};
+                return {false, "", king_square, false, false};
             }
         }
     }
 
-    return {false, "", "", false, false};
+    return {false, "", king_square, false, false};
 
 }
 Board::Pin Board::is_pinned(std::string square){
@@ -576,7 +663,7 @@ Board::Pin Board::is_pinned(std::string square){
     return is_pinned(sc.row, sc.col);
 }
 void Board::is_player_in_check(){
-    player_in_check = false;
+    player_checks = {false, {}};
 
     int king_row = -1; int king_col = -1;
 
@@ -590,8 +677,7 @@ void Board::is_player_in_check(){
         }
     }
 
-    std::string king_square = coordinates_to_square(king_row, king_col);
-
+    // std::cout << "King at " << coordinates_to_square(king_row, king_col) << "\n";    
     bool seen_by_knight = false;
     bool seen_diagonal = false;
     bool seen_straight = false;
@@ -601,50 +687,54 @@ void Board::is_player_in_check(){
         int knight_col = king_col + knight_moves[j][1];
         if (knight_row >= 0 && knight_row < 8 && knight_col >= 0 && knight_col < 8){
             if (board[knight_row][knight_col] * turn_player == -2){
-                 std::string s = coordinates_to_square(knight_row, knight_col);
-                std::cout << "Check by knight " << s << "\n";
-                seen_by_knight = true; 
-                break;
+                std::string s = coordinates_to_square(knight_row, knight_col);
+                // std::cout << "Check by knight " << s << "\n";
+                player_checks.is_check = true;
+                player_checks.squares.push_back(s); 
             }
         }
     }
 
-     for (int j=0; j<4; j++){ // Check if there is a bishop or queen or pawn seeing that square (NOTE: The pawn is not a valid piece to see the king sometimes)
-            for (int k=1; k<8; k++){
-                int bishop_row = king_row + k * bishop_moves[j][0];
-                int bishop_col = king_col + k * bishop_moves[j][1];
-                if (bishop_row >= 0 && bishop_row < 8 && bishop_col >= 0 && bishop_col < 8){
-                    if (board[bishop_row][bishop_col] * turn_player == -3 || board[bishop_row][bishop_col] * turn_player == -5 || (board[bishop_row][bishop_col] * turn_player == -1 && k == 1)){
-                        seen_diagonal = true;
-                        std::string s = coordinates_to_square(bishop_row, bishop_col);
-                        std::cout << "Check by bishop, queen or pawn " << s << "\n";
-                        std::cout << "Piece " << (board[bishop_row][bishop_col] * turn_player) << "\n";
-                        std::cout << "Row " << bishop_row << " Col " << bishop_col << "\n";
-                        break;
-
-                    }
-                    if (board[bishop_row][bishop_col] != EMPTY){
-                        break;
-                    }
+    for (int j=0; j<4; j++){ // Check if there is a bishop or queen or pawn seeing that square (NOTE: The pawn is not a valid piece to see the king sometimes)
+        for (int k=1; k<8; k++){
+            int bishop_row = king_row + k * bishop_moves[j][0];
+            int bishop_col = king_col + k * bishop_moves[j][1];
+            if (bishop_row >= 0 && bishop_row < 8 && bishop_col >= 0 && bishop_col < 8){
+                if (board[bishop_row][bishop_col] * turn_player == -3 || board[bishop_row][bishop_col] * turn_player == -5 || (board[bishop_row][bishop_col] * turn_player == -1 && k == 1)){
+                    seen_diagonal = true;
+                    std::string s = coordinates_to_square(bishop_row, bishop_col);
+                    // std::cout << "Check by bishop, queen or pawn " << s << "\n";
+                    // std::cout << "Piece " << (board[bishop_row][bishop_col] * turn_player) << "\n";
+                    // std::cout << "Row " << bishop_row << " Col " << bishop_col << "\n";
+                    player_checks.is_check = true;
+                    player_checks.squares.push_back(s); 
+                    break;
+                }
+                if (board[bishop_row][bishop_col] != EMPTY){
+                    break;
                 }
             }
         }
+    }
 
-        for (int j=0; j<4; j++){ // Check if there is a rook or queen seeing that square
-            for (int k=1; k<8; k++){
-                int rook_row = king_col + k * rook_moves[j][0];
-                int rook_col = king_col + k * rook_moves[j][1];
-                if (rook_row >= 0 && rook_row < 8 && rook_col >= 0 && rook_col < 8){
-                    if (board[rook_row][rook_col] * turn_player == -4 || board[rook_row][rook_col] * turn_player == -5){
-                        seen_straight = true;
-                        std::string s = coordinates_to_square(king_col, king_col);
-                        std::cout << "Check by rook or queen " << s << "\n";
-                        break;
-                    }
-                    if (board[rook_row][rook_col] != EMPTY){
-                        break;
-                    }
+    for (int j=0; j<4; j++){ // Check if there is a rook or queen seeing that square
+        for (int k=1; k<8; k++){
+            int rook_row = king_col + k * rook_moves[j][0];
+            int rook_col = king_col + k * rook_moves[j][1];
+            if (rook_row >= 0 && rook_row < 8 && rook_col >= 0 && rook_col < 8){
+                if (board[rook_row][rook_col] * turn_player == -4 || board[rook_row][rook_col] * turn_player == -5){
+                    seen_straight = true;
+                    std::string s = coordinates_to_square(king_col, king_col);
+                    // std::cout << "Check by rook or queen " << s << "\n";
+                    player_checks.is_check = true;
+                    player_checks.squares.push_back(s); 
+                    break;
+                }
+                if (board[rook_row][rook_col] != EMPTY){
+                    break;
                 }
             }
         }
+    }
+    
 }
