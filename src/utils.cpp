@@ -76,3 +76,13 @@ bool is_in_ray(std::string from, std::string to, std::string square){
 
     return false;
 }
+
+int positive_board(int x){
+    if (x == 0){
+        return 0;
+    }else if (x < 0){
+        return abs(x) + 6;
+    }else{
+        return x;
+    }
+}

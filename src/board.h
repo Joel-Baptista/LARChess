@@ -20,10 +20,13 @@ public:
     int fullmove_number;
     std::unordered_map<std::string, std::vector<Move>> legal_moves;
     bool legal_moves_calculated = false;
-    void is_player_in_check();
+    bool player_check_calculated = false;
+    std::unordered_map<int, int> state_counter;
     
     void show();
     void reset();
+    void set_from_fen(std::string new_fen);
+    size_t get_board_hash();
     
     void show_from_fen();
     int update_turn_from_fen();
@@ -42,7 +45,17 @@ public:
     void make_move(Move move);
     std::vector<Move> get_legal_moves(std::string square);
     void get_all_legal_moves();
-    
+    bool is_seen_by_opponent(int row, int col);
+    std::vector<Move> blocks_check(std::vector<Move> moves, std::string king_square);
+    void is_player_in_check();
+
+    // Check terminal states
+    bool is_checkmate();
+    bool is_stalemate();
+    bool is_insufficient_material();
+    bool is_threefold_repetition();
+    bool is_fifty_moves_rule();
+    bool is_terminal(); // 0 -> checkmate, 1 -> stalemate, 2 -> insufficient material, 3 -> threefold repetition, 4 -> fifty moves rule
 
     enum Piece{
         W_PAWN = 1,
