@@ -83,7 +83,14 @@ void Board::show(){
 }
 void Board::reset(){
     fen = start_fen;
+    player_check_calculated = false;
+    legal_moves_calculated = false;
+    turn_player = update_turn_from_fen();
     update_board_from_fen(fen);
+    update_castling_rights_from_fen();
+    update_en_passant_from_fen();
+    update_halfmove_clock_from_fen();
+    update_fullmove_number_from_fen();
 }
 size_t Board::get_board_hash(){
     std::hash<int> intHasher;
@@ -250,8 +257,10 @@ void Board::get_all_legal_moves(){
     for (int i=0; i<8; i++){
         for (int j=0; j<8; j++){
             std::string square = std::string(1, (char)('a' + j)) + (char)('8' - i);
-            legal_moves[square] = get_legal_moves(square);
 
+            if (board[i][j] * turn_player > 0){ // If the piece is of the turn player
+                legal_moves[square] = get_legal_moves(square);
+            }
         }
     }
 
@@ -742,7 +751,7 @@ void Board::is_player_in_check(){
                     board[rook_row][rook_col] * turn_player == -5){
                     
                     seen_straight = true;
-                    std::string s = coordinates_to_square(king_col, king_col);
+                    std::string s = coordinates_to_square(rook_row, rook_col);
                     // std::cout << "Check by rook or queen " << s << "\n";
                     player_checks.is_check = true;
                     player_checks.squares.push_back(s); 
@@ -754,6 +763,10 @@ void Board::is_player_in_check(){
             }
         }
     }
+
+    // for (int i=0; i < player_checks.squares.size(); i++){
+    //     std::cout << "Check by " << player_checks.squares[i] << "\n";
+    // }
 
     player_check_calculated = true;
     
@@ -783,7 +796,7 @@ bool Board::is_seen_by_opponent(int row, int col){
                     (board[bishop_row][bishop_col] * turn_player == B_KING && k == 1)){
                     return true;
                 }
-                if (board[bishop_row][bishop_col] != EMPTY){
+                if (board[bishop_row][bishop_col] != EMPTY && board[bishop_row][bishop_col] * turn_player != W_KING){
                     break;
                 }
             }
@@ -794,20 +807,20 @@ bool Board::is_seen_by_opponent(int row, int col){
         for (int k=1; k<8; k++){
             int rook_row = sc.row + k * rook_moves[j][0];
             int rook_col = sc.col + k * rook_moves[j][1];
+
             if (rook_row >= 0 && rook_row < 8 && rook_col >= 0 && rook_col < 8){
                 if (board[rook_row][rook_col] * turn_player == -4 || 
                     board[rook_row][rook_col] * turn_player == -5 ||
                    (board[rook_row][rook_col] * turn_player == B_KING && k == 1)){
                     return true;
                 }
-                if (board[rook_row][rook_col] != EMPTY){
+                if (board[rook_row][rook_col] != EMPTY && board[rook_row][rook_col] * turn_player != W_KING){
                     break;
                 }
             }
         }
     
     }
-
     return false;
 }
 std::vector<Move> Board::blocks_check(std::vector<Move> moves, std::string king_square){
@@ -816,10 +829,17 @@ std::vector<Move> Board::blocks_check(std::vector<Move> moves, std::string king_
             bool blocks_check = true;
 
             for (int j=0; j<player_checks.squares.size(); j++){
+
+                if (moves[i].getTo() == player_checks.squares[j]){ // Capturing checking piece blocks check
+                    // std::cout << "Capturing checking piece in " << moves[i].getTo() << " blocks check delivered by " << player_checks.squares[j] << "\n";
+                    break;
+                }
+
                 if (!is_in_ray(king_square, player_checks.squares[j], moves[i].getTo())){
                     blocks_check = false;
                     break;
                 }
+                // std::cout << "Square " << moves[i].getTo() << " blocks check\n";
             }
             if (blocks_check){
                 blocking_moves.push_back(moves[i]);
@@ -832,14 +852,14 @@ bool Board::is_threefold_repetition(){
     size_t board_hash = get_board_hash();
 
     if (state_counter[board_hash] >= 3){
-        std::cout << "Threefold repetition\n";
+        // std::cout << "Threefold repetition\n";
     }
 
     return state_counter[board_hash] >= 3;
 }
 bool Board::is_fifty_moves_rule(){
     if (halfmove_clock >= 100){
-        std::cout << "Fifty moves rule\n";
+        // std::cout << "Fifty moves rule\n";
     }
     return halfmove_clock >= 100;
 }
@@ -859,7 +879,7 @@ bool Board::is_stalemate(){
     if (player_checks.is_check){
         return false;
     }
-    std::cout << "Stalemate\n";
+    // std::cout << "Stalemate\n";
     return true;
 }
 bool Board::is_checkmate(){
@@ -877,7 +897,7 @@ bool Board::is_checkmate(){
 
     if (player_checks.is_check){
         return true;
-        std::cout << "Checkmate\n";
+        // std::cout << "Checkmate\n";
     }
 
     return false;
@@ -911,18 +931,18 @@ bool Board::is_insufficient_material(){
 
     if (num_pieces <= 3){ // One solo king and one king with minor piece, it's insufficient material
         return true;
-        std::cout << "Insufficient material\n";
+        // std::cout << "Insufficient material\n";
     }
 
     if ((num_bishops_B + num_bishops_W) == 1 && (num_knights_B + num_knights_W) == 1){ // Each side only has one bishop or knight, it's insufficient material
         return true;
-        std::cout << "Insufficient material\n";
+        // std::cout << "Insufficient material\n";
     } else if (num_bishops_B == 1 && num_bishops_W == 1 && (num_knights_B + num_knights_W) == 0){ // Both sides have only a bishop
         return true;
-        std::cout << "Insufficient material\n";
+        // std::cout << "Insufficient material\n";
     } else if (num_bishops_B == 0 && num_bishops_W == 0 && (num_knights_B + num_knights_W) == 2){ // Knight vs Knight or two knight vs lone king is still a draw
         return true;
-        std::cout << "Insufficient material\n";
+        // std::cout << "Insufficient material\n";
     }
 
     return false;
@@ -931,15 +951,15 @@ bool Board::is_insufficient_material(){
 bool Board::is_terminal(){
 
     if (is_checkmate()){
-        std::cout << "Checkmate\n";
+        // std::cout << "Checkmate\n";
     } else if (is_stalemate()){
-        std::cout << "Stalemate\n";
+        // std::cout << "Stalemate\n";
     } else if (is_insufficient_material()){
-        std::cout << "Insufficient material\n";
+        // std::cout << "Insufficient material\n";
     } else if (is_fifty_moves_rule()){
-        std::cout << "Fifty moves rule\n";
+        // std::cout << "Fifty moves rule\n";
     } else if (is_threefold_repetition()){
-        std::cout << "Threefold repetition\n";
+        // std::cout << "Threefold repetition\n";
     }
 
     return is_checkmate() || is_stalemate() || is_insufficient_material() || is_fifty_moves_rule() || is_threefold_repetition();
