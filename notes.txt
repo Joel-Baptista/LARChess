@@ -1,3 +1,0 @@
-8/2r1BpP1/1k6/pp1pR2r/3P2nP/8/6Q1/1N2K2q w  - 3 54 -> triggers an en passant when Qxg4
-
-8/1r2Bp1r/k7/pp1pR1PN/3P2nP/N7/5Q2/4K2q b  - 5 49 -> piece movement is not bound to the check
