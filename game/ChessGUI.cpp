@@ -159,8 +159,7 @@ void ChessGUI::OnUpdate(float deltaTime)
     int x = floor(((iMouse.x - bOffsetX)/ m_RatioX) / square_size);
     int y = floor((((m_windowHeight - bOffsetY) / m_RatioY) - (iMouse.y / m_RatioY)) / square_size);
     // Draw Selected Square
-    
-    if (y >= 0 && y<8 && x >= 0 && x<8){
+    if (y >= 0 && y<8 && x >= 0 && x<8 && !board_locked){
         if (iMouse.mode == GLFW_PRESS && !iMouse.updated){
             iMouse.updated = true;
             if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){ // Movement

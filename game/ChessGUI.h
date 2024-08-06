@@ -30,6 +30,8 @@ class ChessGUI{
         void OnImGuiRender();
 
         std::string get_player_move() const {return m_PlayerMove;}
+        void lock_board()  {board_locked = true;}
+        void unlock_board() {board_locked = false;}
         
         void set_board(std::array<std::array<int, 8>, 8> board);
         struct mouse_input{
@@ -70,6 +72,7 @@ class ChessGUI{
         glm::vec3 m_TranslationA, m_TranslationB;
         float m_QuadPosition[2] = {300.0f, 300.0f};
         float square_size = 100.0f;
+        bool board_locked = false;
 
         struct SelectedSquare {
             int x = 0;

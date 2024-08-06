@@ -19,7 +19,7 @@ std::array<std::array<double, 8>, 8> center_control = {
       { 0.8, 0.8,  0.8,  0.8,  0.8,  0.8, 0.8, 0.8 } }
 };
 
-std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_player, double alpha, double beta){
+minmax_result minmax(Board board, int depth, bool maximizing_player, double alpha, double beta){
     counter++;
     // std::cout << "Counter: " << counter << std::endl;
     if (depth == 0 || board.is_terminal()){
@@ -37,7 +37,7 @@ std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_p
         legal_moves_n += moves.size();
     }
 
-    std::cout << "Depth: " << depth << " Legal moves: " << legal_moves_n << std::endl;
+    // std::cout << "Depth: " << depth << " Legal moves: " << legal_moves_n << std::endl;
 
     if (maximizing_player){
         for (auto const& [square, moves] : board.legal_moves){
@@ -47,7 +47,7 @@ std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_p
                 
                 std::string new_fen;
                 double eval;
-                std::tie(new_fen, eval) = minmax(new_board, depth-1, false, alpha, beta);
+                auto output = minmax(new_board, depth-1, false, alpha, beta);
                 if (eval > target_eval){
                     target_eval = eval;
                     best_move = moves[i].getFrom() + moves[i].getTo();
@@ -67,7 +67,7 @@ std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_p
                 new_board.make_move(moves[i]);
                 std::string new_fen;
                 double eval;
-                std::tie(new_fen, eval) = minmax(new_board, depth-1, true, alpha, beta);
+                auto output = minmax(new_board, depth-1, true, alpha, beta);
                 if (eval < target_eval){
                     target_eval = eval;
                     best_move = moves[i].getFrom() + moves[i].getTo();
