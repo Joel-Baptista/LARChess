@@ -215,13 +215,21 @@ void Board::make_move(Move move){
     }else if (piece == B_KING){
         castling_rights[2] = false;
         castling_rights[3] = false;
-    }else if (move.getFrom() == "a1"){
+    }else if (move.getFrom() == "a1"){ // Rooks moved
         castling_rights[1] = false;
     }else if (move.getFrom() == "h1"){
         castling_rights[0] = false;
     }else if (move.getFrom() == "a8"){
         castling_rights[3] = false;
     }else if (move.getFrom() == "h8"){
+        castling_rights[2] = false;
+    }else if (move.getTo() == "a1"){ // Rooks captured
+        castling_rights[1] = false;
+    }else if (move.getTo() == "h1"){
+        castling_rights[0] = false;
+    }else if (move.getTo() == "a8"){
+        castling_rights[3] = false;
+    }else if (move.getTo() == "h8"){
         castling_rights[2] = false;
     }
 
@@ -238,7 +246,6 @@ void Board::make_move(Move move){
     legal_moves_calculated = false;
     player_check_calculated = false;
     board = new_board;
-
 }
 void Board::get_all_legal_moves(){
     
@@ -401,7 +408,6 @@ std::vector<Move> Board::get_knight_moves(int row, int col){
     std::vector<Move> moves = {};
 
     Pin pin = is_pinned(row, col);
-
     if (pin.is_pinned){ // If the knight is pinned, it can't move ever
         return moves;
     }
@@ -551,6 +557,8 @@ std::vector<Move> Board::get_queen_moves(int row, int col){
 std::vector<Move> Board::get_king_moves(int row, int col){
     std::vector<Move> moves = {};
 
+    bool is_king_in_check = is_seen_by_opponent(row, col);
+
     for (int i=0; i<8; i++){
         int new_row = row + king_moves[i][0];
         int new_col = col + king_moves[i][1];
@@ -569,26 +577,28 @@ std::vector<Move> Board::get_king_moves(int row, int col){
 
     // Castling
 
-    if (turn_player == 1){
-        if (castling_rights[1] && board[7][1] == EMPTY && board[7][2] == EMPTY && board[7][3] == EMPTY){
-            if (!is_seen_by_opponent(7, 2) && !is_seen_by_opponent(7, 3)){
-                moves.push_back(Move("e1", "c1"));
+    if (!is_king_in_check){
+        if (turn_player == 1){
+            if (castling_rights[1] && board[7][1] == EMPTY && board[7][2] == EMPTY && board[7][3] == EMPTY){
+                if (!is_seen_by_opponent(7, 2) && !is_seen_by_opponent(7, 3)){
+                    moves.push_back(Move("e1", "c1"));
+                }
             }
-        }
-        if (castling_rights[0] && board[7][5] == EMPTY && board[7][6] == EMPTY){
-            if (!is_seen_by_opponent(7, 5) && !is_seen_by_opponent(7, 6)){
-                moves.push_back(Move("e1", "g1"));
+            if (castling_rights[0] && board[7][5] == EMPTY && board[7][6] == EMPTY){
+                if (!is_seen_by_opponent(7, 5) && !is_seen_by_opponent(7, 6)){
+                    moves.push_back(Move("e1", "g1"));
+                }
             }
-        }
-    } else{
-        if (castling_rights[3] && board[0][1] == EMPTY && board[0][2] == EMPTY && board[0][3] == EMPTY){
-            if (!is_seen_by_opponent(0, 2) && !is_seen_by_opponent(0, 3)){
-                moves.push_back(Move("e8", "c8"));
+        } else{
+            if (castling_rights[3] && board[0][1] == EMPTY && board[0][2] == EMPTY && board[0][3] == EMPTY){
+                if (!is_seen_by_opponent(0, 2) && !is_seen_by_opponent(0, 3)){
+                    moves.push_back(Move("e8", "c8"));
+                }
             }
-        }
-        if (castling_rights[2] && board[0][5] == EMPTY && board[0][6] == EMPTY){
-            if (!is_seen_by_opponent(0, 5) && !is_seen_by_opponent(0, 6)){
-                moves.push_back(Move("e8", "g8"));
+            if (castling_rights[2] && board[0][5] == EMPTY && board[0][6] == EMPTY){
+                if (!is_seen_by_opponent(0, 5) && !is_seen_by_opponent(0, 6)){
+                    moves.push_back(Move("e8", "g8"));
+                }
             }
         }
     }
@@ -642,9 +652,11 @@ Board::Pin Board::is_pinned(int row, int col){
         return {false, "", king_square, false, false};
     }
 
-    for (int i=1; i<8; i++){ // Search for enemy piece in the oposite direction of the king
-        int new_row = row - i * direction_row; 
-        int new_col = col - i * direction_col;
+    for (int i=1; i<8; i++){ // Starting from king position, the line can only have empty squares or the analysed piece
+        int new_row = king_row - i * direction_row; 
+        int new_col = king_col - i * direction_col;
+
+        if (new_col == col && new_row == row) continue; // Skip own piece
 
         if (new_row >= 0 && new_row < 8 && new_col >= 0 && new_col < 8){
             if (is_straight && 

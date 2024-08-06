@@ -39,6 +39,7 @@ class ChessGUI{
             int pmode = -1;
             int button = -1;
             bool updated = false;
+            std::chrono::_V2::system_clock::time_point press_time = std::chrono::system_clock::now();
         };
 
     private:
@@ -75,6 +76,7 @@ class ChessGUI{
             int y = 0;
             int piece = 0;
             bool selected = false;
+            bool only_select = false;
         };
 
         SelectedSquare selected_square;

@@ -94,15 +94,13 @@ int main() {
 
     Board board;
 
-    // board.set_from_fen("2Rk4/8/7p/r7/4K3/1P5P/2B5/r7 b  - 6 109");
+    board.set_from_fen("6k2/4Q3/6K2/8/8/8/8/8 b - 0 22");
     bool human_vs_human = false;
-    bool human_white = true;
-    bool machine_vs_machine = false;
-    bool stop_program = false;
-    int num_games = 1;
+    int human_player = 1;
     int depth = 3;
 
-    board.reset();
+    // board.reset();
+    chessGUI.set_board(board.board);
     
     // /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
@@ -115,9 +113,14 @@ int main() {
         renderer.Clear(); // Clear the color buffer
         ImGui_ImplGlfwGL3_NewFrame();
 
+        // std::cout << "1.Render Cleared" << std::endl;
+
         chessGUI.OnUpdate(0.0f);
+
+        // std::cout << "2.OnUpdate" << std::endl;
         chessGUI.OnRender();
 
+        // std::cout << "3.OnRender" << std::endl;
         ImGui::Begin("Test");
 
         chessGUI.OnImGuiRender();
@@ -126,164 +129,57 @@ int main() {
         ImGui::Render();
         ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
+        // std::cout << "4.ImGUI" << std::endl;
+
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
         glfwPollEvents();
 
+        // std::cout << "5.PollEvents" << std::endl;
+        std::cout << "Engine" << std::endl;
 
-        if (board.turn_player == 1){
+        if (human_vs_human){
+            std::cout << "Quering the GUI" << std::endl;
+            std::string gui_move = chessGUI.get_player_move();
+            std::cout << "GUI move" << gui_move << std::endl;
+            if (gui_move != ""){
+                Move player_move(gui_move.substr(0,2), gui_move.substr(2,2));
+                board.make_move(player_move);
+                chessGUI.set_board(board.board);
+            }
+        }else if (board.turn_player == human_player){
             std::string gui_move = chessGUI.get_player_move();
             if (gui_move != ""){
                 Move player_move(gui_move.substr(0,2), gui_move.substr(2,2));
                 board.make_move(player_move);
                 chessGUI.set_board(board.board);
             }
-        }else if (board.turn_player == -1){
-            std::tuple<std::string, double> result = minmax(board, depth, false, -1000000, 1000000);
+        }else if (board.turn_player == -1 * human_player){
+            std::cout << "Quering the MinMax" << std::endl;
+            std::tuple<std::string, double> result = minmax(board, depth, (human_player < 0), -1000000, 1000000);
+            std::cout << std::get<0>(result).size() << std::endl;
             Move player_move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
             std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
             board.make_move(player_move);
             chessGUI.set_board(board.board);
         }
 
-        // Move player_move;
-        // if (board.turn_player == 1){
-        //     std::string move_input;
-            
-        //     // std::cout << "White to move" << std::endl;
-            
-        //     if (machine_vs_machine){
-        //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-        //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-        //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-        //     }else if (human_vs_human){
-        //         player_move = human_move();
-        //     }else if (!human_vs_human && human_white){
-        //         player_move = human_move();
-        //     }else{
-        //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-        //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-        //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-        //     }
-        //     // player_move = get_random_move(board.legal_moves);
-        //     // std::cout << "White move: " << player_move.getFrom() << player_move.getTo() << std::endl;
+        if (board.is_checkmate()){
+            break;
+        }
 
-        // }else if (board.turn_player == -1){
-        //     // std::cout << "Black to move" << std::endl;
-
-        //     if (machine_vs_machine){
-        //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-        //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-        //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-        //     }else if (human_vs_human){
-        //         player_move = human_move();
-        //     }else if (!human_vs_human && !human_white){
-        //         player_move = human_move();
-        //     }else{
-        //         std::tuple<std::string, double> result = minmax(board, depth, false, -1000000, 1000000);
-        //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-        //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-        //     }
-        //     // player_move = get_random_move(board.legal_moves);
-        //     // std::cout << "Black move: " << player_move.getFrom() << player_move.getTo() << std::endl;
-        // }
-
+        // std::cout << "6.Make Move" << std::endl;
+        //  std::cout << "----------------------------------------------------------" << std::endl;
     }
 
+     std::cout << "7.End Program" << std::endl;
     ImGui_ImplGlfwGL3_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
 
-    // if (human_vs_human){
-    //     machine_vs_machine = false;
-    // }
-
-    // for (int i=0; i<num_games; i++){
-    //     board.reset();
-    //     std::cout << "Starting position in game " << i+1 << std::endl;
-    //     while (!board.is_terminal() && !stop_program){
-            
-    //         if (!machine_vs_machine){
-    //             board.show();
-    //         }
-    //         // std::cout << "FEN: " << board.get_fen() << std::endl;
-
-            // if (king_count(board.board) != 2){
-            //     std::cout << "King count: " << king_count(board.board) << std::endl;
-            //     stop_program = true;
-            //     break;
-            // }
-
-            // board.get_all_legal_moves();
-
-            // std::string debug_square = "a5";
-            // for (int i=0; i<board.legal_moves[debug_square].size(); i++){
-            //     std::cout << "Legal move: " << board.legal_moves[debug_square][i].getFrom() << board.legal_moves[debug_square][i].getTo() << std::endl;
-            // }
-
-            // Move player_move;
-
-            // std::cout << "Hash of board = " << board.get_board_hash() << std::endl;
-            
-            // if (board.turn_player == 1){
-            //     std::string move_input;
-                
-            //     // std::cout << "White to move" << std::endl;
-                
-            //     if (machine_vs_machine){
-            //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-            //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-            //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-            //     }else if (human_vs_human){
-            //         player_move = human_move();
-            //     }else if (!human_vs_human && human_white){
-            //         player_move = human_move();
-            //     }else{
-            //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-            //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-            //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-            //     }
-            //     // player_move = get_random_move(board.legal_moves);
-            //     // std::cout << "White move: " << player_move.getFrom() << player_move.getTo() << std::endl;
-
-            // }else if (board.turn_player == -1){
-            //     // std::cout << "Black to move" << std::endl;
-
-            //     if (machine_vs_machine){
-            //         std::tuple<std::string, double> result = minmax(board, depth, true, -1000000, 1000000);
-            //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-            //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-            //     }else if (human_vs_human){
-            //         player_move = human_move();
-            //     }else if (!human_vs_human && !human_white){
-            //         player_move = human_move();
-            //     }else{
-            //         std::tuple<std::string, double> result = minmax(board, depth, false, -1000000, 1000000);
-            //         player_move = Move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
-            //         std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
-            //     }
-
-
-            //     // player_move = get_random_move(board.legal_moves);
-            //     // std::cout << "Black move: " << player_move.getFrom() << player_move.getTo() << std::endl;
-            // }
-
-            // board.make_move(player_move);
-        }
-
-        // std::cout << "Final position: " << board.get_fen() << std::endl;
-        // board.show();
-
-        // std::cout << "Game over" << std::endl;
-
-        // if (stop_program){
-        //     break;
-        // }
-    // }
-
-// }
+}
 
 Move get_random_move(std::unordered_map<std::string, std::vector<Move>> all_legal_moves){
 

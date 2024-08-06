@@ -153,47 +153,77 @@ void ChessGUI::OnUpdate(float deltaTime)
     m_VertexBuffer_Pieces->Bind();
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
-    // Draw Selected Square
-    if (iMouse.mode == GLFW_PRESS && !iMouse.updated){
-        iMouse.updated = true;
-        int x = floor(((iMouse.x - bOffsetX)/ m_RatioX) / square_size);
-        int y = floor((((m_windowHeight - bOffsetY) / m_RatioY) - (iMouse.y / m_RatioY)) / square_size);
+    auto time_now = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = time_now - iMouse.press_time;
 
-        if (y >= 0 && y<8 && x >= 0 && x<8){
-            if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){
+    int x = floor(((iMouse.x - bOffsetX)/ m_RatioX) / square_size);
+    int y = floor((((m_windowHeight - bOffsetY) / m_RatioY) - (iMouse.y / m_RatioY)) / square_size);
+    // Draw Selected Square
+    
+    if (y >= 0 && y<8 && x >= 0 && x<8){
+        if (iMouse.mode == GLFW_PRESS && !iMouse.updated){
+            iMouse.updated = true;
+            if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){ // Movement
                 m_PlayerMove = coordinates_to_square(7 - selected_square.y, selected_square.x) + coordinates_to_square(7 - y, x);
-                // board[7-y][x] = selected_square.piece;
-                // board[7-selected_square.y][selected_square.x] = 0;
                 selected_square.selected = false;
                 selected_square.piece = 0;
-            }else if (x == selected_square.x && y == selected_square.y && selected_square.selected){
+            }else if (x == selected_square.x && y == selected_square.y && selected_square.selected){ // Unselect
+                board[7-y][x] = selected_square.piece;
                 selected_square.piece = 0;
                 selected_square.selected = false;
                 m_PlayerMove = "";
-            }
-            else if (board[7-y][x] != 0){
+            }else if (board[7-y][x] != 0){
                 selected_square.piece = board[7-y][x];
+                board[7-y][x] = 0;
                 selected_square.selected = true;
+                selected_square.only_select = false;
                 m_PlayerMove = "";
-            }
+            
 
             selected_square.x = x;
             selected_square.y = y;  
-        }else{
-            selected_square.piece = 0;
-            selected_square.selected = false;
-            m_PlayerMove = "";
-        }      
+            }else{
+                selected_square.piece = 0;
+                selected_square.selected = false;
+                m_PlayerMove = "";
+            }      
+        } else if (iMouse.mode == GLFW_RELEASE && !iMouse.updated && elapsed_seconds.count() < 0.1){
+            iMouse.updated = true; 
+            if (x == selected_square.x && y == selected_square.y && selected_square.selected){ // Movement
+                board[7-y][x] = selected_square.piece;
+                selected_square.only_select = true;
+            }
+        } else if (iMouse.mode == GLFW_RELEASE && !iMouse.updated){
+            iMouse.updated = true;
+            if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){ // Movement
+                m_PlayerMove = coordinates_to_square(7 - selected_square.y, selected_square.x) + coordinates_to_square(7 - y, x);
+                selected_square.selected = false;
+                selected_square.piece = 0;
+            }     
+        }
     }
     float color[4] = {1.0f, 0.5f, 0.5f, 0.5f};
 
-    if (selected_square.piece == 0) color[3] = 0.0f;
+    if (selected_square.piece == 0 || selected_square.only_select) color[3] = 0.0f;
 
-    auto q = CreateQuad(selected_square.x * square_size, 
-                        selected_square.y * square_size, 
-                        square_size,
-                        0.0,
-                        color[0], color[1], color[2], color[3]);
+    auto flipped_board = vflip_board(board);
+    float texture = selected_square.piece > 0 ? 
+                    (float)selected_square.piece: 
+                    (float)abs(selected_square.piece) + 6.0;
+
+    if (selected_square.piece == 0 || selected_square.only_select) texture = 0.0f;
+    
+    double xpos, ypos;
+    glfwGetCursorPos(m_Window, &xpos, &ypos);
+
+    auto q = CreateQuad(
+        // selected_square.x * square_size, 
+        // selected_square.y * square_size, 
+        ((xpos - bOffsetX)/ m_RatioX) - square_size / 2,
+        (((m_windowHeight - bOffsetY) / m_RatioY) - (ypos / m_RatioY)) - square_size / 2,
+        square_size,
+        texture,
+        color[0], color[1], color[2], color[3]);
     
     Vertex target_vertices[1 * 4] = {0};
     memcpy(target_vertices, q.data(),  q.size() * sizeof(Vertex));
@@ -242,7 +272,9 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     iMouse.mode = action;
     iMouse.button = button;
      
-    if (action == 1) iMouse.updated = false;
+    iMouse.updated = false;
+
+    if (action == 1) iMouse.press_time = std::chrono::system_clock::now();
 
 }
 

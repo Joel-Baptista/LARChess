@@ -27,6 +27,8 @@ std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_p
     }
 
     board.get_all_legal_moves();
+
+    std::cout << board.legal_moves["g8"].size() << std::endl;
     double target_eval = maximizing_player ? -1000000 : 1000000;
     std::string best_move;
 
