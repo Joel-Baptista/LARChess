@@ -28,16 +28,16 @@ std::tuple<std::string, double> minmax(Board board, int depth, bool maximizing_p
 
     board.get_all_legal_moves();
 
-    std::cout << board.legal_moves["g8"].size() << std::endl;
+    // std::cout << board.legal_moves["g8"].size() << std::endl;
     double target_eval = maximizing_player ? -1000000 : 1000000;
     std::string best_move;
 
-    // int legal_moves_n = 0;
-    // for (auto const& [square, moves] : board.legal_moves){
-    //     legal_moves_n += moves.size();
-    // }
+    int legal_moves_n = 0;
+    for (auto const& [square, moves] : board.legal_moves){
+        legal_moves_n += moves.size();
+    }
 
-    // std::cout << "Depth: " << depth << " Legal moves: " << legal_moves_n << std::endl;
+    std::cout << "Depth: " << depth << " Legal moves: " << legal_moves_n << std::endl;
 
     if (maximizing_player){
         for (auto const& [square, moves] : board.legal_moves){
@@ -89,7 +89,7 @@ double evaluate(Board& board){
     double score = 0.0;
 
     if (board.is_checkmate()){
-        return (board.turn_player == 1) ? -1000000 : 1000000;
+        return (board.turn_player == 1) ? -1000 : 1000;
     }
 
     for (int i=0; i<8; i++){

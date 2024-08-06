@@ -159,7 +159,8 @@ int main() {
         }else if (board.turn_player == -1 * human_player){
             std::cout << "Quering the MinMax" << std::endl;
             std::tuple<std::string, double> result = minmax(board, depth, (human_player < 0), -1000000, 1000000);
-            std::cout << std::get<0>(result).size() << std::endl;
+            std::cout << "Output: " << std::get<0>(result) << std::endl;
+        
             Move player_move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
             std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
             board.make_move(player_move);
