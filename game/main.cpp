@@ -94,13 +94,13 @@ int main() {
 
     Board board;
 
-    board.set_from_fen("2Rk4/8/7p/r7/4K3/1P5P/2B5/r7 b  - 6 109");
+    // board.set_from_fen("2Rk4/8/7p/r7/4K3/1P5P/2B5/r7 b  - 6 109");
     bool human_vs_human = false;
     bool human_white = true;
     bool machine_vs_machine = false;
     bool stop_program = false;
     int num_games = 1;
-    int depth = 2;
+    int depth = 3;
 
     board.reset();
     
@@ -130,7 +130,23 @@ int main() {
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
-        glfwWaitEvents();
+        glfwPollEvents();
+
+
+        if (board.turn_player == 1){
+            std::string gui_move = chessGUI.get_player_move();
+            if (gui_move != ""){
+                Move player_move(gui_move.substr(0,2), gui_move.substr(2,2));
+                board.make_move(player_move);
+                chessGUI.set_board(board.board);
+            }
+        }else if (board.turn_player == -1){
+            std::tuple<std::string, double> result = minmax(board, depth, false, -1000000, 1000000);
+            Move player_move(std::get<0>(result).substr(0,2), std::get<0>(result).substr(2,2));
+            std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << std::get<1>(result) << std::endl;
+            board.make_move(player_move);
+            chessGUI.set_board(board.board);
+        }
 
         // Move player_move;
         // if (board.turn_player == 1){
@@ -174,8 +190,6 @@ int main() {
         //     // std::cout << "Black move: " << player_move.getFrom() << player_move.getTo() << std::endl;
         // }
 
-        // board.make_move(player_move);
-        // chessGUI.set_board(board.board);
     }
 
     ImGui_ImplGlfwGL3_Shutdown();

@@ -7,6 +7,8 @@
 #include <memory>
 #include <array>
 #include <GLFW/glfw3.h>
+#include <chrono>
+#include <ctime> 
 
 #include "include/glm/glm.hpp"
 #include "include/glm/gtc/matrix_transform.hpp"
@@ -26,11 +28,17 @@ class ChessGUI{
         void OnUpdate(float deltaTime);
         void OnRender();
         void OnImGuiRender();
+
+        std::string get_player_move() const {return m_PlayerMove;}
         
         void set_board(std::array<std::array<int, 8>, 8> board);
-        struct selected_square{
+        struct mouse_input{
             float x = -1.0;
             float y = -1.0;
+            int mode = 0;
+            int pmode = -1;
+            int button = -1;
+            bool updated = false;
         };
 
     private:
@@ -55,11 +63,22 @@ class ChessGUI{
         int m_windowHeight;
         GLFWwindow* m_Window;
         float m_RatioX, m_RatioY; 
+        float bOffsetX, bOffsetY;
         
         glm::mat4 m_Proj, m_View;
         glm::vec3 m_TranslationA, m_TranslationB;
         float m_QuadPosition[2] = {300.0f, 300.0f};
         float square_size = 100.0f;
+
+        struct SelectedSquare {
+            int x = 0;
+            int y = 0;
+            int piece = 0;
+            bool selected = false;
+        };
+
+        SelectedSquare selected_square;
+        std::string m_PlayerMove;
 
         void get_board_indices(unsigned int* indices_board, int n_squares);
         void get_board_vertices(Vertex* vertices);

@@ -1,4 +1,5 @@
 #include "ChessGUI.h"
+#include "../src/utils.h"
 
 #include "include/OpenGLEngine/Renderer.h"
 #include "include/imgui/imgui.h"
@@ -10,12 +11,13 @@
 #include <random>
 #include <array>
 
+
 static float get_texture(int piece);
 static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 8>, 8> board);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
-ChessGUI::selected_square sSquare = {0, 0};
+ChessGUI::mouse_input iMouse;
 
 ChessGUI::ChessGUI(GLFWwindow* window):
     m_View(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))), m_RatioX(1.0f), m_RatioY(1.0f)
@@ -125,44 +127,79 @@ ChessGUI::~ChessGUI()
 void ChessGUI::OnUpdate(float deltaTime)
 {
 
+    int width, height;
+    glfwGetWindowSize(m_Window, &width, &height);
+    
+    if (width != m_windowWidth || height != m_windowHeight){
+
+        m_windowWidth = width;
+        m_windowHeight = height;
+
+        // Board Offset
+        m_RatioX = (float)m_windowWidth / 1920.0f;
+        m_RatioY = (float)m_windowHeight / 1080.0f;
+
+        bOffsetX = (m_windowWidth / 2)  - (4 * square_size * m_RatioX);
+        bOffsetY = (m_windowHeight / 2) - (4 * square_size * m_RatioY);
+    }
+
     GLCall(glClearColor(0.7f, 0.7f, 0.7f, 1.0f));
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
+    // Draw Pieces
     Vertex vertices[220]; // 32 quads are 128 vertices
     get_piece_vertices(vertices);
     
     m_VertexBuffer_Pieces->Bind();
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
-    Vertex target_vertices[1 * 4] = {0};
-    auto q = CreateQuad((sSquare.x / m_RatioX - (square_size / 2)), (m_windowHeight / m_RatioY - (sSquare.y / m_RatioY + (square_size / 2))), square_size, 0.0);
+    // Draw Selected Square
+    if (iMouse.mode == GLFW_PRESS && !iMouse.updated){
+        iMouse.updated = true;
+        int x = floor(((iMouse.x - bOffsetX)/ m_RatioX) / square_size);
+        int y = floor((((m_windowHeight - bOffsetY) / m_RatioY) - (iMouse.y / m_RatioY)) / square_size);
 
+        if (y >= 0 && y<8 && x >= 0 && x<8){
+            if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){
+                m_PlayerMove = coordinates_to_square(7 - selected_square.y, selected_square.x) + coordinates_to_square(7 - y, x);
+                // board[7-y][x] = selected_square.piece;
+                // board[7-selected_square.y][selected_square.x] = 0;
+                selected_square.selected = false;
+                selected_square.piece = 0;
+            }else if (x == selected_square.x && y == selected_square.y && selected_square.selected){
+                selected_square.piece = 0;
+                selected_square.selected = false;
+                m_PlayerMove = "";
+            }
+            else if (board[7-y][x] != 0){
+                selected_square.piece = board[7-y][x];
+                selected_square.selected = true;
+                m_PlayerMove = "";
+            }
+
+            selected_square.x = x;
+            selected_square.y = y;  
+        }else{
+            selected_square.piece = 0;
+            selected_square.selected = false;
+            m_PlayerMove = "";
+        }      
+    }
+    float color[4] = {1.0f, 0.5f, 0.5f, 0.5f};
+
+    if (selected_square.piece == 0) color[3] = 0.0f;
+
+    auto q = CreateQuad(selected_square.x * square_size, 
+                        selected_square.y * square_size, 
+                        square_size,
+                        0.0,
+                        color[0], color[1], color[2], color[3]);
+    
+    Vertex target_vertices[1 * 4] = {0};
     memcpy(target_vertices, q.data(),  q.size() * sizeof(Vertex));
 
     m_VertexBuffer_Targets->Bind();
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(target_vertices), target_vertices);
-
-    // std::cout << "X: " << sSquare.x << " Y: " << sSquare.y << std::endl;
-
-    // std::random_device dev;
-    // std::mt19937 rng(dev());
-    // std::uniform_int_distribution<std::mt19937::result_type> dist2(1,2); // distribution in range [1, 6]
-
-    // std::cout << dist2(rng) << std::endl;
-
-
-    // for (int i = 0; i < m_Textures.size(); i++){
-    //     glBindTextureUnit(i, m_Textures[i]->GetRendererID());  
-    // }
-
-    int width, height;
-    glfwGetWindowSize(m_Window, &width, &height);
-    
-    if (width != m_windowWidth || height != m_windowHeight){
-        m_windowWidth = width;
-        m_windowHeight = height;
-        // glViewport(0, 0, width, height);
-    }
 
 }
 
@@ -170,14 +207,9 @@ void ChessGUI::OnRender()
 {
     Renderer renderer;
     
-    m_RatioX = (float)m_windowWidth / 1920.0f;
-    m_RatioY = (float)m_windowHeight / 1080.0f;
-
-    std::cout << "Ratio X: " << m_RatioX << " Ratio Y: " << m_RatioY << std::endl;
-    
     glm::mat4 model =  glm::scale(glm::mat4(1.0f), glm::vec3(m_RatioX, m_RatioY, 1.0f));   
-    // m_View =  glm::translate(glm::mat4(1.0f), glm::vec3(m_RatioX * square_size, m_RatioY * square_size, 1.0f));   
-    m_View =  glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));   
+    m_View =  glm::translate(glm::mat4(1.0f), glm::vec3(bOffsetX, 
+                                                        bOffsetY, 1.0f));   
     m_Proj = glm::ortho(0.0f, (float)1920.0f, 0.0f, (float)1080.0f, -1.0f, 1.0f);
 
     glm::mat4 mvp =  m_Proj * m_View * model;
@@ -185,7 +217,6 @@ void ChessGUI::OnRender()
     m_Shader->Bind();
     m_Shader->SetUniformMat4f("u_MVP", mvp);
 
-    // std::cout << "Window Width: " << m_windowWidth << " Window Height: " << m_windowHeight << std::endl;
 
     renderer.Draw(*m_VAO_Board, *m_IndexBuffer_Board, *m_Shader);
     renderer.Draw(*m_VAO_Pieces, *m_IndexBuffer_Pieces, *m_Shader);
@@ -204,9 +235,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    // std::cout << "Mouse button: " << button << " Action: " << action << " X: " << xpos << " Y: " << ypos << std::endl;
-    sSquare.x = xpos;
-    sSquare.y = ypos;
+
+    iMouse.x = xpos;
+    iMouse.y = ypos;
+
+    iMouse.mode = action;
+    iMouse.button = button;
+     
+    if (action == 1) iMouse.updated = false;
+
 }
 
 void ChessGUI::set_board(std::array<std::array<int, 8>, 8> board){
@@ -271,8 +308,8 @@ void ChessGUI::get_piece_vertices(Vertex* pieces_vertices){
         for (int j=0; j<8; j++){
 
             if (flipped_board[i][j] != 0){          
-                float texture = flipped_board[i][j] > 0 ? (float)flipped_board[i][j]: (float)abs(board[i][j]) + 6.0;
-                // std::cout << "Texture: " << texture << std::endl;
+                float texture = flipped_board[i][j] > 0 ? (float)flipped_board[i][j]: (float)abs(flipped_board[i][j]) + 6.0;
+
                 quad_count++;
                 auto q = CreateQuad((square_size * j), (square_size * i), square_size, texture);
 
