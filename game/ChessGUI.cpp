@@ -347,8 +347,6 @@ void ChessGUI::get_piece_vertices(Vertex* pieces_vertices){
             }
         } 
     }   
-    std::cout << quad_count << std::endl;
-    std::cout << offset << std::endl;
 }   
 
 static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 8>, 8> board){
