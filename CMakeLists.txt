@@ -41,6 +41,12 @@ add_executable(ChessGame
     game/include/imgui/imgui.cpp
 )
 
+add_executable(bit_board_test
+#  Game Engine
+    tests/bit_board_test.cpp
+    src/bit_board.cpp
+)
+
 # Link GLFW and OpenGL libraries to your executable
 # target_link_libraries(game PRIVATE )
 
