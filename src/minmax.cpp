@@ -48,6 +48,7 @@ minmax_result minmax(Board board, int depth, bool maximizing_player, double alph
                 std::string new_fen;
                 double eval;
                 auto output = minmax(new_board, depth-1, false, alpha, beta);
+                eval = output.evaluation;
                 if (eval > target_eval){
                     target_eval = eval;
                     best_move = moves[i].getFrom() + moves[i].getTo();
@@ -68,6 +69,7 @@ minmax_result minmax(Board board, int depth, bool maximizing_player, double alph
                 std::string new_fen;
                 double eval;
                 auto output = minmax(new_board, depth-1, true, alpha, beta);
+                eval = output.evaluation;
                 if (eval < target_eval){
                     target_eval = eval;
                     best_move = moves[i].getFrom() + moves[i].getTo();
@@ -89,7 +91,7 @@ double evaluate(Board& board){
     double score = 0.0;
 
     if (board.is_checkmate()){
-        return (board.turn_player == 1) ? -1000 : 1000;
+        return (board.turn_player == 1) ? -10000 : 10000;
     }
 
     for (int i=0; i<8; i++){
