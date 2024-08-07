@@ -22,6 +22,28 @@
 #define get_move_enpassant(move) (((move) & 0x400000))
 #define get_move_castling(move) (((move) & 0x800000))
 
+#define copy_board()                                                                        \
+    U64 bitboards_copy[12], occupancies_copy[12];                                           \
+    int side_copy, en_passant_square_copy, castle_copy, halfmove_copy, fullmove_copy;       \
+    memcpy(bitboards_copy, bitboards, sizeof(bitboards));                                   \
+    memcpy(occupancies_copy, occupancies, sizeof(occupancies));                             \
+    side_copy = side;                                                                       \
+    en_passant_square_copy = en_passant_square;                                             \
+    castle_copy = castle;                                                                   \
+    halfmove_copy = halfmove;                                                               \
+    fullmove_copy = fullmove;                                                               \
+
+
+#define restore_board()                                             \
+    memcpy(bitboards, bitboards_copy, sizeof(bitboards));           \
+    memcpy(occupancies, occupancies_copy, sizeof(occupancies));     \
+    side = side_copy;                                               \
+    en_passant_square = en_passant_square_copy;                     \
+    castle = castle_copy;                                           \
+    halfmove = halfmove_copy;                                       \
+    fullmove = fullmove_copy;                                       \
+
+
 // Some test strings
 #define empty_board "8/8/8/8/8/8/8/8 w - -"
 #define start_position "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -90,7 +112,8 @@ class BitBoard {
         inline int is_square_attacked(int square, int side);
         void print_attacked_square(int side);
 
-        inline void generate_moves();
+        inline void generate_moves(moves* move_list);
+        inline int make_move(int move, int move_flag);
 
         enum colors{
             white, black, both
@@ -108,6 +131,11 @@ class BitBoard {
         enum pieces 
         {
             P, N, B, R, Q, K, p, n, b, r, q, k,
+        };
+
+        enum move_types 
+        {
+            all_moves, only_captures
         };
 
 
@@ -153,7 +181,7 @@ class BitBoard {
         };
         std::unordered_map<int, char> promoted_pieces = {
             {N, 'n'}, {B, 'b'}, {R, 'r'}, {Q, 'q'},
-            {n, 'n'}, {b, 'b'}, {r, 'r'}, {q, 'q'}
+            {n, 'n'}, {b, 'b'}, {r, 'r'}, {q, 'q'}, {0, ' '}
         };
 
         const U64 not_a_file = 18374403900871474942ULL;

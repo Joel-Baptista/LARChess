@@ -52,37 +52,23 @@ BitBoard::~BitBoard(){
 void BitBoard::test_bitboard()
 {   
     // parse_fen("8/3R4/8/1q1B4/8/8/8/8 w - -");
-    parse_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
-    // parse_fen(start_position);
+    // parse_fen(tricky_position);
+    // parse_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq c6 0 1");
+    parse_fen(start_position);
     // parse_fen(killer_position);  
 
-    print_board();
+
     moves move_list[1]; 
 
-int move = encode_move(e2, e4, P, 0, 0, 0, 0, 0);
+    generate_moves(move_list);
+    
+    for (int i = 0; i < move_list->count; i++)
+    {
+        int move = move_list->moves[i]; 
+        make_move(move, all_moves);
+    }
 
-    add_move(move_list, move);
-
-    print_move_list(move_list);
-
-    // int source_square = get_move_source(move);
-    // int target_square = get_move_target(move);
-    // int piece = get_move_piece(move);
-    // int promoted_piece = get_move_promoted(move);
-    // int capture = get_move_capture(move);
-    // int double_push = get_move_double(move);
-    // int en_passant = get_move_enpassant(move);
-    // int castle = get_move_castling(move);
-
-    // std::cout << "Source square: " << square_to_coords[source_square] << std::endl;  
-    // std::cout << "Target square: " << square_to_coords[target_square] << std::endl;
-    // std::cout << "Piece: " << unicode_pieces[piece] << std::endl;
-    // std::cout << "Promoted piece: " << unicode_pieces[promoted_piece] << std::endl;
-    // std::cout << "Capture: " << (bool)capture << std::endl;
-    // std::cout << "Double push: " << (bool)double_push << std::endl;
-    // std::cout << "En passant: " << (bool)en_passant << std::endl;
-    // std::cout << "Castle: " << (bool)castle << std::endl;
-
+    // print_move_list(move_list);
 }
 
 
@@ -104,8 +90,10 @@ int move = encode_move(e2, e4, P, 0, 0, 0, 0, 0);
 <=========================================================================================>
 */
 
-inline void BitBoard::generate_moves()
+inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-legals moves
 {
+    move_list->count = 0;
+
     int source_square, target_square;
 
     U64 bitboard, attacks;
@@ -129,20 +117,20 @@ inline void BitBoard::generate_moves()
                     {
                         if (source_square >= a7 && source_square <= h7)
                         {
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "q" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "r" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "b" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "n" <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, P, Q, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, R, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, B, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, N, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Pawn move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, P, 0, 0, 0, 0, 0));
 
                             if (source_square >= a2 && source_square <= h2 && 
                                 !get_bit(occupancies[both], target_square - 8) && 
                                 !get_bit(occupancies[both], target_square - 16)) // Second rank double push (with no piece in between)
                             {
-                                std::cout << "Pawn double move: " << square_to_coords[source_square] << square_to_coords[target_square - 8] <<  std::endl;
+                                add_move(move_list, encode_move(source_square, target_square - 8, P, 0, 0, 1, 0, 0));                                   
                             }
                         }
                     }
@@ -155,14 +143,14 @@ inline void BitBoard::generate_moves()
                         
                         if (source_square >= a7 && source_square <= h7)
                         {
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "q" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "r" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "b" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "n" <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, P, Q, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, R, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, B, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, P, N, 1, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Pawn capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, P, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -173,7 +161,7 @@ inline void BitBoard::generate_moves()
                         if (enpassant_attacks)
                         {
                             int target_enpassant = get_least_significant_bit(enpassant_attacks);
-                            std::cout << "En passant: " << square_to_coords[source_square] << square_to_coords[target_enpassant] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_enpassant, P, 0, 1, 0, 1, 0));
                         }
                     }
 
@@ -187,14 +175,9 @@ inline void BitBoard::generate_moves()
                 {
                     if (!get_bit(occupancies[both], f1) && !get_bit(occupancies[both], g1))
                     {
-                        if (!is_square_attacked(e1, black) && !is_square_attacked(f1, black) && !is_square_attacked(g1, black))
-                        // if (!is_square_attacked(e1, black) && !is_square_attacked(f1, black))
-                        /*
-                        The original implementation did not check g1, because they would do it in make move. I don't agree with that
-                        because the generate_moves() function should only generate legal moves. All other castles suffer the same problem
-                        */ 
+                        if (!is_square_attacked(e1, black) && !is_square_attacked(f1, black))
                         {
-                            std::cout << "White kingside castle: e1g1" << std::endl;
+                            add_move(move_list, encode_move(e1, g1, K, 0, 0, 0, 0, 1));
                         }
                     }  
                 }
@@ -202,9 +185,9 @@ inline void BitBoard::generate_moves()
                 {
                     if (!get_bit(occupancies[both], d1) && !get_bit(occupancies[both], c1) && !get_bit(occupancies[both], b1))
                     {
-                        if (!is_square_attacked(e1, black) && !is_square_attacked(d1, black) && !is_square_attacked(c1, black))
+                        if (!is_square_attacked(e1, black) && !is_square_attacked(d1, black))
                         {
-                            std::cout << "White queenside castle: e1c1" << std::endl;
+                            add_move(move_list, encode_move(e1, c1, K, 0, 0, 0, 0, 1));
                         }
                     }  
                 }
@@ -225,20 +208,20 @@ inline void BitBoard::generate_moves()
                     {
                         if (source_square >= a2 && source_square <= h2)
                         {
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "q" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "r" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "b" <<  std::endl;
-                            std::cout << "Pawn promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "n" <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, p, q, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, n, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, b, 0, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, r, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Pawn move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
-
+                            add_move(move_list, encode_move(source_square, target_square, p, 0, 0, 0, 0, 0));
+                         
                             if (source_square >= a7 && source_square <= h7 && 
                                 !get_bit(occupancies[both], target_square + 8) && 
                                 !get_bit(occupancies[both], target_square + 16)) // Second rank double push (with no piece in between)
                             {
-                                std::cout << "Pawn double move: " << square_to_coords[source_square] << square_to_coords[target_square + 8] <<  std::endl;
+                                add_move(move_list, encode_move(source_square, target_square + 8, p, 0, 0, 1, 0, 0));
                             }
                         }
                     }
@@ -251,14 +234,14 @@ inline void BitBoard::generate_moves()
                         
                         if (source_square >= a2 && source_square <= h2)
                         {
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "q" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "r" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "b" <<  std::endl;
-                            std::cout << "Pawn capture promotion: " << square_to_coords[source_square] << square_to_coords[target_square]  << "n" <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, p, q, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, n, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, b, 1, 0, 0, 0));
+                            add_move(move_list, encode_move(source_square, target_square, p, r, 1, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Pawn capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, p, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -269,7 +252,7 @@ inline void BitBoard::generate_moves()
                         if (enpassant_attacks)
                         {
                             int target_enpassant = get_least_significant_bit(enpassant_attacks);
-                            std::cout << "En passant: " << square_to_coords[source_square] << square_to_coords[target_enpassant] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_enpassant, p, 0, 1, 0, 1, 0));
                         }
                     }
                     clear_bit(bitboard, source_square);
@@ -281,9 +264,10 @@ inline void BitBoard::generate_moves()
                 {
                     if (!get_bit(occupancies[both], f8) && !get_bit(occupancies[both], g8))
                     {
-                        if (!is_square_attacked(e8, white) && !is_square_attacked(f8, white) && !is_square_attacked(g8, white))
+                        if (!is_square_attacked(e8, white) && !is_square_attacked(f8, white))
                         {
                             std::cout << "Black kingside castle: e8g8" << std::endl;
+                            add_move(move_list, encode_move(e8, g8, k, 0, 0, 0, 0, 1));
                         }
                     }  
                 }
@@ -291,9 +275,10 @@ inline void BitBoard::generate_moves()
                 {
                     if (!get_bit(occupancies[both], d8) && !get_bit(occupancies[both], c8) && !get_bit(occupancies[both], b8))
                     {
-                        if (!is_square_attacked(e8, white) && !is_square_attacked(d8, white) && !is_square_attacked(c8, white))
+                        if (!is_square_attacked(e8, white) && !is_square_attacked(d8, white))
                         {
                             std::cout << "Black queenside castle: e8c8" << std::endl;
+                            add_move(move_list, encode_move(e8, c8, k, 0, 0, 0, 0, 1));
                         }
                     }  
                 }
@@ -316,11 +301,11 @@ inline void BitBoard::generate_moves()
                         
                         if (!get_bit(((side == white) ? occupancies[black] : occupancies[white]), target_square))
                         {
-                            std::cout << "Knight move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Knight capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -347,11 +332,11 @@ inline void BitBoard::generate_moves()
                         
                         if (!get_bit(((side == white) ? occupancies[black] : occupancies[white]), target_square))
                         {
-                            std::cout << "Bishop move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Bishop capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -378,11 +363,11 @@ inline void BitBoard::generate_moves()
                         
                         if (!get_bit(((side == white) ? occupancies[black] : occupancies[white]), target_square))
                         {
-                            std::cout << "Rook move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Rook capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -409,11 +394,11 @@ inline void BitBoard::generate_moves()
                         
                         if (!get_bit(((side == white) ? occupancies[black] : occupancies[white]), target_square))
                         {
-                            std::cout << "Queen move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "Queen capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -437,20 +422,14 @@ inline void BitBoard::generate_moves()
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-
-                        if (is_square_attacked(target_square, (side == white) ? black : white))
-                        { // No pseudo-legal moves here
-                            clear_bit(attacks, target_square);
-                            continue;
-                        }
                         
                         if (!get_bit(((side == white) ? occupancies[black] : occupancies[white]), target_square))
                         {
-                            std::cout << "King move: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 0, 0, 0, 0));
                         }
                         else
                         {
-                            std::cout << "King capture: " << square_to_coords[source_square] << square_to_coords[target_square] <<  std::endl;
+                            add_move(move_list, encode_move(source_square, target_square, piece, 0, 1, 0, 0, 0));
                         }
                         
                         clear_bit(attacks, target_square);
@@ -463,11 +442,43 @@ inline void BitBoard::generate_moves()
     }
 }   
 
+inline int BitBoard::make_move(int move, int move_flag)
+{
+    if (move_flag == all_moves)
+    {
+        copy_board();
+
+        int source_square = get_move_source(move);
+        int target_square = get_move_target(move);
+        int piece = get_move_piece(move);
+        int capture = get_move_capture(move);
+        int promotion = get_move_promoted(move);
+        int enpassant = get_move_enpassant(move);
+        int castle = get_move_castling(move);
+        int double_push = get_move_double(move);
+
+        clear_bit(bitboards[piece], source_square);
+        set_bit(bitboards[piece], target_square);
+    }
+    else
+    {
+        if (get_move_capture(move))
+        {
+            make_move(move, all_moves);
+        }
+        else
+        {
+            return 0;
+        }
+    }
+}
+
 static inline void add_move(moves *move_list, int move) // Does not need to be a member function
 {
     move_list->moves[move_list->count] = move;
     move_list->count++;
 }
+
 
 /*
 <=========================================================================================>
@@ -982,13 +993,22 @@ void BitBoard::print_move(int move)
 }
 
 void BitBoard::print_move_list(moves* move_list)
-{
-    std::cout << "\n   move  piece  capture  double  enpassant  castling\n";
+{   
+    if (move_list->count == 0)
+    {
+        std::cout << "No moves available" << std::endl;
+        return;
+    }
+
+    std::cout << "\n       move  piece  capture  double  enpassant  castling\n";
     
     for (int move_count = 0; move_count < move_list->count; move_count++)
     {
         int move = move_list->moves[move_count];
-        std::cout << "  " << 
+        
+        std::string index = std::to_string(move_count + 1);
+        
+        std::cout << "  " << ((move_count + 1 < 10) ? " " + index : index) << ": " <<
                     square_to_coords[get_move_source(move)] << 
                     square_to_coords[get_move_target(move)] << 
                     promoted_pieces[get_move_promoted(move)] << "    " <<
