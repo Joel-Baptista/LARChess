@@ -17,6 +17,7 @@ static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
+
 ChessGUI::mouse_input iMouse;
 
 ChessGUI::ChessGUI(GLFWwindow* window):
@@ -147,7 +148,7 @@ void ChessGUI::OnUpdate(float deltaTime)
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
     // Draw Pieces
-    Vertex vertices[220]; // 32 quads are 128 vertices
+    Vertex vertices[128]; // 32 quads are 128 vertices
     get_piece_vertices(vertices);
     
     m_VertexBuffer_Pieces->Bind();
@@ -216,8 +217,6 @@ void ChessGUI::OnUpdate(float deltaTime)
     glfwGetCursorPos(m_Window, &xpos, &ypos);
 
     auto q = CreateQuad(
-        // selected_square.x * square_size, 
-        // selected_square.y * square_size, 
         ((xpos - bOffsetX)/ m_RatioX) - square_size / 2,
         (((m_windowHeight - bOffsetY) / m_RatioY) - (ypos / m_RatioY)) - square_size / 2,
         square_size,
@@ -329,7 +328,6 @@ void ChessGUI::get_target_vertices(Vertex* vertices)
 }
 
 void ChessGUI::get_piece_vertices(Vertex* pieces_vertices){
-
     auto flipped_board = vflip_board(board);
 
     int quad_count = 0;
@@ -349,6 +347,8 @@ void ChessGUI::get_piece_vertices(Vertex* pieces_vertices){
             }
         } 
     }   
+    std::cout << quad_count << std::endl;
+    std::cout << offset << std::endl;
 }   
 
 static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 8>, 8> board){

@@ -142,9 +142,9 @@ int main() {
 
     Board board;
 
-    board.set_from_fen("1k1KQ3/3Q4/1P1P4/7p/3P3P/8/8/8 w  - 1 70");
-    bool replay_game = true;
-    bool human_vs_human = true;
+    board.set_from_fen("3k4/pp6/4p1P1/3pP2p/1P1P3P/3PKN2/8/3b4 w  - 1 37");
+    bool replay_game = false;
+    bool human_vs_human = false;
     bool bot_vs_bot = true;
     int human_player = 1;
     int depth = 4;
