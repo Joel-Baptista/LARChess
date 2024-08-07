@@ -44,7 +44,8 @@ add_executable(ChessGame
 add_executable(bit_board_test
 #  Game Engine
     tests/bit_board_test.cpp
-    src/bit_board.cpp
+    src/bitboard/bb_magic_nums.cpp
+    src/bitboard/bit_board.cpp
 )
 
 # Link GLFW and OpenGL libraries to your executable

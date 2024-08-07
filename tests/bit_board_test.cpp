@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "../src/bit_board.h"
+#include "../src/bitboard/bit_board.h"
 
 
 int main(){

@@ -1,11 +1,38 @@
 #pragma once
+#include <unordered_map>
+#include <iostream>
+#include <string>
+#include <string.h>
+#include <stdlib.h> 
 
 // Macros
 #define U64 unsigned long long
-#define get_bit(bitboard, square) (bitboard & (1ULL << square))
-#define set_bit(bitboard, square) (bitboard |= (1ULL << square))
-#define clear_bit(bitboard, square) (bitboard &= ~(1ULL << square))
+#define get_bit(bitboard, square) ((bitboard) & (1ULL << (square)))
+#define set_bit(bitboard, square) ((bitboard) |= (1ULL << (square)))
+#define clear_bit(bitboard, square) ((bitboard) &= ~(1ULL << (square)))
+#define encode_move(source, target, piece, promoted, capture, double_push, en_passant, castling) \
+    ((source) | ((target) << 6) | ((piece) << 12) | ((promoted) << 16) | ((capture) << 20) | ((double_push) << 21) | ((en_passant) << 22) | ((castling) << 23))
 
+#define get_move_source(move) ((move) & 0x3f)
+#define get_move_target(move) (((move) & 0xfc0) >> 6)
+#define get_move_piece(move) (((move) & 0xf000) >> 12)
+#define get_move_promoted(move) (((move) & 0xf0000) >> 16)
+#define get_move_capture(move) (((move) & 0x100000))
+#define get_move_double(move) (((move) & 0x200000))
+#define get_move_enpassant(move) (((move) & 0x400000))
+#define get_move_castling(move) (((move) & 0x800000))
+
+// Some test strings
+#define empty_board "8/8/8/8/8/8/8/8 w - -"
+#define start_position "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+#define tricky_position "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+#define killer_position "rnbqkb1r/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 w KQkq e6 0 1"
+#define cmk_position "r2q1rk1/ppp2ppp/2n1bn2/2b1p3/3pP3/3P1NPP/PPP1NPB1/R1BQ1RK1 b - - 0 9"
+
+typedef struct {
+    int moves[256]; // The average number of legal moves is 40, so 256 is a good number
+    int count = 0; // Number of moves
+} moves;
 
 class BitBoard {
     public:
@@ -13,12 +40,25 @@ class BitBoard {
         ~BitBoard();
 
         void print_bitboard(U64 bitboard);
-
+        void print_board();
+        void parse_fen(const char *fen);
+        void print_move(int move);
+        void print_move_list(moves* move_list);
 
     private:
         
         void init_magic_numbers();
-        void init_leapers_attacks(); // pawns and knights attacks
+        void init_leapers_attacks(); // pawns, knights and king attacks
+        void init_sliders_attacks(int bishop); // bishops and rooks attacks (and queens)
+
+        // Board state variables
+        U64 bitboards[12]; // 12 bitboards for each piece type (6 for white and 6 for black)
+        U64 occupancies[3]; // occupancy bitboards for each color and all pieces
+        int side; // side to move
+        int en_passant_square = no_sq;
+        int castle; 
+        int halfmove;
+        int fullmove;
         
         U64 set_occupancy(int index, int bits, U64 attack_mask);
 
@@ -31,23 +71,45 @@ class BitBoard {
         U64 king_attacks[64];
         U64 mask_king_attacks(int square);
 
-        U64 bishop_attacks[64];
+        U64 bishop_attacks[64][512]; // [square][occupancies]
+        U64 bishop_masks[64];
         U64 mask_bishop_attacks(int square);
+        inline U64  get_bishop_attacks(int square, U64 occupancy);
 
-        U64 rook_attacks[64];
+        U64 rook_attacks[64][4096]; // [square][occupancies]
+        U64 rook_masks[64];
         U64 mask_rook_attacks(int square);
+        inline U64 get_rook_attacks(int square, U64 occupancy);
 
         U64 bishop_attacks_on_the_fly(int square, U64 blocks);
         
         U64 rook_attacks_on_the_fly(int square, U64 blocks); 
 
+        inline U64 get_queen_attacks(int square, U64 occupancy);
+
+        inline int is_square_attacked(int square, int side);
+        void print_attacked_square(int side);
+
+        inline void generate_moves();
+
         enum colors{
-            white, black
+            white, black, both
         };
 
         enum slides{
             rook, bishop
         };
+
+        enum castling_rights 
+        {
+            wk = 1, wq = 2, bk = 4, bq = 8, // 0001, 0010, 0100, 1000 in decimal. Summing all give 1111 
+        };
+
+        enum pieces 
+        {
+            P, N, B, R, Q, K, p, n, b, r, q, k,
+        };
+
 
         enum board_square{
             a8, b8, c8, d8, e8, f8, g8, h8,
@@ -57,14 +119,42 @@ class BitBoard {
             a4, b4, c4, d4, e4, f4, g4, h4,
             a3, b3, c3, d3, e3, f3, g3, h3,
             a2, b2, c2, d2, e2, f2, g2, h2,
-            a1, b1, c1, d1, e1, f1, g1, h1,
-        };
-        
+            a1, b1, c1, d1, e1, f1, g1, h1, no_sq
+        }; 
+
         unsigned int state = 1804289383;
         unsigned int get_random_U32_number();
         U64 get_random_U64_number();
         U64 generate_magic_number();
         U64 find_magic_number(int square, int occupancy_bits, int bishop);
+
+        /* Move enconding 
+                    
+                    Binary Representation                            Hexadecimal Constants
+
+        0000 0000 0000 0000 0011 1111   source square    [64]               0x3f   
+        0000 0000 0000 1111 1100 0000   target square    [64]               0xfc0
+        0000 0000 1111 0000 0000 0000   piece            [12]               0xf000
+        0000 1111 0000 0000 0000 0000   promoted piece   [12]               0xf0000
+        0001 0000 0000 0000 0000 0000   capture flag     [ 1]               0x100000
+        0010 0000 0000 0000 0000 0000   double push flag [ 1]               0x200000
+        0100 0000 0000 0000 0000 0000   en passant flag  [ 1]               0x400000
+        1000 0000 0000 0000 0000 0000   castling flag    [ 1]               0x800000
+        
+        
+        */
+
+        // Board Visualization Functions
+        char ascii_pieces[12] = {'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'};
+        const char *unicode_pieces[12] = {"♟", "♞", "♝", "♜", "♛", "♚", "♙", "♘", "♗", "♖", "♕", "♔"};
+        std::unordered_map<char, int> char_pieces = {
+            {'P', P}, {'N', N}, {'B', B}, {'R', R}, {'Q', Q}, {'K', K},
+            {'p', p}, {'n', n}, {'b', b}, {'r', r}, {'q', q}, {'k', k}
+        };
+        std::unordered_map<int, char> promoted_pieces = {
+            {N, 'n'}, {B, 'b'}, {R, 'r'}, {Q, 'q'},
+            {n, 'n'}, {b, 'b'}, {r, 'r'}, {q, 'q'}
+        };
 
         const U64 not_a_file = 18374403900871474942ULL;
         /* Not "a" file mask
@@ -256,6 +346,7 @@ class BitBoard {
         
 };
 
+static inline void add_move(moves *move_list, int move);
 
 // Bit Manipulation Functions
 
