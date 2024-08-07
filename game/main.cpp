@@ -38,6 +38,44 @@
 // ChessGUI
 #include "ChessGUI.h"
 
+std::string game[] = {
+"1k6/4K3/8/1PQpP2p/3P3P/3P4/8/8 b  - 4 54",
+"8/1k2K3/8/1PQpP2p/3P3P/3P4/8/8 w  - 5 55",
+"8/1k2K3/2Q5/1P1pP2p/3P3P/3P4/8/8 b  - 6 55",
+"1k6/4K3/2Q5/1P1pP2p/3P3P/3P4/8/8 w  - 7 56",
+"1k6/4K3/8/1PQpP2p/3P3P/3P4/8/8 b  - 8 56",
+"8/1k2K3/8/1PQpP2p/3P3P/3P4/8/8 w  - 9 57",
+"8/1k2K3/2Q5/1P1pP2p/3P3P/3P4/8/8 b  - 10 57",
+"1k6/4K3/2Q5/1P1pP2p/3P3P/3P4/8/8 w  - 11 58",
+"1k6/4K3/3Q4/1P1pP2p/3P3P/3P4/8/8 b  - 12 58",
+"2k5/4K3/3Q4/1P1pP2p/3P3P/3P4/8/8 w  - 13 59",
+"2k5/3QK3/8/1P1pP2p/3P3P/3P4/8/8 b  - 14 59",
+"1k6/3QK3/8/1P1pP2p/3P3P/3P4/8/8 w  - 15 60",
+"1k6/3QK3/1P6/3pP2p/3P3P/3P4/8/8 b  - 0 60",
+"k7/3QK3/1P6/3pP2p/3P3P/3P4/8/8 w  - 1 61",
+"k2K4/3Q4/1P6/3pP2p/3P3P/3P4/8/8 b  - 2 61",
+"1k1K4/3Q4/1P6/3pP2p/3P3P/3P4/8/8 w  - 3 62",
+"1k1K4/3Q4/1P2P3/3p3p/3P3P/3P4/8/8 b  - 0 62",
+"k2K4/3Q4/1P2P3/3p3p/3P3P/3P4/8/8 w  - 1 63",
+"k2K4/3QP3/1P6/3p3p/3P3P/3P4/8/8 b  - 0 63",
+"1k1K4/3QP3/1P6/3p3p/3P3P/3P4/8/8 w  - 1 64",
+"1k1KQ3/3Q4/1P6/3p3p/3P3P/3P4/8/8 b  - 0 64",
+"k2KQ3/3Q4/1P6/3p3p/3P3P/3P4/8/8 w  - 1 65",
+"k2KQ3/8/1P6/3Q3p/3P3P/3P4/8/8 b  - 0 65",
+"1k1KQ3/8/1P6/3Q3p/3P3P/3P4/8/8 w  - 1 66",
+"1k1KQ3/3Q4/1P6/7p/3P3P/3P4/8/8 b  - 2 66",
+"k2KQ3/3Q4/1P6/7p/3P3P/3P4/8/8 w  - 3 67",
+"k2KQ3/3Q4/1P6/3P3p/7P/3P4/8/8 b  - 0 67",
+"1k1KQ3/3Q4/1P6/3P3p/7P/3P4/8/8 w  - 1 68",
+"1k1KQ3/3Q4/1P6/3P3p/3P3P/8/8/8 b  - 0 68",
+"k2KQ3/3Q4/1P6/3P3p/3P3P/8/8/8 w  - 1 69",
+"k2KQ3/3Q4/1P1P4/7p/3P3P/8/8/8 b  - 0 69",
+"1k1KQ3/3Q4/1P1P4/7p/3P3P/8/8/8 w  - 1 70",
+"1k1KQ3/3Q4/1P1P4/3P3p/7P/8/8/8 b  - 0 70",
+"k2KQ3/3Q4/1P1P4/3P3p/7P/8/8/8 w  - 1 71",
+"k2KQ3/Q7/1P1P4/3P3p/7P/8/8/8 b  - 2 71",
+};
+
 struct BotResult{
     std::string move;
     double evaluation;
@@ -104,8 +142,9 @@ int main() {
 
     Board board;
 
-    board.set_from_fen("6k2/4Q3/6K2/8/8/8/8/8 b - 0 22");
-    bool human_vs_human = false;
+    board.set_from_fen("1k1KQ3/3Q4/1P1P4/7p/3P3P/8/8/8 w  - 1 70");
+    bool replay_game = true;
+    bool human_vs_human = true;
     bool bot_vs_bot = true;
     int human_player = 1;
     int depth = 4;
@@ -113,9 +152,11 @@ int main() {
     BotResult result;
     bool processing_flag = false;
     std::future<BotResult> future;
-    board.reset();
+    // board.reset();
     chessGUI.set_board(board.board);
     
+    int game_count = 0;
+
     // /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {   
@@ -151,6 +192,26 @@ int main() {
         /* Poll for and process events */
         glfwPollEvents();
 
+        if (replay_game)
+        {
+            board.set_from_fen(game[game_count]);
+            chessGUI.set_board(board.board);
+            game_count++;
+            
+            auto start = std::chrono::system_clock::now();
+
+            std::chrono::duration<double> elapsed_seconds = start - start;
+
+            while(elapsed_seconds.count() < 0.5) 
+            {
+                auto end = std::chrono::system_clock::now();
+                elapsed_seconds = end-start;
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            continue;
+        }
+
         // std::cout << "5.PollEvents" << std::endl;
         // std::cout << "Engine" << std::endl;
         if (!game_finished){
@@ -180,17 +241,14 @@ int main() {
                 }
 
                 if (future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready) {
-                    std::cout << "Future is ready" << std::endl;
                     result = future.get();
-                    std::cout << "Result: " << result.move << std::endl;
-                    std::cout << "Processed: " << result.processed << std::endl;
                 } 
 
                 if (result.processed){
-                    std::cout << "Play move" << std::endl;
                     Move player_move(result.move.substr(0,2), result.move.substr(2,2));
-                    std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << result.evaluation << std::endl;
+                    // std::cout << "Best move: " << player_move.getFrom() << player_move.getTo() << " with value " << result.evaluation << std::endl;
                     board.make_move(player_move);
+                    std::cout << board.get_fen() << std::endl;
                     chessGUI.set_board(board.board);
                     chessGUI.unlock_board();
                     processing_flag = false;
@@ -235,7 +293,6 @@ BotResult bot_callback(Board board, int depth, int turn_player){
     auto end = std::chrono::system_clock::now();
 
     std::chrono::duration<double> elapsed_seconds = end-start;
-    std::cout << elapsed_seconds.count() << std::endl;
 
     while(elapsed_seconds.count() < 0.5) 
     {
