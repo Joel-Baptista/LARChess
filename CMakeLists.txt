@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Find OpenGL (GL) library
 find_package(OpenGL REQUIRED)
 
-add_executable(ChessEngine
+add_executable(engine_test
     src/main.cpp
     src/board.cpp
     src/move.cpp

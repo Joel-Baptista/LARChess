@@ -4,6 +4,7 @@
 #include <string>
 #include <string.h>
 #include <stdlib.h> 
+#include <sys/time.h>
 
 // Macros
 #define U64 unsigned long long
@@ -24,12 +25,12 @@
 
 #define copy_board()                                                                        \
     U64 bitboards_copy[12], occupancies_copy[12];                                           \
-    int side_copy, en_passant_square_copy, castle_copy, halfmove_copy, fullmove_copy;       \
+    int side_copy, en_passant_square_copy, castle_rights_copy, halfmove_copy, fullmove_copy;\
     memcpy(bitboards_copy, bitboards, sizeof(bitboards));                                   \
     memcpy(occupancies_copy, occupancies, sizeof(occupancies));                             \
     side_copy = side;                                                                       \
     en_passant_square_copy = en_passant_square;                                             \
-    castle_copy = castle;                                                                   \
+    castle_rights_copy = castle_rights;                                                     \
     halfmove_copy = halfmove;                                                               \
     fullmove_copy = fullmove;                                                               \
 
@@ -39,7 +40,7 @@
     memcpy(occupancies, occupancies_copy, sizeof(occupancies));     \
     side = side_copy;                                               \
     en_passant_square = en_passant_square_copy;                     \
-    castle = castle_copy;                                           \
+    castle_rights = castle_rights_copy;                             \
     halfmove = halfmove_copy;                                       \
     fullmove = fullmove_copy;                                       \
 
@@ -66,22 +67,37 @@ class BitBoard {
         void parse_fen(const char *fen);
         void print_move(int move);
         void print_move_list(moves* move_list);
+        
+        // Testing
+        void perft_driver(int depth);
+        void reset_leaf_nodes() { leaf_nodes = 0; }
+        long get_leaf_nodes() { return leaf_nodes; }
 
     private:
         
-        void init_magic_numbers();
-        void init_leapers_attacks(); // pawns, knights and king attacks
-        void init_sliders_attacks(int bishop); // bishops and rooks attacks (and queens)
-
         // Board state variables
         U64 bitboards[12]; // 12 bitboards for each piece type (6 for white and 6 for black)
         U64 occupancies[3]; // occupancy bitboards for each color and all pieces
         int side; // side to move
         int en_passant_square = no_sq;
-        int castle; 
+        int castle_rights; 
         int halfmove;
         int fullmove;
+
+        // Testing
+        long leaf_nodes = 0;
+        long perf_captures = 0;
+        long perf_enpassant = 0;
+        long perf_castlings = 0;
+        long perf_promotions = 0;
+        long perf_checks = 0;
+
+        // Move generation 
         
+        void init_magic_numbers();
+        void init_leapers_attacks(); // pawns, knights and king attacks
+        void init_sliders_attacks(int bishop); // bishops and rooks attacks (and queens)
+
         U64 set_occupancy(int index, int bits, U64 attack_mask);
 
         U64 pawn_attacks[2][64]; // pawns attacks [color][square]
@@ -123,11 +139,6 @@ class BitBoard {
             rook, bishop
         };
 
-        enum castling_rights 
-        {
-            wk = 1, wq = 2, bk = 4, bq = 8, // 0001, 0010, 0100, 1000 in decimal. Summing all give 1111 
-        };
-
         enum pieces 
         {
             P, N, B, R, Q, K, p, n, b, r, q, k,
@@ -149,6 +160,36 @@ class BitBoard {
             a2, b2, c2, d2, e2, f2, g2, h2,
             a1, b1, c1, d1, e1, f1, g1, h1, no_sq
         }; 
+
+        enum 
+        {
+            wk = 1, wq = 2, bk = 4, bq = 8, // 0001, 0010, 0100, 1000 in decimal. Summing all give 1111 
+        };
+
+
+        /*
+                                    Castling Rights     move update         binary      decimal
+            no king and rook move:      1111        &      1111       =      1111          15
+
+                 white king moved:      1111        &      1100       =      1100          12
+          white king's rook moved:      1111        &      1110       =      1110          14
+         white queen's rook moved:      1111        &      1101       =      1101          13
+        
+                 black king moved:      1111        &      0011       =      0011           3
+          black king's rook moved:      1111        &      1011       =      1011          11
+         black queen's rook moved:      1111        &      0111       =      0111           7
+        */
+
+        int castling_rights_board[64] = {
+             7, 15, 15, 15,  3, 15, 15, 11,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15, 15, 15, 15, 15, 15, 15,
+            13, 15, 15, 15, 12, 15, 15, 14,
+        };
 
         unsigned int state = 1804289383;
         unsigned int get_random_U32_number();
@@ -375,6 +416,7 @@ class BitBoard {
 };
 
 static inline void add_move(moves *move_list, int move);
+int get_time_ms();
 
 // Bit Manipulation Functions
 

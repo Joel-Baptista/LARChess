@@ -53,20 +53,25 @@ void BitBoard::test_bitboard()
 {   
     // parse_fen("8/3R4/8/1q1B4/8/8/8/8 w - -");
     // parse_fen(tricky_position);
-    // parse_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq c6 0 1");
+    // parse_fen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+    // parse_fen("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
     parse_fen(start_position);
     // parse_fen(killer_position);  
 
+    int start = get_time_ms();
 
-    moves move_list[1]; 
-
-    generate_moves(move_list);
+    perft_driver(6);
     
-    for (int i = 0; i < move_list->count; i++)
-    {
-        int move = move_list->moves[i]; 
-        make_move(move, all_moves);
-    }
+    int end = get_time_ms();
+
+    std::cout << "Time taken to calculate legal_moves: " << end - start << " ms" << std::endl; 
+    std::cout << "Total nodes: " << leaf_nodes << std::endl;
+    std::cout << "Total captures: " << perf_captures << std::endl;
+    std::cout << "Total en passant: " << perf_enpassant << std::endl;
+    std::cout << "Total castles: " << perf_castlings << std::endl;
+    std::cout << "Total promotions: " << perf_promotions << std::endl;
+    std::cout << "Total checks: " << perf_checks << std::endl;
+    // std::cout << "Nodes per second: " << leaf_nodes / ((end - start) / 1000) << std::endl;
 
     // print_move_list(move_list);
 }
@@ -127,8 +132,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
                             add_move(move_list, encode_move(source_square, target_square, P, 0, 0, 0, 0, 0));
 
                             if (source_square >= a2 && source_square <= h2 && 
-                                !get_bit(occupancies[both], target_square - 8) && 
-                                !get_bit(occupancies[both], target_square - 16)) // Second rank double push (with no piece in between)
+                                !get_bit(occupancies[both], target_square - 8)) // Second rank double push (with no piece in between)
                             {
                                 add_move(move_list, encode_move(source_square, target_square - 8, P, 0, 0, 1, 0, 0));                                   
                             }
@@ -157,7 +161,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
                     }
                     if (en_passant_square != no_sq) // The en passant square is not occupied, therefore will not be caught by the logic before
                     {
-                        U64 enpassant_attacks = pawn_attacks[white][source_square] & (1ULL << en_passant_square);
+                        U64 enpassant_attacks = pawn_attacks[side][source_square] & (1ULL << en_passant_square);
                         if (enpassant_attacks)
                         {
                             int target_enpassant = get_least_significant_bit(enpassant_attacks);
@@ -171,7 +175,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
 
             if (piece == K) // Castling
             {
-                if (castle & wk)
+                if (castle_rights & wk)
                 {
                     if (!get_bit(occupancies[both], f1) && !get_bit(occupancies[both], g1))
                     {
@@ -181,7 +185,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
                         }
                     }  
                 }
-                if (castle & wq)
+                if (castle_rights & wq)
                 {
                     if (!get_bit(occupancies[both], d1) && !get_bit(occupancies[both], c1) && !get_bit(occupancies[both], b1))
                     {
@@ -218,8 +222,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
                             add_move(move_list, encode_move(source_square, target_square, p, 0, 0, 0, 0, 0));
                          
                             if (source_square >= a7 && source_square <= h7 && 
-                                !get_bit(occupancies[both], target_square + 8) && 
-                                !get_bit(occupancies[both], target_square + 16)) // Second rank double push (with no piece in between)
+                                !get_bit(occupancies[both], target_square + 8)) // Second rank double push (with no piece in between)
                             {
                                 add_move(move_list, encode_move(source_square, target_square + 8, p, 0, 0, 1, 0, 0));
                             }
@@ -248,7 +251,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
                     }
                     if (en_passant_square != no_sq) // The en passant square is not occupied, therefore will not be caught by the logic before
                     {
-                        U64 enpassant_attacks = pawn_attacks[black][source_square] & (1ULL << en_passant_square);
+                        U64 enpassant_attacks = pawn_attacks[side][source_square] & (1ULL << en_passant_square);
                         if (enpassant_attacks)
                         {
                             int target_enpassant = get_least_significant_bit(enpassant_attacks);
@@ -260,24 +263,22 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
             }
             if (piece == k) // Castling
             {
-                if (castle & bk)
+                if (castle_rights & bk)
                 {
                     if (!get_bit(occupancies[both], f8) && !get_bit(occupancies[both], g8))
                     {
                         if (!is_square_attacked(e8, white) && !is_square_attacked(f8, white))
                         {
-                            std::cout << "Black kingside castle: e8g8" << std::endl;
                             add_move(move_list, encode_move(e8, g8, k, 0, 0, 0, 0, 1));
                         }
                     }  
                 }
-                if (castle & bq)
+                if (castle_rights & bq)
                 {
                     if (!get_bit(occupancies[both], d8) && !get_bit(occupancies[both], c8) && !get_bit(occupancies[both], b8))
                     {
                         if (!is_square_attacked(e8, white) && !is_square_attacked(d8, white))
                         {
-                            std::cout << "Black queenside castle: e8c8" << std::endl;
                             add_move(move_list, encode_move(e8, c8, k, 0, 0, 0, 0, 1));
                         }
                     }  
@@ -452,13 +453,142 @@ inline int BitBoard::make_move(int move, int move_flag)
         int target_square = get_move_target(move);
         int piece = get_move_piece(move);
         int capture = get_move_capture(move);
-        int promotion = get_move_promoted(move);
+        int promoted_piece = get_move_promoted(move);
         int enpassant = get_move_enpassant(move);
         int castle = get_move_castling(move);
-        int double_push = get_move_double(move);
+        int double_push = get_move_double(move);        
 
+        int opponent = (side == white) ? black : white;
+
+        // move the piece
         clear_bit(bitboards[piece], source_square);
         set_bit(bitboards[piece], target_square);
+
+        clear_bit(occupancies[side], source_square);
+        set_bit(occupancies[side], target_square);
+
+        halfmove++;
+        if (side == black) fullmove++;
+        if (piece == P || piece == p) halfmove = 0;
+
+
+        // captures
+        if ((bool)capture)
+        {
+            halfmove = 0;
+            int start_piece, end_piece;
+
+            if (side == white)
+            {
+                start_piece = p;
+                end_piece = k;
+            }
+            else
+            {
+                start_piece = P;
+                end_piece = K;    
+            }
+
+            for (int bb_piece = start_piece; bb_piece <= end_piece; bb_piece++)
+            {
+                if (get_bit(bitboards[bb_piece], target_square))
+                {
+                    clear_bit(bitboards[bb_piece], target_square);
+                    clear_bit(occupancies[opponent], target_square);
+                    break;
+                }
+            }
+        }
+
+        if (promoted_piece)
+        {
+            clear_bit(bitboards[(side == white) ? P : p], target_square);
+
+            set_bit(bitboards[promoted_piece], target_square);
+        }
+
+        if ((bool)enpassant)
+        {
+            if (side == white)
+            {
+                clear_bit(bitboards[p], target_square + 8);
+                clear_bit(occupancies[opponent], target_square + 8);
+            }
+            else
+            {
+                clear_bit(bitboards[P], target_square - 8);
+                clear_bit(occupancies[opponent], target_square - 8);
+            }
+        }
+
+        if ((bool)double_push)
+        {
+            en_passant_square = ((side == white) ?  target_square + 8 : target_square - 8);
+        } else en_passant_square = no_sq;
+
+        if (castle)
+        {
+            switch (target_square)
+            {
+            case g1:
+                clear_bit(bitboards[R], h1);
+                set_bit(bitboards[R], f1);
+                clear_bit(occupancies[side], h1);
+                set_bit(occupancies[side], f1);
+                break;
+            case c1:
+                clear_bit(bitboards[R], a1);
+                set_bit(bitboards[R], d1);
+                clear_bit(occupancies[side], a1);
+                set_bit(occupancies[side], d1);
+                break;
+            case g8:
+                clear_bit(bitboards[r], h8);
+                set_bit(bitboards[r], f8);
+                clear_bit(occupancies[side], h8);
+                set_bit(occupancies[side], f8);
+                break;
+            case c8:
+                clear_bit(bitboards[r], a8);
+                set_bit(bitboards[r], d8);
+                clear_bit(occupancies[side], a8);
+                set_bit(occupancies[side], d8);
+                break;
+            
+            default:
+                break;
+            }
+        }
+
+        castle_rights &= castling_rights_board[source_square]; // If pieces move
+        castle_rights &= castling_rights_board[target_square]; // If rooks are captured
+
+        // Update occupancies
+        occupancies[both] = occupancies[side] | occupancies[opponent];
+
+        // memset(occupancies, 0x0ULL, sizeof(occupancies));
+        // for (int bb_piece = P; bb_piece <= K; bb_piece++)
+        //     occupancies[white] |= bitboards[bb_piece];
+        
+        // for (int bb_piece = p; bb_piece <= k; bb_piece++)
+        //     occupancies[black] |= bitboards[bb_piece];
+        
+        // occupancies[both] |= occupancies[white];
+        // occupancies[both] |= occupancies[black];
+
+
+        // Change sides with XOR operator
+        side ^= 1;
+
+        if (is_square_attacked(get_least_significant_bit((side == white) ? bitboards[k] : bitboards[K]) , side))
+        { // Illegal move
+            restore_board();
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
     }
     else
     {
@@ -471,6 +601,8 @@ inline int BitBoard::make_move(int move, int move_flag)
             return 0;
         }
     }
+
+    return 0;
 }
 
 static inline void add_move(moves *move_list, int move) // Does not need to be a member function
@@ -495,7 +627,7 @@ inline int BitBoard::is_square_attacked(int square, int side) // Is the given si
     if ((side == white) && (pawn_attacks[black][square] & bitboards[P])) return 1;
     if ((side == black) && (pawn_attacks[white][square] & bitboards[p])) return 1;
 
-    if (knight_attacks[square] & (side == white ? bitboards[N] : bitboards[n])) return 1;
+    if (knight_attacks[square] & ((side == white) ? bitboards[N] : bitboards[n])) return 1;
 
     if (get_bishop_attacks(square, occupancies[both]) & (side == white ? bitboards[B] : bitboards[b])) return 1;
     
@@ -504,7 +636,6 @@ inline int BitBoard::is_square_attacked(int square, int side) // Is the given si
     if (get_queen_attacks(square, occupancies[both]) & (side == white ? bitboards[Q] : bitboards[q])) return 1;
     
     if (king_attacks[square] & (side == white ? bitboards[K] : bitboards[k])) return 1;
-
 
     return 0;
 }
@@ -600,8 +731,8 @@ U64 BitBoard::mask_bishop_attacks(int square)
 
     for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) attacks |= (1ULL << (r * 8 + f));
     for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) attacks |= (1ULL << (r * 8 + f));
-    for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) attacks |= (1ULL << (r * 8 + f));
     for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) attacks |= (1ULL << (r * 8 + f));
+    for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) attacks |= (1ULL << (r * 8 + f));
 
     return attacks;
 
@@ -813,7 +944,7 @@ void BitBoard::parse_fen(const char *fen)
     memset(occupancies, 0ULL, sizeof(occupancies));
     side = 0;
     en_passant_square = no_sq;
-    castle = 0;
+    castle_rights = 0;
     halfmove = 0;
     fullmove = 0;
 
@@ -868,16 +999,16 @@ void BitBoard::parse_fen(const char *fen)
         switch (*fen)
         {
         case 'K':
-            castle |= wk;
+            castle_rights |= wk;
             break;
         case 'Q':
-            castle |= wq;
+            castle_rights |= wq;
             break;
         case 'k':
-            castle |= bk;
+            castle_rights |= bk;
             break; 
         case 'q':
-            castle |= bq;
+            castle_rights |= bq;
             break;
         
         default:
@@ -958,7 +1089,9 @@ void BitBoard::print_board()
     std::cout << "   a b c d e f g h\n" << std::endl;
     std::cout << "   Side: " << (!side ? "White" : "Black") << std::endl;
     std::cout << "   En Passant: " << ((en_passant_square != no_sq) ? square_to_coords[en_passant_square] : "-") << std::endl;
-    std::cout << "   Castling: " << ((castle & wk) ? "K" : "") << ((castle & wq) ? "Q" : "") << ((castle & bk) ? "k" : "") << ((castle & bq) ? "q" : "") << std::endl;
+    std::cout << "   Castling: " << ((castle_rights & wk) ? "K" : "") << 
+                ((castle_rights & wq) ? "Q" : "") << ((castle_rights & bk) ? "k" : "") << 
+                ((castle_rights & bq) ? "q" : "") << std::endl;
     std::cout << "   Half Move: " << halfmove << std::endl;
     std::cout << "   Full Move: " << fullmove << std::endl;
     std::cout << std::endl;
@@ -1020,4 +1153,63 @@ void BitBoard::print_move_list(moves* move_list)
                     std::endl;
         
     }
+}
+
+/*
+<=========================================================================================>
+<=========================================================================================>
+<=====================================TIME================================================>
+<=========================================================================================>
+<=========================================================================================>
+*/
+
+int get_time_ms()
+{
+    struct timeval time_value;
+    gettimeofday(&time_value, NULL);
+
+    return time_value.tv_sec * 1000 + time_value.tv_usec / 1000;
+}
+
+/*
+<=========================================================================================>
+<=========================================================================================>
+<=====================================TESTING=============================================>
+<=========================================================================================>
+<=========================================================================================>
+*/
+
+inline void BitBoard::perft_driver(int depth)
+{
+    if (depth == 0)
+    {
+        leaf_nodes++;
+        return;
+    }
+
+    moves move_list[1]; 
+    
+    generate_moves(move_list);
+
+    // print_move_list(move_list);
+
+    for (int i = 0; i < move_list->count; i++)
+    {
+        copy_board();
+    
+        if (!make_move(move_list->moves[i], all_moves)) continue;
+
+        perft_driver(depth - 1);
+        
+        if (get_move_capture(move_list->moves[i])) perf_captures++;
+        if (get_move_enpassant(move_list->moves[i])) perf_enpassant++;
+        if (get_move_castling(move_list->moves[i])) perf_castlings++;
+        if (get_move_promoted(move_list->moves[i])) perf_promotions++;
+
+        if (is_square_attacked(get_least_significant_bit((side == white) ? bitboards[K] : bitboards[k]), side ^1)) perf_checks++;
+
+        restore_board();
+    }   
+
+
 }
