@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h> 
 #include <sys/time.h>
+#include <array>
 
 // Macros
 #define U64 unsigned long long
@@ -67,11 +68,26 @@ class BitBoard {
         void parse_fen(const char *fen);
         void print_move(int move);
         void print_move_list(moves* move_list);
-        
+
+        // Normal Getters and Setters
+
+        int get_side() { return side; }
+        int get_bot_best_move() { return bot_best_move; }
+
         // Testing
         void perft_driver(int depth);
+        void perft_test(int depth);
         void reset_leaf_nodes() { leaf_nodes = 0; }
         long get_leaf_nodes() { return leaf_nodes; }
+
+        // Bots
+
+        std::string move_to_uci(int move);
+        float alpha_beta(int depth, float alpha, float beta);
+        std::array<std::array<int, 8>, 8> bitboard_to_board();
+        int make_player_move(const char *move);
+        int make_bot_move(int move);
+        
 
     private:
         
@@ -83,6 +99,7 @@ class BitBoard {
         int castle_rights; 
         int halfmove;
         int fullmove;
+        int ply = 0; // ply counter for the search algorithm
 
         // Testing
         long leaf_nodes = 0;
@@ -91,6 +108,10 @@ class BitBoard {
         long perf_castlings = 0;
         long perf_promotions = 0;
         long perf_checks = 0;
+
+        float board_evaluation();
+        inline int quiescence(float alpha, float beta);
+        int bot_best_move;
 
         // Move generation 
         
@@ -130,6 +151,7 @@ class BitBoard {
 
         inline void generate_moves(moves* move_list);
         inline int make_move(int move, int move_flag);
+        int parse_move(const char* move_string);
 
         enum colors{
             white, black, both
@@ -143,6 +165,40 @@ class BitBoard {
         {
             P, N, B, R, Q, K, p, n, b, r, q, k,
         };
+
+        int board_conversion[12] = {
+            1, 2, 3, 4, 5, 6, -1, -2, -3, -4, -5, -6
+        };
+
+        int piece_values[12] = {
+            1, 3, 3, 5, 9, 200, -1, -3, -3, -5, -9, -200
+        };
+
+        float piece_positional_value[64] = 
+        {
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.0,
+            1.0, 1.1, 1.2, 1.2, 1.2, 1.2, 1.1, 1.0,
+            1.0, 1.1, 1.2, 1.2, 1.2, 1.2, 1.1, 1.0,
+            1.0, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+        };
+
+        float king_safety_value[64] = 
+        {
+            1.5, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.5,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5,
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
+            1.5, 2.0, 2.0, 1.0, 1.0, 2.0, 2.0, 1.5,
+        };
+
+
 
         enum move_types 
         {

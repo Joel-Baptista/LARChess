@@ -41,6 +41,28 @@ add_executable(ChessGame
     game/include/imgui/imgui.cpp
 )
 
+add_executable(ChessGameV2
+#  Game Engine
+    game/main_bb.cpp
+    src/bitboard/bb_magic_nums.cpp
+    src/bitboard/bit_board.cpp
+    src/utils.cpp
+# Game GUI in OpenGL
+    game/include/OpenGLEngine/IndexBuffer.cpp
+    game/include/OpenGLEngine/Renderer.cpp
+    game/include/OpenGLEngine/VertexBuffer.cpp   
+    game/include/OpenGLEngine/VertexArray.cpp
+    game/include/OpenGLEngine/Shader.cpp
+    game/include/OpenGLEngine/Texture.cpp
+    # src/include/OpenGLEngine/tests/Test.cpp
+    game/ChessGUI.cpp
+    game/include/stb_image/stb_image.cpp
+    game/include/imgui/imgui_impl_glfw_gl3.cpp
+    game/include/imgui/imgui_demo.cpp
+    game/include/imgui/imgui_draw.cpp
+    game/include/imgui/imgui.cpp
+)
+
 add_executable(bit_board_test
 #  Game Engine
     tests/bit_board_test.cpp
@@ -52,6 +74,7 @@ add_executable(bit_board_test
 # target_link_libraries(game PRIVATE )
 
 target_link_libraries(ChessGame PRIVATE glfw GLEW OpenGL::GL)
+target_link_libraries(ChessGameV2 PRIVATE glfw GLEW OpenGL::GL)
 
 enable_testing()
 
