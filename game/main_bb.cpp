@@ -39,7 +39,7 @@ struct BotResult{
     bool processed = false;
 };
 
-BotResult bot_callback(BitBoard board, int depth);
+BotResult bot_callback(BitBoard board, int depth, bool quien);
 
 int main() {
 
@@ -98,8 +98,8 @@ int main() {
 
     board.parse_fen("6k2/4Q3/6K2/8/8/8/8/8 b - 0 22");
     bool human_vs_human = false;
-    int human_player = 1;
-    int depth = 6;
+    int human_player = 0;
+    int depth = 4;
     BotResult result;
     bool processing_flag = false;
     std::future<BotResult> future;
@@ -157,11 +157,11 @@ int main() {
                 board.make_player_move(gui_move.c_str());   
                 chessGUI.set_board(board.bitboard_to_board());
             }
-        }else if (board.get_side() == !human_player){
+        }else if (board.get_side() == !human_player || human_player == -1){
             // std::thread bt(bot_callback, std::ref(result), std::ref(board), std::ref(depth), std::ref(human_player));
 
             if (!processing_flag){
-                future = std::async(std::launch::async, bot_callback, board, depth);
+                future = std::async(std::launch::async, bot_callback, board, depth, true);
                 processing_flag = true;
                 chessGUI.lock_board();
             }
@@ -201,15 +201,17 @@ int main() {
 
 }
 
-BotResult bot_callback(BitBoard board, int depth){
+BotResult bot_callback(BitBoard board, int depth, bool quien){
     BotResult result;
     int bot_move;
     // std::cout << "Inside thread" << std::endl;
     int start = get_time_ms();
-    float eval = board.alpha_beta(depth, -1000000, 1000000);
+    board.reset_leaf_nodes();
+    float eval = board.alpha_beta(depth, -1000000, 1000000, quien);
     int end = get_time_ms();
+    long nodes = board.get_leaf_nodes();
     std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Time taken: " << end - start << "ms" << std::endl;
+    std::cout << "Time taken: " << end - start << "ms - Visited " << nodes << " nodes"  << std::endl;
     // std::cout << "Minmax calculated" << std::endl;
     result.move = board.get_bot_best_move();
     result.evaluation = eval;

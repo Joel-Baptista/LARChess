@@ -83,7 +83,7 @@ class BitBoard {
         // Bots
 
         std::string move_to_uci(int move);
-        float alpha_beta(int depth, float alpha, float beta);
+        float alpha_beta(int depth, float alpha, float beta, bool quien = false);
         std::array<std::array<int, 8>, 8> bitboard_to_board();
         int make_player_move(const char *move);
         int make_bot_move(int move);
@@ -110,7 +110,7 @@ class BitBoard {
         long perf_checks = 0;
 
         float board_evaluation();
-        inline int quiescence(float alpha, float beta);
+        inline float quiescence(float alpha, float beta);
         int bot_best_move;
 
         // Move generation 

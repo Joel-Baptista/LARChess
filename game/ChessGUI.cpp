@@ -23,7 +23,6 @@ ChessGUI::ChessGUI(GLFWwindow* window):
     m_View(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0))), m_RatioX(1.0f), m_RatioY(1.0f)
 {   
     m_Window = window;
-    int nVertices = 1000;
     
     GLint texture_units;
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &texture_units);
@@ -69,7 +68,7 @@ ChessGUI::ChessGUI(GLFWwindow* window):
     // Pieces will be Dynamic so we can move them constantly
     m_VAO_Pieces = std::make_unique<VertexArray>(); // Instantiate a vertex array
     
-    m_VertexBuffer_Pieces = std::make_unique<VertexBuffer>(nullptr, sizeof(Vertex) * nVertices, GL_DYNAMIC_DRAW); // Instantiate a buffer with the positions and binds it by default
+    m_VertexBuffer_Pieces = std::make_unique<VertexBuffer>(nullptr, sizeof(Vertex) * m_NumPieceVertex, GL_DYNAMIC_DRAW); // Instantiate a buffer with the positions and binds it by default
 
     m_VAO_Pieces->addBuffer(*m_VertexBuffer_Pieces, layout); // Add the buffer to the vertex array
     m_IndexBuffer_Pieces = std::make_unique<IndexBuffer>(indices_pieces, num_elements_pieces); // Instantiate an index buffer
@@ -147,10 +146,11 @@ void ChessGUI::OnUpdate(float deltaTime)
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
     // Draw Pieces
-    Vertex vertices[220]; // 32 quads are 128 vertices
+    Vertex vertices[m_NumPieceVertex]; // 32 quads are 128 vertices
     get_piece_vertices(vertices);
     
     m_VertexBuffer_Pieces->Bind();
+    glClearBufferData(GL_ARRAY_BUFFER, GL_RGBA32F, GL_RGBA, GL_FLOAT, nullptr);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
     auto time_now = std::chrono::system_clock::now();
@@ -164,6 +164,12 @@ void ChessGUI::OnUpdate(float deltaTime)
             iMouse.updated = true;
             if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){ // Movement
                 m_PlayerMove = coordinates_to_square(7 - selected_square.y, selected_square.x) + coordinates_to_square(7 - y, x);
+                
+                std::cout << "Piece: " << selected_square.piece << "X: " << x << "Y: " << y << std::endl; 
+                if ((selected_square.piece == 1 && y == 7) || (selected_square.piece == -1 && y == 0)){
+                    m_PlayerMove += "q";
+                }
+                
                 selected_square.selected = false;
                 selected_square.piece = 0;
             }else if (x == selected_square.x && y == selected_square.y && selected_square.selected){ // Unselect
@@ -196,6 +202,9 @@ void ChessGUI::OnUpdate(float deltaTime)
             iMouse.updated = true;
             if (selected_square.piece != 0 && (x != selected_square.x || y != selected_square.y)){ // Movement
                 m_PlayerMove = coordinates_to_square(7 - selected_square.y, selected_square.x) + coordinates_to_square(7 - y, x);
+                if ((selected_square.piece == 1 && y == 7) || (selected_square.piece == -1 && y == 0)){
+                    m_PlayerMove += "q";
+                }
                 selected_square.selected = false;
                 selected_square.piece = 0;
             }     
@@ -348,7 +357,18 @@ void ChessGUI::get_piece_vertices(Vertex* pieces_vertices){
                 offset += q.size();
             }
         } 
-    }   
+    } 
+
+    while (offset < m_NumPieceVertex)
+    {
+        quad_count++;
+        auto q = CreateQuad((square_size * (-1)), (square_size * (-1)), square_size, 
+                            0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+        memcpy(pieces_vertices + offset, q.data(),  q.size() * sizeof(Vertex));
+        offset += q.size();
+    }
+
 }   
 
 static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 8>, 8> board){

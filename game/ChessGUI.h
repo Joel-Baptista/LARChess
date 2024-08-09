@@ -84,6 +84,7 @@ class ChessGUI{
 
         SelectedSquare selected_square;
         std::string m_PlayerMove;
+        int m_NumPieceVertex = 256;
 
         void get_board_indices(unsigned int* indices_board, int n_squares);
         void get_board_vertices(Vertex* vertices);
