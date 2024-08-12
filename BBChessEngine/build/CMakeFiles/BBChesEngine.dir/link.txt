@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o CMakeFiles/BBChesEngine.dir/src/bb_magic_nums.cpp.o CMakeFiles/BBChesEngine.dir/src/bit_board.cpp.o -o BBChesEngine 

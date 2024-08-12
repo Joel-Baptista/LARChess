@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/board.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/board.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/minmax.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/minmax.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/move.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessEngine/src/move.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/ChessGUI.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/ChessGUI.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/IndexBuffer.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/IndexBuffer.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Renderer.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Renderer.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Shader.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Shader.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Texture.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/Texture.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/VertexArray.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/VertexArray.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/VertexBuffer.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/OpenGLEngine/VertexBuffer.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_demo.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_demo.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_draw.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_draw.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_impl_glfw_gl3.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/imgui/imgui_impl_glfw_gl3.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/stb_image/stb_image.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/ChessGUI/src/include/stb_image/stb_image.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/utils/utils.cpp.o"
+  "CMakeFiles/ChessGame.dir/home/joel/projects/YACE/utils/utils.cpp.o.d"
+  "CMakeFiles/ChessGame.dir/src/main.cpp.o"
+  "CMakeFiles/ChessGame.dir/src/main.cpp.o.d"
+  "ChessGame"
+  "ChessGame.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/ChessGame.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

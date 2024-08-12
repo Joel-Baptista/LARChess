@@ -1,0 +1,4 @@
+/home/joel/projects/YACE/BBChessEngine/build/CMakeFiles/BBChesEngine.dir
+/home/joel/projects/YACE/BBChessEngine/build/CMakeFiles/test.dir
+/home/joel/projects/YACE/BBChessEngine/build/CMakeFiles/edit_cache.dir
+/home/joel/projects/YACE/BBChessEngine/build/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,4 @@
+/home/joel/projects/YACE/ChessEngine/build/CMakeFiles/ChessEngine.dir
+/home/joel/projects/YACE/ChessEngine/build/CMakeFiles/test.dir
+/home/joel/projects/YACE/ChessEngine/build/CMakeFiles/edit_cache.dir
+/home/joel/projects/YACE/ChessEngine/build/CMakeFiles/rebuild_cache.dir
