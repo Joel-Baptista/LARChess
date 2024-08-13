@@ -45,7 +45,7 @@ BitBoard::BitBoard(){
 
     std::cout << "BitBoard object created" << std::endl;
     parse_fen(start_position);
-    print_board();
+    // print_board();
 }
 
 BitBoard::~BitBoard(){
@@ -544,6 +544,7 @@ inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-le
 
 inline int BitBoard::make_move(int move, int move_flag)
 {
+    std::cout << "Make Move" << std::endl;
     if (move_flag == all_moves)
     {
         copy_board();

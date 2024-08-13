@@ -61,7 +61,30 @@ typedef struct {
 class BitBoard {
     public:
         BitBoard();
+        BitBoard(const BitBoard& other)
+        {
+
+            memcpy(bitboards, other.bitboards, sizeof(bitboards));
+            memcpy(occupancies, other.occupancies, sizeof(occupancies));
+            memcpy(pawn_attacks, other.pawn_attacks, sizeof(pawn_attacks));
+            memcpy(knight_attacks, other.knight_attacks, sizeof(knight_attacks));
+            memcpy(king_attacks, other.king_attacks, sizeof(king_attacks));
+            memcpy(bishop_attacks, other.bishop_attacks, sizeof(bishop_attacks));
+            memcpy(bishop_masks, other.bishop_masks, sizeof(bishop_masks));
+            memcpy(rook_attacks, other.rook_attacks, sizeof(rook_attacks));
+            memcpy(rook_masks, other.rook_masks, sizeof(rook_masks));
+            side = other.side;
+            en_passant_square = other.en_passant_square;
+            castle_rights = other.castle_rights;
+            halfmove = other.halfmove;
+            fullmove = other.fullmove;
+        };
+        
         ~BitBoard();
+     
+        BitBoard* clone() const {
+            return new BitBoard(*this); // Uses the copy constructor
+        }
 
         void print_bitboard(U64 bitboard);
         void print_board();
@@ -70,9 +93,6 @@ class BitBoard {
         void print_move_list(moves* move_list);
 
         // Normal Getters and Setters
-
-        int get_side() { return side; }
-        int get_bot_best_move() { return bot_best_move; }
 
         // Testing
         void perft_driver(int depth);
@@ -87,10 +107,35 @@ class BitBoard {
         std::array<std::array<int, 8>, 8> bitboard_to_board();
         int make_player_move(const char *move);
         int make_bot_move(int move);
+        int parse_move(const char* move_string);
+        inline int make_move(int move, int move_flag);
         
+        // Board Variables Interface
+        U64 get_bitboard(int piece) { return bitboards[piece]; }
+        // void get_bitboards(U64 new_bitboards[12]) { memcpy(new_bitboards, bitboards, sizeof(bitboards)); }
+        // void get_occupancies(U64 new_occupancies[3]) { memcpy(new_occupancies, occupancies, sizeof(occupancies)); }
+        
+        const U64* get_bitboards() { return bitboards; }
+        const U64* get_occupancies() { return occupancies; }
+        
+        int get_side() { return side; }
+        int get_en_passant_square() { return en_passant_square; }
+        int get_castle_rights() { return castle_rights; }
+        int get_halfmove() { return halfmove; }
+        int get_fullmove() { return fullmove; }
+        int get_bot_best_move() { return bot_best_move; }
+
+        
+        void set_bitboard(int piece, U64 new_bitboard) { bitboards[piece] = new_bitboard; }
+        void set_bitboards(U64 new_bitboards[12]) { memcpy(bitboards, new_bitboards, sizeof(bitboards)); }
+        void set_occupancies(U64 new_occupancies[3]) { memcpy(occupancies, new_occupancies, sizeof(occupancies)); }
+        void set_side(int new_side) { side = new_side; }
+        void set_en_passant_square(int new_en_passant_square) { en_passant_square = new_en_passant_square; }
+        void set_castle_rights(int new_castle_rights) { castle_rights = new_castle_rights; }
+        void set_halfmove(int new_halfmove) { halfmove = new_halfmove; }
+        void set_fullmove(int new_fullmove) { fullmove = new_fullmove; }
 
     private:
-        
         // Board state variables
         U64 bitboards[12]; // 12 bitboards for each piece type (6 for white and 6 for black)
         U64 occupancies[3]; // occupancy bitboards for each color and all pieces
@@ -99,9 +144,9 @@ class BitBoard {
         int castle_rights; 
         int halfmove;
         int fullmove;
-        int ply = 0; // ply counter for the search algorithm
-
+        
         // Testing
+        int ply = 0; // ply counter for the search algorithm
         long leaf_nodes = 0;
         long perf_captures = 0;
         long perf_enpassant = 0;
@@ -150,8 +195,6 @@ class BitBoard {
         void print_attacked_square(int side);
 
         inline void generate_moves(moves* move_list);
-        inline int make_move(int move, int move_flag);
-        int parse_move(const char* move_string);
 
         enum colors{
             white, black, both
