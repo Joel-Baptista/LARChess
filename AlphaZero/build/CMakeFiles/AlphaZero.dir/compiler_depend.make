@@ -205,7 +205,32 @@ CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp
   /usr/include/c++/12/stdlib.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
-  /usr/include/c++/12/compare
+  /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc
 
 CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o: /home/joel/projects/YACE/AlphaZero/src/AlphaZero.cpp \
   /usr/include/stdc-predef.h \
@@ -5168,7 +5193,448 @@ CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o: /home/joel/projects/YACE/AlphaZero
   /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/special.h \
   /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/version.h \
   /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/xpu.h \
-  /home/joel/projects/YACE/AlphaZero/src/include/ResNet.h
+  /home/joel/projects/YACE/AlphaZero/src/include/ResNet.h \
+  /home/joel/projects/YACE/AlphaZero/src/mcts.h \
+  /home/joel/projects/YACE/BBChessEngine/src/bit_board.h \
+  /usr/include/c++/12/stdlib.h \
+  /usr/include/x86_64-linux-gnu/sys/time.h \
+  /home/joel/projects/YACE/AlphaZero/src/game.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xarray.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xsequence.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtl_config.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmeta_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbuffer_adaptor.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xclosure.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstorage.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexception.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xcompare.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_config.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_simd.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xdynamic_bitset.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xclosure.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xiterator_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xutils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmeta_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xcontainer.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xaccessible.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrides.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xshape.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xlayout.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_forward.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional_sequence.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xdynamic_bitset.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional_meta.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmasked_value_meta.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xsequence.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xiterable.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xiterator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xiterator_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xmath.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xcomplex.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xaccumulator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xeval.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression_traits.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xmanipulation.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbuilder.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbroadcast.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xscalar.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xfunction.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xgenerator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrided_view.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xvariant.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xvariant_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xsemantic.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xassign.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrided_view_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xslice.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xoperation.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xrepeat.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xreducer.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xio.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xview.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xarray.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xview_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xadapt.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xfixed.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp
+
+CMakeFiles/AlphaZero.dir/src/game.cpp.o: /home/joel/projects/YACE/AlphaZero/src/game.cpp \
+  /usr/include/stdc-predef.h \
+  /home/joel/projects/YACE/AlphaZero/src/game.h \
+  /home/joel/projects/YACE/BBChessEngine/src/bit_board.h \
+  /usr/include/c++/12/unordered_map \
+  /usr/include/c++/12/type_traits \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h \
+  /usr/include/features.h \
+  /usr/include/features-time64.h \
+  /usr/include/x86_64-linux-gnu/bits/wordsize.h \
+  /usr/include/x86_64-linux-gnu/bits/timesize.h \
+  /usr/include/x86_64-linux-gnu/sys/cdefs.h \
+  /usr/include/x86_64-linux-gnu/bits/long-double.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
+  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/cpu_defines.h \
+  /usr/include/c++/12/pstl/pstl_config.h \
+  /usr/include/c++/12/initializer_list \
+  /usr/include/c++/12/bits/allocator.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++allocator.h \
+  /usr/include/c++/12/bits/new_allocator.h \
+  /usr/include/c++/12/new \
+  /usr/include/c++/12/bits/exception.h \
+  /usr/include/c++/12/bits/functexcept.h \
+  /usr/include/c++/12/bits/exception_defines.h \
+  /usr/include/c++/12/bits/move.h \
+  /usr/include/c++/12/bits/memoryfwd.h \
+  /usr/include/c++/12/ext/alloc_traits.h \
+  /usr/include/c++/12/bits/alloc_traits.h \
+  /usr/include/c++/12/bits/stl_construct.h \
+  /usr/include/c++/12/bits/stl_iterator_base_types.h \
+  /usr/include/c++/12/bits/stl_iterator_base_funcs.h \
+  /usr/include/c++/12/bits/concept_check.h \
+  /usr/include/c++/12/debug/assertions.h \
+  /usr/include/c++/12/bits/ptr_traits.h \
+  /usr/include/c++/12/ext/numeric_traits.h \
+  /usr/include/c++/12/bits/cpp_type_traits.h \
+  /usr/include/c++/12/ext/type_traits.h \
+  /usr/include/c++/12/ext/aligned_buffer.h \
+  /usr/include/c++/12/bits/stl_pair.h \
+  /usr/include/c++/12/bits/utility.h \
+  /usr/include/c++/12/bits/stl_function.h \
+  /usr/include/c++/12/backward/binders.h \
+  /usr/include/c++/12/bits/functional_hash.h \
+  /usr/include/c++/12/bits/hash_bytes.h \
+  /usr/include/c++/12/bits/hashtable.h \
+  /usr/include/c++/12/bits/hashtable_policy.h \
+  /usr/include/c++/12/tuple \
+  /usr/include/c++/12/bits/uses_allocator.h \
+  /usr/include/c++/12/bits/invoke.h \
+  /usr/include/c++/12/bits/stl_algobase.h \
+  /usr/include/c++/12/bits/stl_iterator.h \
+  /usr/include/c++/12/debug/debug.h \
+  /usr/include/c++/12/bits/predefined_ops.h \
+  /usr/include/c++/12/bits/enable_special_members.h \
+  /usr/include/c++/12/bits/node_handle.h \
+  /usr/include/c++/12/bits/unordered_map.h \
+  /usr/include/c++/12/bits/range_access.h \
+  /usr/include/c++/12/bits/erase_if.h \
+  /usr/include/c++/12/iostream \
+  /usr/include/c++/12/ostream \
+  /usr/include/c++/12/ios \
+  /usr/include/c++/12/iosfwd \
+  /usr/include/c++/12/bits/stringfwd.h \
+  /usr/include/c++/12/bits/postypes.h \
+  /usr/include/c++/12/cwchar \
+  /usr/include/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn.h \
+  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stddef.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h \
+  /usr/include/x86_64-linux-gnu/bits/wchar.h \
+  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
+  /usr/include/c++/12/exception \
+  /usr/include/c++/12/bits/exception_ptr.h \
+  /usr/include/c++/12/bits/cxxabi_init_exception.h \
+  /usr/include/c++/12/typeinfo \
+  /usr/include/c++/12/bits/nested_exception.h \
+  /usr/include/c++/12/bits/char_traits.h \
+  /usr/include/c++/12/cstdint \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h \
+  /usr/include/stdint.h \
+  /usr/include/x86_64-linux-gnu/bits/types.h \
+  /usr/include/x86_64-linux-gnu/bits/typesizes.h \
+  /usr/include/x86_64-linux-gnu/bits/time64.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-intn.h \
+  /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h \
+  /usr/include/c++/12/bits/localefwd.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/c++locale.h \
+  /usr/include/c++/12/clocale \
+  /usr/include/locale.h \
+  /usr/include/x86_64-linux-gnu/bits/locale.h \
+  /usr/include/c++/12/cctype \
+  /usr/include/ctype.h \
+  /usr/include/x86_64-linux-gnu/bits/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/endianness.h \
+  /usr/include/c++/12/bits/ios_base.h \
+  /usr/include/c++/12/ext/atomicity.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/gthr-default.h \
+  /usr/include/pthread.h \
+  /usr/include/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/types/time_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h \
+  /usr/include/x86_64-linux-gnu/bits/sched.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
+  /usr/include/x86_64-linux-gnu/bits/cpu-set.h \
+  /usr/include/time.h \
+  /usr/include/x86_64-linux-gnu/bits/time.h \
+  /usr/include/x86_64-linux-gnu/bits/timex.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clock_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
+  /usr/include/x86_64-linux-gnu/bits/types/clockid_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/timer_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes.h \
+  /usr/include/x86_64-linux-gnu/bits/thread-shared-types.h \
+  /usr/include/x86_64-linux-gnu/bits/pthreadtypes-arch.h \
+  /usr/include/x86_64-linux-gnu/bits/atomic_wide_counter.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_mutex.h \
+  /usr/include/x86_64-linux-gnu/bits/struct_rwlock.h \
+  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__sigset_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
+  /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h \
+  /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
+  /usr/include/c++/12/bits/locale_classes.h \
+  /usr/include/c++/12/string \
+  /usr/include/c++/12/bits/ostream_insert.h \
+  /usr/include/c++/12/bits/cxxabi_forced.h \
+  /usr/include/c++/12/bits/refwrap.h \
+  /usr/include/c++/12/bits/basic_string.h \
+  /usr/include/c++/12/string_view \
+  /usr/include/c++/12/bits/string_view.tcc \
+  /usr/include/c++/12/ext/string_conversions.h \
+  /usr/include/c++/12/cstdlib \
+  /usr/include/stdlib.h \
+  /usr/include/x86_64-linux-gnu/bits/waitflags.h \
+  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
+  /usr/include/x86_64-linux-gnu/sys/types.h \
+  /usr/include/endian.h \
+  /usr/include/x86_64-linux-gnu/bits/byteswap.h \
+  /usr/include/x86_64-linux-gnu/bits/uintn-identity.h \
+  /usr/include/x86_64-linux-gnu/sys/select.h \
+  /usr/include/x86_64-linux-gnu/bits/select.h \
+  /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h \
+  /usr/include/alloca.h \
+  /usr/include/x86_64-linux-gnu/bits/stdlib-float.h \
+  /usr/include/c++/12/bits/std_abs.h \
+  /usr/include/c++/12/cstdio \
+  /usr/include/stdio.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h \
+  /usr/include/x86_64-linux-gnu/bits/types/struct_FILE.h \
+  /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h \
+  /usr/include/x86_64-linux-gnu/bits/stdio_lim.h \
+  /usr/include/c++/12/cerrno \
+  /usr/include/errno.h \
+  /usr/include/x86_64-linux-gnu/bits/errno.h \
+  /usr/include/linux/errno.h \
+  /usr/include/x86_64-linux-gnu/asm/errno.h \
+  /usr/include/asm-generic/errno.h \
+  /usr/include/asm-generic/errno-base.h \
+  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
+  /usr/include/c++/12/bits/charconv.h \
+  /usr/include/c++/12/bits/basic_string.tcc \
+  /usr/include/c++/12/bits/locale_classes.tcc \
+  /usr/include/c++/12/system_error \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/error_constants.h \
+  /usr/include/c++/12/stdexcept \
+  /usr/include/c++/12/streambuf \
+  /usr/include/c++/12/bits/streambuf.tcc \
+  /usr/include/c++/12/bits/basic_ios.h \
+  /usr/include/c++/12/bits/locale_facets.h \
+  /usr/include/c++/12/cwctype \
+  /usr/include/wctype.h \
+  /usr/include/x86_64-linux-gnu/bits/wctype-wchar.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h \
+  /usr/include/c++/12/bits/streambuf_iterator.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h \
+  /usr/include/c++/12/bits/locale_facets.tcc \
+  /usr/include/c++/12/bits/basic_ios.tcc \
+  /usr/include/c++/12/bits/ostream.tcc \
+  /usr/include/c++/12/istream \
+  /usr/include/c++/12/bits/istream.tcc \
+  /usr/include/string.h \
+  /usr/include/strings.h \
+  /usr/include/c++/12/stdlib.h \
+  /usr/include/x86_64-linux-gnu/sys/time.h \
+  /usr/include/c++/12/array \
+  /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc \
+  /usr/include/c++/12/memory \
+  /usr/include/c++/12/bits/stl_uninitialized.h \
+  /usr/include/c++/12/bits/stl_tempbuf.h \
+  /usr/include/c++/12/bits/stl_raw_storage_iter.h \
+  /usr/include/c++/12/bits/align.h \
+  /usr/include/c++/12/bit \
+  /usr/include/c++/12/bits/unique_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr.h \
+  /usr/include/c++/12/bits/shared_ptr_base.h \
+  /usr/include/c++/12/bits/allocated_ptr.h \
+  /usr/include/c++/12/ext/concurrence.h \
+  /usr/include/c++/12/bits/shared_ptr_atomic.h \
+  /usr/include/c++/12/bits/atomic_base.h \
+  /usr/include/c++/12/bits/atomic_lockfree_defines.h \
+  /usr/include/c++/12/backward/auto_ptr.h \
+  /usr/include/c++/12/pstl/glue_memory_defs.h \
+  /usr/include/c++/12/pstl/execution_defs.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xarray.hpp \
+  /usr/include/c++/12/algorithm \
+  /usr/include/c++/12/bits/stl_algo.h \
+  /usr/include/c++/12/bits/algorithmfwd.h \
+  /usr/include/c++/12/bits/stl_heap.h \
+  /usr/include/c++/12/bits/uniform_int_dist.h \
+  /usr/include/c++/12/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/12/utility \
+  /usr/include/c++/12/bits/stl_relops.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xsequence.hpp \
+  /usr/include/c++/12/cstddef \
+  /usr/include/c++/12/vector \
+  /usr/include/c++/12/bits/stl_vector.h \
+  /usr/include/c++/12/bits/stl_bvector.h \
+  /usr/include/c++/12/bits/vector.tcc \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtl_config.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmeta_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
+  /usr/include/c++/12/complex \
+  /usr/include/c++/12/sstream \
+  /usr/include/c++/12/bits/sstream.tcc \
+  /usr/include/c++/12/chrono \
+  /usr/include/c++/12/bits/chrono.h \
+  /usr/include/c++/12/ratio \
+  /usr/include/c++/12/ctime \
+  /usr/include/c++/12/bits/parse_numbers.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbuffer_adaptor.hpp \
+  /usr/include/c++/12/functional \
+  /usr/include/c++/12/bits/std_function.h \
+  /usr/include/c++/12/iterator \
+  /usr/include/c++/12/bits/stream_iterator.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xclosure.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstorage.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexception.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xcompare.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_config.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_simd.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xdynamic_bitset.hpp \
+  /usr/include/c++/12/climits \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h \
+  /usr/lib/gcc/x86_64-linux-gnu/12/include/syslimits.h \
+  /usr/include/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+  /usr/include/linux/limits.h \
+  /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+  /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xclosure.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xiterator_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xutils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmeta_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xcontainer.hpp \
+  /usr/include/c++/12/numeric \
+  /usr/include/c++/12/bits/stl_numeric.h \
+  /usr/include/c++/12/pstl/glue_numeric_defs.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xaccessible.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrides.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xshape.hpp \
+  /usr/include/c++/12/cassert \
+  /usr/include/assert.h \
+  /usr/include/c++/12/cstring \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xlayout.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_forward.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional_sequence.hpp \
+  /usr/include/c++/12/bitset \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xdynamic_bitset.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xoptional_meta.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xmasked_value_meta.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xsequence.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xiterable.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xiterator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xiterator_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xmath.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xcomplex.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xaccumulator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xeval.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression_traits.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xmanipulation.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbuilder.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xbroadcast.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xscalar.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xfunction.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xgenerator.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrided_view.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xvariant.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtl/xvariant_impl.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xsemantic.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xassign.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xstrided_view_base.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xslice.hpp \
+  /usr/include/c++/12/map \
+  /usr/include/c++/12/bits/stl_tree.h \
+  /usr/include/c++/12/bits/stl_map.h \
+  /usr/include/c++/12/bits/stl_multimap.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xoperation.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xrepeat.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xreducer.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xio.hpp \
+  /usr/include/c++/12/iomanip \
+  /usr/include/c++/12/locale \
+  /usr/include/c++/12/bits/locale_facets_nonio.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/time_members.h \
+  /usr/include/x86_64-linux-gnu/c++/12/bits/messages_members.h \
+  /usr/include/libintl.h \
+  /usr/include/c++/12/bits/codecvt.h \
+  /usr/include/c++/12/bits/locale_facets_nonio.tcc \
+  /usr/include/c++/12/bits/locale_conv.h \
+  /usr/include/c++/12/bits/quoted_string.h \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xview.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xarray.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xview_utils.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xadapt.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xfixed.hpp \
+  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp
 
 CMakeFiles/AlphaZero.dir/src/main.cpp.o: /home/joel/projects/YACE/AlphaZero/src/main.cpp \
   /usr/include/stdc-predef.h \
@@ -5371,6 +5837,31 @@ CMakeFiles/AlphaZero.dir/src/main.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
   /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc \
   /usr/include/c++/12/vector \
   /usr/include/c++/12/bits/stl_uninitialized.h \
   /usr/include/c++/12/bits/stl_vector.h \
@@ -5409,31 +5900,6 @@ CMakeFiles/AlphaZero.dir/src/main.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
   /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
   /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
   /usr/include/c++/12/complex \
-  /usr/include/c++/12/cmath \
-  /usr/include/math.h \
-  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
-  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
-  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
-  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
-  /usr/include/c++/12/bits/specfun.h \
-  /usr/include/c++/12/limits \
-  /usr/include/c++/12/tr1/gamma.tcc \
-  /usr/include/c++/12/tr1/special_function_util.h \
-  /usr/include/c++/12/tr1/bessel_function.tcc \
-  /usr/include/c++/12/tr1/beta_function.tcc \
-  /usr/include/c++/12/tr1/ell_integral.tcc \
-  /usr/include/c++/12/tr1/exp_integral.tcc \
-  /usr/include/c++/12/tr1/hypergeometric.tcc \
-  /usr/include/c++/12/tr1/legendre_function.tcc \
-  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
-  /usr/include/c++/12/tr1/poly_hermite.tcc \
-  /usr/include/c++/12/tr1/poly_laguerre.tcc \
-  /usr/include/c++/12/tr1/riemann_zeta.tcc \
   /usr/include/c++/12/sstream \
   /usr/include/c++/12/bits/sstream.tcc \
   /usr/include/c++/12/chrono \
@@ -10407,6 +10873,31 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
   /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc \
   /usr/include/c++/12/vector \
   /usr/include/c++/12/bits/stl_uninitialized.h \
   /usr/include/c++/12/bits/stl_vector.h \
@@ -10445,31 +10936,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
   /home/joel/projects/YACE/AlphaZero/src/include/xtl/xfunctional.hpp \
   /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp \
   /usr/include/c++/12/complex \
-  /usr/include/c++/12/cmath \
-  /usr/include/math.h \
-  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
-  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
-  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
-  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
-  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
-  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
-  /usr/include/c++/12/bits/specfun.h \
-  /usr/include/c++/12/limits \
-  /usr/include/c++/12/tr1/gamma.tcc \
-  /usr/include/c++/12/tr1/special_function_util.h \
-  /usr/include/c++/12/tr1/bessel_function.tcc \
-  /usr/include/c++/12/tr1/beta_function.tcc \
-  /usr/include/c++/12/tr1/ell_integral.tcc \
-  /usr/include/c++/12/tr1/exp_integral.tcc \
-  /usr/include/c++/12/tr1/hypergeometric.tcc \
-  /usr/include/c++/12/tr1/legendre_function.tcc \
-  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
-  /usr/include/c++/12/tr1/poly_hermite.tcc \
-  /usr/include/c++/12/tr1/poly_laguerre.tcc \
-  /usr/include/c++/12/tr1/riemann_zeta.tcc \
   /usr/include/c++/12/sstream \
   /usr/include/c++/12/bits/sstream.tcc \
   /usr/include/c++/12/chrono \
@@ -10576,6 +11042,10 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
   /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp
 
 
+/home/joel/projects/YACE/AlphaZero/src/main.cpp:
+
+/home/joel/projects/YACE/AlphaZero/src/game.cpp:
+
 /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xadapt.hpp:
 
 /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xgenerator.hpp:
@@ -10611,8 +11081,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtype_traits.hpp:
 
 /home/joel/projects/YACE/AlphaZero/src/include/xtl/xtl_config.hpp:
-
-/home/joel/projects/YACE/AlphaZero/src/main.cpp:
 
 /home/joel/projects/YACE/AlphaZero/src/include/ResNet.h:
 
@@ -15198,52 +15666,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/is_same_size_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_pad_packed_sequence.h:
-
-/home/joel/projects/libtorch/include/c10/util/intrusive_ptr.h:
-
-/home/joel/projects/libtorch/include/ATen/core/boxing/BoxedKernel.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/histogram_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/diagonal_ops.h:
-
-/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_make_per_tensor_quantized_tensor_native.h:
-
-/home/joel/projects/libtorch/include/c10/util/IdWrapper.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/arange.h:
-
-/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/embedding_dense_backward_ops.h:
-
-/home/joel/projects/libtorch/include/c10/core/impl/DeviceGuardImplInterface.h:
-
-/usr/include/c++/12/bits/stl_raw_storage_iter.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/where_native.h:
-
-/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/exp_ops.h:
-
-/usr/include/c++/12/bits/invoke.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/subtract_ops.h:
-
-/home/joel/projects/YACE/AlphaZero/src/include/xtl/xmasked_value_meta.hpp:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_ndtri_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/matrix_exp_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/argwhere_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/bitwise_left_shift_ops.h:
-
 /usr/include/c++/12/bits/stl_heap.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/all_native.h:
@@ -15268,27 +15690,11 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/_weight_int8pack_mm.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/miopen_rnn_backward_native.h:
-
-/usr/include/c++/12/atomic:
-
-/home/joel/projects/libtorch/include/ATen/ops/_fft_c2r_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/narrow.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/cosine_embedding_loss_ops.h:
-
 /home/joel/projects/libtorch/include/torch/csrc/autograd/custom_function.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/fbgemm_pack_gemm_matrix_fp16_native.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/fbgemm_linear_int8_weight_fp32_activation_ops.h:
-
-/home/joel/projects/libtorch/include/c10/core/impl/InlineEvent.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_sobol_engine_initialize_state_ops.h:
-
-/usr/include/c++/12/bits/stl_algo.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/conv1d_ops.h:
 
@@ -15302,9 +15708,81 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/sign_ops.h:
 
-/home/joel/projects/libtorch/include/c10/util/Backtrace.h:
+/home/joel/projects/libtorch/include/ATen/ops/_to_cpu.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_jagged_to_padded_dense_forward.h:
+/home/joel/projects/libtorch/include/ATen/ops/_conj_copy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_neg_view_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/nansum_ops.h:
+
+/usr/include/c++/12/tr1/riemann_zeta.tcc:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/options/normalization.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/to_sparse_bsc_ops.h:
+
+/home/joel/projects/YACE/AlphaZero/src/include/xtl/xmasked_value_meta.hpp:
+
+/home/joel/projects/libtorch/include/ATen/ops/special_ndtri_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/matrix_exp_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/mv_ops.h:
+
+/usr/include/c++/12/bits/basic_ios.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/scatter_add.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/adaptive_avg_pool2d_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/PythonTorchFunctionTLS.h:
+
+/usr/include/c++/12/tr1/modified_bessel_func.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/copy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/retains_grad_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/embedding_bag_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/frexp_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_indices_ops.h:
+
+/usr/include/c++/12/tr1/legendre_function.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/stack.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_make_dual_copy_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/minimum_meta.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/greater.h:
+
+/home/joel/projects/libtorch/include/c10/core/QScheme.h:
+
+/home/joel/projects/libtorch/include/c10/util/CallOnce.h:
+
+/home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression.hpp:
+
+/home/joel/projects/libtorch/include/ATen/ops/_foreach_sinh_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/special_bessel_y0_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_indices_copy_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fmod.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/nextafter_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/exp_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/cosh_meta.h:
+
+/usr/include/c++/12/tr1/ell_integral.tcc:
+
+/usr/include/c++/12/cwchar:
 
 /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor_simd.hpp:
 
@@ -15338,7 +15816,49 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/isnan_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_to_cpu.h:
+/home/joel/projects/libtorch/include/ATen/ops/reshape.h:
+
+/usr/include/c++/12/tr1/gamma.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/set_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/new_zeros_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/linalg_householder_product_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_thnn_differentiable_lstm_cell_backward_native.h:
+
+/usr/include/c++/12/bits/locale_conv.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/take_along_dim_ops.h:
+
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_sparse_softmax_backward_data_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/uniform_ops.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/data/datasets.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/special_modified_bessel_k1_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/isclose_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/is_vulkan_available.h:
+
+/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_cudnn_rnn_flatten_weight.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/minimum_ops.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/optim/schedulers/lr_scheduler.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_cast_Long_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_pdist_backward.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/l1_loss_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_test_optional_filled_intlist_native.h:
 
@@ -15360,54 +15880,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/core/TensorBody.h:
 
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/options/normalization.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/to_sparse_bsc_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/mv_ops.h:
-
-/usr/include/c++/12/bits/basic_ios.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/_conj_copy.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_neg_view_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/nansum_ops.h:
-
-/usr/include/c++/12/tr1/riemann_zeta.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/scatter_add.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/adaptive_avg_pool2d_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/PythonTorchFunctionTLS.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/align_to_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/fft_fft_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/fft_ifft2.h:
-
-/usr/include/c++/12/iterator:
-
-/home/joel/projects/libtorch/include/torch/csrc/autograd/variable_info.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/gru_cell_ops.h:
-
-/home/joel/projects/libtorch/include/c10/core/QScheme.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/frac_meta.h:
-
-/usr/include/c++/12/pstl/execution_defs.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/set_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/reshape.h:
-
-/usr/include/c++/12/tr1/gamma.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/new_zeros_ops.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/stft_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/pairwise_distance_ops.h:
@@ -15424,6 +15896,14 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/bits/basic_string.tcc:
 
+/home/joel/projects/libtorch/include/ATen/ops/split_with_sizes_copy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/new_empty_strided.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_foreach_erf.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/_cast_Long.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/special_exp2_ops.h:
@@ -15433,24 +15913,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/triu_ops.h:
 
 /usr/include/asm-generic/errno.h:
-
-/usr/include/c++/12/bits/shared_ptr_base.h:
-
-/usr/include/x86_64-linux-gnu/bits/errno.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/logical_and_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/softplus_backward_native.h:
-
-/usr/include/c++/12/bits/istream.tcc:
-
-/usr/include/stdint.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/where.h:
-
-/usr/include/c++/12/bits/allocated_ptr.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/addbmm_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_nested_view_from_buffer_native.h:
 
@@ -15503,18 +15965,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/c10/core/Allocator.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/cudnn_grid_sampler_backward_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/minimum_ops.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/optim/schedulers/lr_scheduler.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_cast_Long_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_pdist_backward.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/l1_loss_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_cudnn_rnn_flatten_weight.h:
 
 /home/joel/projects/YACE/AlphaZero/src/include/xtl/xspan.hpp:
 
@@ -15572,35 +16022,7 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/c10/core/impl/PyObjectSlot.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/fractional_max_pool2d_native.h:
-
-/home/joel/projects/YACE/BBChessEngine/src/bit_board.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_fake_quantize_learnable_per_channel_affine.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/rad2deg.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/ctc_loss_ops.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/data/transforms/collate.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/replication_pad2d_native.h:
-
-/home/joel/projects/libtorch/include/c10/util/string_utils.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/fmin.h:
-
-/usr/include/c++/12/tr1/modified_bessel_func.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/copy.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/retains_grad_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/embedding_bag_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/frexp_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_indices_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/detail/XPUHooksInterface.h:
 
@@ -15624,6 +16046,18 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/bits/predefined_ops.h:
 
+/usr/include/stdint.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/where.h:
+
+/usr/include/c++/12/bits/allocated_ptr.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/addbmm_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/softplus_backward_native.h:
+
+/usr/include/c++/12/bits/istream.tcc:
+
 /usr/include/c++/12/bits/stl_stack.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/cudnn_affine_grid_generator_backward_native.h:
@@ -15645,6 +16079,20 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/new_empty_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_unsafe_index_put_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/where_native.h:
+
+/usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/exp_ops.h:
+
+/usr/include/c++/12/bits/invoke.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/subtract_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/argwhere_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/bitwise_left_shift_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/new_full_ops.h:
 
@@ -15671,10 +16119,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/col_indices_ops.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__fpos64_t.h:
-
-/usr/include/c++/12/iostream:
-
-/home/joel/projects/libtorch/include/c10/util/Half-inl.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/asin_meta.h:
 
@@ -15782,29 +16226,9 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/bits/refwrap.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/round_meta.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_to_copy_native.h:
-
-/usr/include/c++/12/pstl/glue_memory_defs.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/flip.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/histc.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/logspace_native.h:
-
-/usr/include/c++/12/bits/atomic_lockfree_defines.h:
-
 /usr/include/x86_64-linux-gnu/bits/time64.h:
-
-/usr/include/c++/12/ext/concurrence.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/unbind_copy_native.h:
-
-/usr/include/c++/12/ext/string_conversions.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/detach_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/detail/MPSHooksInterface.h:
 
@@ -15879,10 +16303,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/include/c++/12/bits/functional_hash.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/fft_ihfft_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_fused_moving_avg_obs_fq_helper_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/corrcoef_ops.h:
 
 /home/joel/projects/libtorch/include/torch/csrc/autograd/autograd_not_implemented_fallback.h:
 
@@ -15962,23 +16382,21 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/le.h:
 
+/home/joel/projects/libtorch/include/ATen/ops/fractional_max_pool2d_native.h:
+
+/home/joel/projects/YACE/BBChessEngine/src/bit_board.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_fake_quantize_learnable_per_channel_affine.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/rad2deg.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/ctc_loss_ops.h:
+
 /usr/include/c++/12/typeinfo:
 
 /home/joel/projects/libtorch/include/ATen/ops/_assert_scalar_native.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_inline.h:
-
-/usr/include/c++/12/tr1/beta_function.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/ormqr_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/linalg_ldl_factor_ex_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/ravel_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/is_distributed_ops.h:
-
-/home/joel/projects/YACE/AlphaZero/src/AlphaZero.h:
 
 /usr/include/c++/12/initializer_list:
 
@@ -15991,22 +16409,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/slow_conv_dilated2d.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/addr_ops.h:
-
-/home/joel/projects/libtorch/include/c10/core/GradMode.h:
-
-/usr/include/c++/12/iomanip:
-
-/home/joel/projects/libtorch/include/ATen/ops/_sobol_engine_ff_native.h:
-
-/usr/include/c++/12/bits/uses_allocator.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/utils.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_zeta_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/binomial_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_test_check_tensor.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/special_expit_native.h:
 
@@ -16030,12 +16432,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/clamp_max_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/core/Tensor.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_foreach_ceil_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/huber_loss_backward_ops.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/_ctc_loss_backward.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_sparse_coo_tensor_unsafe_ops.h:
@@ -16051,6 +16447,18 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/aminmax_ops.h:
 
 /usr/include/c++/12/bits/ostream.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/arange.h:
+
+/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
+
+/home/joel/projects/libtorch/include/c10/core/impl/InlineEvent.h:
+
+/usr/include/c++/12/bits/stl_algo.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_sobol_engine_initialize_state_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/embedding_dense_backward_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/linalg_lu_solve_ops.h:
 
@@ -16122,6 +16530,12 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/c10/core/DeviceGuard.h:
 
+/usr/include/x86_64-linux-gnu/bits/errno.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/logical_and_ops.h:
+
+/usr/include/c++/12/bits/shared_ptr_base.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/_pad_packed_sequence_native.h:
 
 /home/joel/projects/libtorch/include/ATen/core/IListRef_inl.h:
@@ -16151,6 +16565,14 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/prod_ops.h:
 
 /usr/include/c++/12/bits/alloc_traits.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_slow_conv2d_forward_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/argmax_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_to_sparse_native.h:
+
+/home/joel/projects/libtorch/include/c10/util/TypeCast.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_standard_gamma_grad_native.h:
 
@@ -16198,6 +16620,14 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/heaviside.h:
 
+/usr/include/c++/12/ext/concurrence.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/unbind_copy_native.h:
+
+/usr/include/c++/12/ext/string_conversions.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/detach_ops.h:
+
 /home/joel/projects/libtorch/include/torch/csrc/jit/frontend/function_schema_parser.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/limits.h:
@@ -16207,8 +16637,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/core/stack.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_copy_from_and_resize_ops.h:
-
-/usr/include/c++/12/algorithm:
 
 /home/joel/projects/libtorch/include/ATen/ops/unsafe_split_with_sizes_native.h:
 
@@ -16277,6 +16705,10 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/include/c++/12/bits/allocator.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_empty_per_channel_affine_quantized.h:
+
+/home/joel/projects/libtorch/include/ATen/core/ATen_fwd.h:
+
+/usr/include/limits.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/slow_conv_transpose2d.h:
 
@@ -16402,6 +16834,14 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/_foreach_lgamma_ops.h:
 
+/home/joel/projects/libtorch/include/ATen/ops/narrow_copy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_sparse_mm_reduce_impl_ops.h:
+
+/home/joel/projects/libtorch/include/c10/util/qint8.h:
+
+/usr/include/c++/12/bits/streambuf_iterator.h:
+
 /usr/include/c++/12/vector:
 
 /home/joel/projects/libtorch/include/ATen/ops/rot90.h:
@@ -16454,14 +16894,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/leaky_relu.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/roll_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/q_zero_point_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/igamma_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_nested_get_jagged_dummy.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/_log_softmax_backward_data_meta.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/align_as_ops.h:
@@ -16480,15 +16912,19 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/complex:
 
-/home/joel/projects/libtorch/include/c10/core/WrapDimMinimal.h:
+/home/joel/projects/libtorch/include/ATen/ops/special_hermite_polynomial_he_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/unsafe_split_with_sizes_ops.h:
+/home/joel/projects/libtorch/include/ATen/ops/cholesky_solve_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/split_ops.h:
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/autograd.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_values_ops.h:
+/home/joel/projects/libtorch/include/ATen/ops/special_modified_bessel_k1_meta.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/fused_moving_avg_obs_fake_quant.h:
+/home/joel/projects/libtorch/include/ATen/ops/_values_copy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/minimum_native.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
 /home/joel/projects/libtorch/include/c10/util/Float8_e4m3fn-inl.h:
 
@@ -16510,10 +16946,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/logdet_ops.h:
 
-/usr/include/c++/12/bits/unique_ptr.h:
-
-/usr/include/strings.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/replication_pad1d_backward_meta.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/nll_loss2d_forward_ops.h:
@@ -16529,6 +16961,18 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/all_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/glu_backward_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/diagonal_ops.h:
+
+/usr/include/x86_64-linux-gnu/bits/struct_rwlock.h:
+
+/home/joel/projects/libtorch/include/ATen/core/boxing/BoxedKernel.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/histogram_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_make_per_tensor_quantized_tensor_native.h:
+
+/home/joel/projects/libtorch/include/c10/util/IdWrapper.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/special_log1p.h:
 
@@ -16549,6 +16993,12 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/include/c++/12/debug/assertions.h:
 
 /home/joel/projects/libtorch/include/c10/core/SymNodeImpl.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/linalg_svdvals_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/sgn_ops.h:
+
+/home/joel/projects/libtorch/include/c10/util/ConstexprCrc.h:
 
 /usr/include/c++/12/exception:
 
@@ -16612,6 +17062,8 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/_foreach_acos.h:
 
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/hsplit.h:
 
 /usr/include/c++/12/utility:
@@ -16623,6 +17075,10 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/grid_sampler_3d_backward_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_sparse_semi_structured_mm_ops.h:
+
+/home/joel/projects/libtorch/include/c10/util/quint2x4.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/avg_pool3d_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/erfinv_ops.h:
 
@@ -16642,21 +17098,29 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/convolution_backward_overrideable_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/angle_native.h:
+/usr/include/c++/12/tr1/beta_function.tcc:
 
-/home/joel/projects/libtorch/include/ATen/ops/tril_indices.h:
+/home/joel/projects/libtorch/include/ATen/ops/ormqr_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/rand_like.h:
+/home/joel/projects/libtorch/include/ATen/ops/linalg_ldl_factor_ex_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/core/boxing/impl/WrapFunctionIntoRuntimeFunctor.h:
+/home/joel/projects/libtorch/include/ATen/ops/ravel_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/rsqrt_ops.h:
+/home/joel/projects/libtorch/include/ATen/ops/is_distributed_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_foreach_norm_ops.h:
+/home/joel/projects/YACE/AlphaZero/src/AlphaZero.h:
 
-/usr/include/c++/12/bits/nested_exception.h:
+/usr/include/c++/12/bits/shared_ptr.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/fix.h:
+/home/joel/projects/libtorch/include/ATen/ops/_embedding_bag_backward_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_sparse_log_softmax_backward_data_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_weight_int8pack_mm_ops.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/options/rnn.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/batch_norm_update_stats.h:
 
 /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/functional/instancenorm.h:
 
@@ -16669,14 +17133,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/_weight_norm_ops.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/polygamma_ops.h:
-
-/usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h:
-
-/home/joel/projects/libtorch/include/c10/util/Exception.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/conv_depthwise3d_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/diagonal_backward_ops.h:
 
@@ -16705,10 +17161,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/include/x86_64-linux-gnu/bits/local_lim.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/chain_matmul_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/cat_meta.h:
-
-/home/joel/projects/libtorch/include/c10/util/Half.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/cookie_io_functions_t.h:
 
@@ -16742,6 +17194,28 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/string_view:
 
+/home/joel/projects/libtorch/include/c10/core/GradMode.h:
+
+/usr/include/c++/12/iomanip:
+
+/home/joel/projects/libtorch/include/ATen/ops/_sobol_engine_ff_native.h:
+
+/usr/include/c++/12/bits/uses_allocator.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/utils.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/special_zeta_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/binomial_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_test_check_tensor.h:
+
+/home/joel/projects/libtorch/include/ATen/core/Tensor.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_foreach_ceil_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/huber_loss_backward_ops.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/linalg_qr_meta.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/output_nr_ops.h:
@@ -16770,10 +17244,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/bits/erase_if.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_conj.h:
-
-/usr/include/c++/12/backward/auto_ptr.h:
-
 /home/joel/projects/libtorch/include/ATen/ops/_cslt_compress_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/min_native.h:
@@ -16784,6 +17254,20 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/floor.h:
 
+/home/joel/projects/libtorch/include/c10/util/Half-inl.h:
+
+/usr/include/c++/12/iostream:
+
+/home/joel/projects/libtorch/include/ATen/ops/_pad_packed_sequence.h:
+
+/home/joel/projects/libtorch/include/c10/util/intrusive_ptr.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/unsafe_split_with_sizes_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/split_ops.h:
+
+/home/joel/projects/libtorch/include/c10/core/WrapDimMinimal.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/replication_pad1d_backward.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/neg_ops.h:
@@ -16792,43 +17276,13 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/requires_grad_ops.h:
 
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/serialize.h:
+
+/usr/include/c++/12/ext/alloc_traits.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/_cast_Char.h:
 
 /home/joel/projects/libtorch/include/c10/util/safe_numerics.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_conj_physical_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/squeeze_copy.h:
-
-/home/joel/projects/libtorch/include/c10/core/StreamGuard.h:
-
-/usr/include/c++/12/ratio:
-
-/home/joel/projects/libtorch/include/ATen/ops/remainder_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ExpandUtils.h:
-
-/usr/include/c++/12/cwchar:
-
-/usr/include/c++/12/bits/shared_ptr.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_embedding_bag_backward_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_sparse_log_softmax_backward_data_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_weight_int8pack_mm_ops.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/nn/options/rnn.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/batch_norm_update_stats.h:
-
-/usr/include/c++/12/bits/streambuf_iterator.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/narrow_copy.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_sparse_mm_reduce_impl_ops.h:
-
-/home/joel/projects/libtorch/include/c10/util/qint8.h:
 
 /home/joel/projects/libtorch/include/c10/util/complex.h:
 
@@ -16842,23 +17296,39 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/_triton_multi_head_attention.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_assert_async.h:
+/home/joel/projects/libtorch/include/ATen/ops/view_as_real_ops.h:
 
-/home/joel/projects/libtorch/include/ATen/WrapDimUtils.h:
+/home/joel/projects/libtorch/include/ATen/ops/float_power_ops.h:
 
-/usr/include/c++/12/bits/stl_relops.h:
+/home/joel/projects/libtorch/include/ATen/ops/unflatten_dense_tensors_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/_prelu_kernel_ops.h:
+/home/joel/projects/libtorch/include/ATen/ops/align_tensors_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/bitwise_and.h:
+/home/joel/projects/libtorch/include/ATen/ops/adaptive_avg_pool3d_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/fix_native.h:
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/fft_hfft2_native.h:
+/usr/include/c++/12/tr1/poly_hermite.tcc:
 
-/home/joel/projects/libtorch/include/ATen/ops/count_nonzero_ops.h:
+/home/joel/projects/libtorch/include/ATen/ops/angle_native.h:
 
-/home/joel/projects/libtorch/include/ATen/ops/hann_window.h:
+/home/joel/projects/libtorch/include/ATen/ops/tril_indices.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/rand_like.h:
+
+/home/joel/projects/libtorch/include/ATen/core/boxing/impl/WrapFunctionIntoRuntimeFunctor.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/rsqrt_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fix.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_fused_moving_avg_obs_fq_helper_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/corrcoef_ops.h:
+
+/usr/include/c++/12/bits/nested_exception.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_foreach_norm_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_make_dual_copy_native.h:
 
@@ -16875,6 +17345,50 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/_nested_tensor_from_mask.h:
 
 /usr/include/c++/12/bits/std_abs.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/replication_pad3d_backward_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/nonzero_numpy_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/detail/MTIAHooksInterface.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/torch.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/sym_constrain_range_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_empty_affine_quantized_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_foreach_tanh.h:
+
+/usr/include/c++/12/bits/chrono.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_transformer_encoder_layer_fwd_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/square.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_chunk_cat.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/special_digamma.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/not_equal_ops.h:
+
+/usr/include/c++/12/bits/stl_queue.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_add_batch_dim_native.h:
+
+/usr/include/c++/12/bits/sstream.tcc:
+
+/home/joel/projects/libtorch/include/ATen/ops/_conj_physical_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/squeeze_copy.h:
+
+/home/joel/projects/libtorch/include/c10/core/StreamGuard.h:
+
+/usr/include/c++/12/ratio:
+
+/home/joel/projects/libtorch/include/ATen/ops/remainder_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ExpandUtils.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/to_sparse_native.h:
 
@@ -16949,6 +17463,16 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_fused_sdp_choice.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fused_moving_avg_obs_fake_quant.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_values_ops.h:
+
+/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/data/transforms/collate.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/replication_pad2d_native.h:
+
+/home/joel/projects/libtorch/include/c10/util/string_utils.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_cudnn_init_dropout_state_ops.h:
 
@@ -17048,6 +17572,100 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /usr/include/c++/12/bits/range_access.h:
 
+/home/joel/projects/libtorch/include/ATen/ops/roll_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/q_zero_point_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/igamma_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_nested_get_jagged_dummy.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_jagged_to_padded_dense_forward.h:
+
+/home/joel/projects/libtorch/include/c10/util/Backtrace.h:
+
+/home/joel/projects/libtorch/include/c10/core/impl/DeviceGuardImplInterface.h:
+
+/usr/include/c++/12/bits/stl_raw_storage_iter.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/align_to_ops.h:
+
+/usr/include/strings.h:
+
+/usr/include/c++/12/bits/unique_ptr.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fft_fft_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fft_ifft2.h:
+
+/usr/include/c++/12/iterator:
+
+/home/joel/projects/libtorch/include/torch/csrc/autograd/variable_info.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/gru_cell_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/logspace_native.h:
+
+/usr/include/c++/12/bits/atomic_lockfree_defines.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_conj.h:
+
+/usr/include/c++/12/backward/auto_ptr.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/round_meta.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_to_copy_native.h:
+
+/usr/include/c++/12/pstl/glue_memory_defs.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/flip.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/frac_meta.h:
+
+/usr/include/c++/12/pstl/execution_defs.h:
+
+/usr/include/c++/12/algorithm:
+
+/home/joel/projects/libtorch/include/ATen/ops/cat_meta.h:
+
+/home/joel/projects/libtorch/include/c10/util/Half.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/miopen_rnn_backward_native.h:
+
+/usr/include/c++/12/atomic:
+
+/home/joel/projects/libtorch/include/ATen/ops/_fft_c2r_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/narrow.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/cosine_embedding_loss_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/polygamma_ops.h:
+
+/usr/include/x86_64-linux-gnu/c++/12/bits/atomic_word.h:
+
+/home/joel/projects/libtorch/include/c10/util/Exception.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/conv_depthwise3d_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_assert_async.h:
+
+/home/joel/projects/libtorch/include/ATen/WrapDimUtils.h:
+
+/usr/include/c++/12/bits/stl_relops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/_prelu_kernel_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/bitwise_and.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fix_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/fft_hfft2_native.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/count_nonzero_ops.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/hann_window.h:
+
 /home/joel/projects/libtorch/include/ATen/ops/nll_loss2d_ops.h:
 
 /home/joel/projects/libtorch/include/c10/util/string_view.h:
@@ -17055,24 +17673,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /home/joel/projects/libtorch/include/ATen/ops/ne_meta.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/_foreach_expm1_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_slow_conv2d_forward_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/argmax_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_to_sparse_native.h:
-
-/home/joel/projects/libtorch/include/c10/util/TypeCast.h:
-
-/usr/include/c++/12/bits/stl_queue.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_add_batch_dim_native.h:
-
-/usr/include/c++/12/bits/sstream.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_digamma.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/not_equal_ops.h:
 
 /home/joel/projects/libtorch/include/ATen/ops/addmv_ops.h:
 
@@ -17136,6 +17736,12 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 
 /home/joel/projects/libtorch/include/ATen/ops/refine_names_ops.h:
 
+/home/joel/projects/libtorch/include/ATen/ops/sparse_compressed_tensor.h:
+
+/home/joel/projects/libtorch/include/ATen/core/CheckMemoryFormat.h:
+
+/home/joel/projects/libtorch/include/ATen/ops/grid_sampler_3d_ops.h:
+
 /usr/include/c++/12/bits/shared_ptr_atomic.h:
 
 /usr/include/linux/limits.h:
@@ -17147,144 +17753,6 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/
 /usr/include/c++/12/backward/binders.h:
 
 /usr/include/x86_64-linux-gnu/bits/posix2_lim.h:
-
-/usr/include/x86_64-linux-gnu/bits/math-vector.h:
-
-/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/linalg_svdvals_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/sgn_ops.h:
-
-/home/joel/projects/libtorch/include/c10/util/ConstexprCrc.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_sparse_softmax_backward_data_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/uniform_ops.h:
-
-/usr/include/limits.h:
-
-/home/joel/projects/libtorch/include/ATen/core/ATen_fwd.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/data/datasets.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_modified_bessel_k1_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/isclose_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/is_vulkan_available.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/split_with_sizes_copy.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/new_empty_strided.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_foreach_erf.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/view_as_real_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/float_power_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/unflatten_dense_tensors_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/align_tensors_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/adaptive_avg_pool3d_native.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_hermite_polynomial_he_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/cholesky_solve_native.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/autograd.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_modified_bessel_k1_meta.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_values_copy.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/minimum_native.h:
-
-/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/linalg_householder_product_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_thnn_differentiable_lstm_cell_backward_native.h:
-
-/usr/include/c++/12/bits/locale_conv.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/take_along_dim_ops.h:
-
-/usr/include/x86_64-linux-gnu/bits/iscanonical.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/serialize.h:
-
-/usr/include/c++/12/ext/alloc_traits.h:
-
-/home/joel/projects/libtorch/include/c10/util/CallOnce.h:
-
-/home/joel/projects/YACE/AlphaZero/src/include/xtensor/xexpression.hpp:
-
-/home/joel/projects/libtorch/include/ATen/ops/_foreach_sinh_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/special_bessel_y0_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_indices_copy_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/fmod.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/nextafter_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/exp_native.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/cosh_meta.h:
-
-/usr/include/c++/12/tr1/ell_integral.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/replication_pad3d_backward_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/nonzero_numpy_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/detail/MTIAHooksInterface.h:
-
-/home/joel/projects/libtorch/include/torch/csrc/api/include/torch/torch.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/sym_constrain_range_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_empty_affine_quantized_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_foreach_tanh.h:
-
-/usr/include/c++/12/bits/chrono.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_transformer_encoder_layer_fwd_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/square.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_chunk_cat.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/sparse_compressed_tensor.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/grid_sampler_3d_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/core/CheckMemoryFormat.h:
-
-/usr/include/c++/12/tr1/legendre_function.tcc:
-
-/home/joel/projects/libtorch/include/ATen/ops/stack.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/_make_dual_copy_ops.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/minimum_meta.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/greater.h:
-
-/home/joel/projects/libtorch/include/c10/util/quint2x4.h:
-
-/home/joel/projects/libtorch/include/ATen/ops/avg_pool3d_ops.h:
-
-/usr/include/c++/12/tr1/poly_hermite.tcc:
 
 /home/joel/projects/libtorch/include/ATen/ops/q_per_channel_scales_ops.h:
 

@@ -200,7 +200,32 @@ CMakeFiles/BBChesEngine.dir/src/bb_magic_nums.cpp.o: /home/joel/projects/YACE/BB
   /usr/include/c++/12/stdlib.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
-  /usr/include/c++/12/compare
+  /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc
 
 CMakeFiles/BBChesEngine.dir/src/bit_board.cpp.o: /home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp \
   /usr/include/stdc-predef.h \
@@ -406,7 +431,32 @@ CMakeFiles/BBChesEngine.dir/src/bit_board.cpp.o: /home/joel/projects/YACE/BBChes
   /usr/include/c++/12/stdlib.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
-  /usr/include/c++/12/compare
+  /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc
 
 CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/BBChessEngine/src/bit_board_test.cpp \
   /usr/include/stdc-predef.h \
@@ -607,7 +657,32 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
   /usr/include/c++/12/stdlib.h \
   /usr/include/x86_64-linux-gnu/sys/time.h \
   /usr/include/c++/12/array \
-  /usr/include/c++/12/compare
+  /usr/include/c++/12/compare \
+  /usr/include/c++/12/cmath \
+  /usr/include/math.h \
+  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
+  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
+  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-logb.h \
+  /usr/include/x86_64-linux-gnu/bits/fp-fast.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls.h \
+  /usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h \
+  /usr/include/x86_64-linux-gnu/bits/iscanonical.h \
+  /usr/include/c++/12/bits/specfun.h \
+  /usr/include/c++/12/limits \
+  /usr/include/c++/12/tr1/gamma.tcc \
+  /usr/include/c++/12/tr1/special_function_util.h \
+  /usr/include/c++/12/tr1/bessel_function.tcc \
+  /usr/include/c++/12/tr1/beta_function.tcc \
+  /usr/include/c++/12/tr1/ell_integral.tcc \
+  /usr/include/c++/12/tr1/exp_integral.tcc \
+  /usr/include/c++/12/tr1/hypergeometric.tcc \
+  /usr/include/c++/12/tr1/legendre_function.tcc \
+  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
+  /usr/include/c++/12/tr1/poly_hermite.tcc \
+  /usr/include/c++/12/tr1/poly_laguerre.tcc \
+  /usr/include/c++/12/tr1/riemann_zeta.tcc
 
 
 /home/joel/projects/YACE/BBChessEngine/src/bit_board_test.cpp:
@@ -616,7 +691,35 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/c++/12/bits/stl_vector.h:
 
+/usr/include/c++/12/tr1/riemann_zeta.tcc:
+
 /home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp:
+
+/usr/include/c++/12/tr1/poly_laguerre.tcc:
+
+/usr/include/c++/12/tr1/modified_bessel_func.tcc:
+
+/usr/include/c++/12/tr1/legendre_function.tcc:
+
+/usr/include/c++/12/tr1/hypergeometric.tcc:
+
+/usr/include/c++/12/tr1/ell_integral.tcc:
+
+/usr/include/c++/12/tr1/bessel_function.tcc:
+
+/usr/include/c++/12/tr1/gamma.tcc:
+
+/usr/include/c++/12/limits:
+
+/usr/include/c++/12/bits/specfun.h:
+
+/usr/include/x86_64-linux-gnu/bits/iscanonical.h:
+
+/usr/include/x86_64-linux-gnu/bits/fp-fast.h:
+
+/usr/include/x86_64-linux-gnu/bits/flt-eval-method.h:
+
+/usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h:
 
 /usr/include/c++/12/compare:
 
@@ -647,6 +750,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 /usr/include/c++/12/bits/basic_string.tcc:
 
 /usr/include/c++/12/bits/charconv.h:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-helper-functions.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/error_t.h:
 
@@ -762,6 +867,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/c++/12/bits/ptr_traits.h:
 
+/usr/include/x86_64-linux-gnu/bits/math-vector.h:
+
 /usr/include/c++/12/bits/stl_pair.h:
 
 /usr/include/c++/12/bits/utility.h:
@@ -777,6 +884,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 /usr/include/x86_64-linux-gnu/c++/12/bits/os_defines.h:
 
 /usr/include/x86_64-linux-gnu/bits/long-double.h:
+
+/usr/include/c++/12/cmath:
 
 /usr/include/features.h:
 
@@ -818,7 +927,11 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/c++/12/debug/assertions.h:
 
+/usr/include/x86_64-linux-gnu/bits/fp-logb.h:
+
 /usr/include/c++/12/exception:
+
+/usr/include/x86_64-linux-gnu/bits/mathcalls-narrow.h:
 
 /usr/include/c++/12/bits/memoryfwd.h:
 
@@ -842,6 +955,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/x86_64-linux-gnu/bits/wchar.h:
 
+/usr/include/c++/12/tr1/beta_function.tcc:
+
 /usr/include/x86_64-linux-gnu/c++/12/bits/gthr.h:
 
 /usr/include/x86_64-linux-gnu/c++/12/bits/ctype_base.h:
@@ -849,6 +964,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 /usr/include/c++/12/bits/stl_iterator_base_types.h:
 
 /home/joel/projects/YACE/BBChessEngine/src/bb_magic_nums.cpp:
+
+/usr/include/math.h:
 
 /usr/include/c++/12/ext/numeric_traits.h:
 
@@ -920,6 +1037,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/c++/12/ext/aligned_buffer.h:
 
+/usr/include/c++/12/tr1/special_function_util.h:
+
 /usr/include/c++/12/ostream:
 
 /usr/include/c++/12/ios:
@@ -938,6 +1057,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdarg.h:
 
+/usr/include/x86_64-linux-gnu/bits/mathcalls.h:
+
 /usr/include/c++/12/bits/node_handle.h:
 
 /usr/include/c++/12/cstdint:
@@ -948,6 +1069,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 
 /usr/include/x86_64-linux-gnu/bits/types/mbstate_t.h:
 
+/usr/include/c++/12/tr1/poly_hermite.tcc:
+
 /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:
 
 /usr/include/c++/12/bits/nested_exception.h:
@@ -955,6 +1078,8 @@ CMakeFiles/BBChesEngine.dir/src/bit_board_test.cpp.o: /home/joel/projects/YACE/B
 /usr/include/c++/12/bits/char_traits.h:
 
 /usr/include/stdint.h:
+
+/usr/include/c++/12/tr1/exp_integral.tcc:
 
 /usr/lib/gcc/x86_64-linux-gnu/12/include/stdint.h:
 

@@ -17,6 +17,7 @@ add_executable(${PROJECT_NAME}
         ${PROJECT_ROOT}/AlphaZero/src/main.cpp
         ${PROJECT_ROOT}/AlphaZero/src/mcts.cpp
         ${PROJECT_ROOT}/AlphaZero/src/AlphaZero.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game.cpp
         ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
         ${PROJECT_ROOT}/AlphaZero/src/include/network.h
         

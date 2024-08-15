@@ -6,6 +6,7 @@
 #include <stdlib.h> 
 #include <sys/time.h>
 #include <array>
+#include <cmath>
 
 // Macros
 #define U64 unsigned long long
@@ -23,6 +24,21 @@
 #define get_move_double(move) (((move) & 0x200000))
 #define get_move_enpassant(move) (((move) & 0x400000))
 #define get_move_castling(move) (((move) & 0x800000))
+
+
+#define encode_alpha_move(source, direction, length, knight, underpromotion, is_knight, side) \
+    ((source) | ((direction) << 6) | ((length) << 9) | ((knight) << 12) | ((underpromotion) << 15) | ((is_knight) << 20) | ((side) << 21))
+
+#define get_alpha_move_source(move) ((move) & 0x3f)
+#define get_alpha_move_direction(move) (((move) & 0x1c0) >> 6)
+#define get_alpha_move_length(move) (((move) & 0xE00) >> 9)
+#define get_alpha_move_knight(move) (((move) & 0x7000) >> 12)
+#define get_alpha_move_undepromotion(move) (((move) & 0xF8000) >> 15)
+#define get_alpha_move_is_knight(move) (((move) & 0x100000) >> 20)
+#define get_alpha_move_side(move) (((move) & 0x200000) >> 21)
+
+
+
 
 #define copy_board()                                                                        \
     U64 bitboards_copy[12], occupancies_copy[12];                                           \
@@ -109,6 +125,9 @@ class BitBoard {
         int make_bot_move(int move);
         int parse_move(const char* move_string);
         inline int make_move(int move, int move_flag);
+        void get_alpha_moves(moves* move_list);
+        inline void generate_moves(moves* move_list);
+        inline int is_square_attacked(int square, int side);
         
         // Board Variables Interface
         U64 get_bitboard(int piece) { return bitboards[piece]; }
@@ -191,10 +210,9 @@ class BitBoard {
 
         inline U64 get_queen_attacks(int square, U64 occupancy);
 
-        inline int is_square_attacked(int square, int side);
         void print_attacked_square(int side);
 
-        inline void generate_moves(moves* move_list);
+        inline void generate_alpha_moves(moves* move_list, moves* move_list_alpha);
 
         enum colors{
             white, black, both
@@ -309,8 +327,47 @@ class BitBoard {
         0100 0000 0000 0000 0000 0000   en passant flag  [ 1]               0x400000
         1000 0000 0000 0000 0000 0000   castling flag    [ 1]               0x800000
         
-        
         */
+
+        /* Alpha Move enconding 
+                    
+                    Binary Representation                            Hexadecimal Constants
+
+        0000 0000 0000 0000 0011 1111   source square    [64]               0x3f   
+        0000 0000 0000 0001 1100 0000   direction        [ 8]               0x1c0
+        0000 0000 0000 1110 0000 0000   length           [ 7]               0xE00
+        0000 0000 0111 0000 0000 0000   knight moves     [ 8]               0x7000
+        0000 1111 1000 0000 0000 0000   underpromotions  [ 9]               0xF8000
+        0001 0000 0000 0000 0000 0000   piece is knight  [ 1]               0x100000
+        0010 0000 0000 0000 0000 0000   side             [ 1]               0x200000
+
+        Direction = {N, NE, E, SE, S, SW, W, NW}
+        Lenght = {1, 2, 3, 4, 5, 6, 7}
+        Knight moves = { Counter Clockwise beginning from top-left 
+         
+            { 2, -1}, 0 -> [4][1]
+            { 2,  1}, 1 -> [4][3]
+            { 1,  2}, 2 -> [3][4]
+            {-1,  2}, 3 -> [1][4]
+            {-2,  1}, 4 -> [0][3]
+            {-2, -1}, 5 -> [0][1]
+            {-1, -2}, 6 -> [1][0]
+            { 1, -2}  7 -> [3][0]
+        }
+
+        underpromotions = {No, N_NE, N_N, N_NW, B_NE, B_N, B_NW, R_NE, R_N, R_NW}
+                            0    1    2     3    4     5    6     7      8    9
+        */
+
+        int knight_jumps[5][5] =
+        {
+            {-1,  5, -1,  4, -1},
+            { 6, -1, -1, -1,  3},
+            {-1, -1, -1, -1, -1},
+            { 7, -1, -1, -1,  2},
+            {-1,  0, -1,  1, -1},
+        };
+
 
         // Board Visualization Functions
         char ascii_pieces[12] = {'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k'};

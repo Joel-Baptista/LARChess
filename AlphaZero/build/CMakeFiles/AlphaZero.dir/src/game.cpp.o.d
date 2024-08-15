@@ -1,6 +1,6 @@
-CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: \
- /home/joel/projects/YACE/AlphaZero/src/mcts.cpp \
- /usr/include/stdc-predef.h /home/joel/projects/YACE/AlphaZero/src/mcts.h \
+CMakeFiles/AlphaZero.dir/src/game.cpp.o: \
+ /home/joel/projects/YACE/AlphaZero/src/game.cpp \
+ /usr/include/stdc-predef.h /home/joel/projects/YACE/AlphaZero/src/game.h \
  /home/joel/projects/YACE/AlphaZero/src/../../BBChessEngine/src/bit_board.h \
  /usr/include/c++/12/unordered_map /usr/include/c++/12/type_traits \
  /usr/include/x86_64-linux-gnu/c++/12/bits/c++config.h \
@@ -182,12 +182,8 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: \
  /usr/include/c++/12/tr1/modified_bessel_func.tcc \
  /usr/include/c++/12/tr1/poly_hermite.tcc \
  /usr/include/c++/12/tr1/poly_laguerre.tcc \
- /usr/include/c++/12/tr1/riemann_zeta.tcc /usr/include/c++/12/vector \
+ /usr/include/c++/12/tr1/riemann_zeta.tcc /usr/include/c++/12/memory \
  /usr/include/c++/12/bits/stl_uninitialized.h \
- /usr/include/c++/12/bits/stl_vector.h \
- /usr/include/c++/12/bits/stl_bvector.h \
- /usr/include/c++/12/bits/vector.tcc \
- /home/joel/projects/YACE/AlphaZero/src/game.h /usr/include/c++/12/memory \
  /usr/include/c++/12/bits/stl_tempbuf.h \
  /usr/include/c++/12/bits/stl_raw_storage_iter.h \
  /usr/include/c++/12/bits/align.h /usr/include/c++/12/bit \
@@ -210,7 +206,10 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: \
  /usr/include/c++/12/pstl/glue_algorithm_defs.h \
  /usr/include/c++/12/utility /usr/include/c++/12/bits/stl_relops.h \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/../xtl/xsequence.hpp \
- /usr/include/c++/12/cstddef \
+ /usr/include/c++/12/cstddef /usr/include/c++/12/vector \
+ /usr/include/c++/12/bits/stl_vector.h \
+ /usr/include/c++/12/bits/stl_bvector.h \
+ /usr/include/c++/12/bits/vector.tcc \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/../xtl/xtl_config.hpp \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/../xtl/xmeta_utils.hpp \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/../xtl/xfunctional.hpp \

@@ -1,7 +1,8 @@
 #include "AlphaZero.h"
 
 
-AlphaZero::AlphaZero(int num_searches, 
+AlphaZero::AlphaZero(Game* game,
+                     int num_searches, 
                      int num_iterations, 
                      int num_selfPlay_iterations, 
                      int num_parallel_games, 
@@ -22,6 +23,7 @@ AlphaZero::AlphaZero(int num_searches,
 
     m_mcts = std::make_unique<MCTS>(num_searches, dichirlet_alpha, dichirlet_epsilon, C);
 
+    this->game = game;
     this->num_searches = num_searches;
     this->num_iterations = num_iterations;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
@@ -50,7 +52,7 @@ void AlphaZero::SelfPlay()
 
     for (int i = 0; i < num_parallel_games; i++)
     {
-        SPG* spg = new SPG(&board);
+        SPG* spg = new SPG(game);
         spGames.push_back(spg);
     }
 

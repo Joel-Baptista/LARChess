@@ -10,6 +10,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp" "CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp.o" "gcc" "CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp.o.d"
   "/home/joel/projects/YACE/AlphaZero/src/AlphaZero.cpp" "CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o" "gcc" "CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o.d"
+  "/home/joel/projects/YACE/AlphaZero/src/game.cpp" "CMakeFiles/AlphaZero.dir/src/game.cpp.o" "gcc" "CMakeFiles/AlphaZero.dir/src/game.cpp.o.d"
   "/home/joel/projects/YACE/AlphaZero/src/main.cpp" "CMakeFiles/AlphaZero.dir/src/main.cpp.o" "gcc" "CMakeFiles/AlphaZero.dir/src/main.cpp.o.d"
   "/home/joel/projects/YACE/AlphaZero/src/mcts.cpp" "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o" "gcc" "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o.d"
   )

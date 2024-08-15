@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp.o.d"
   "CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o"
   "CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o.d"
+  "CMakeFiles/AlphaZero.dir/src/game.cpp.o"
+  "CMakeFiles/AlphaZero.dir/src/game.cpp.o.d"
   "CMakeFiles/AlphaZero.dir/src/main.cpp.o"
   "CMakeFiles/AlphaZero.dir/src/main.cpp.o.d"
   "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o"

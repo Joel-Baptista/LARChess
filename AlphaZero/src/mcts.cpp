@@ -69,18 +69,11 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 pNode = pNode->select();
             }
 
-            /*
-            
-                Get value of the state and if it is a terminal state
+            final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, pNode->action);
 
-            */ 
-
-            bool terminal = false;
-            float value = 0;
-
-            if (terminal)
+            if (fState.terminated)
             {
-                pNode->backpropagate(value);
+                pNode->backpropagate(-fState.value);
             }
             else
             {
@@ -138,12 +131,14 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
 }
 
-Node::Node(BitBoard* board, Node* parent, std::string action, float C, float prior, int visit_count)
+Node::Node(Game* game, Node* parent, std::string action, float C, float prior, int visit_count)
 {
 
-    game = board->clone(); // Game is a pointer to the clone
+    // game = board->clone(); // Game is a pointer to the clone
 
-    copy_state_from_board(node_state, board);
+    this->game = game;
+
+    copy_state_from_board(node_state, game->m_Board);
 
     this->parent = parent;
     this->action = action;
@@ -209,6 +204,8 @@ void Node::expand(xt::xtensor<float, 3> action_probs)
    std::vector<std::string> actions;
    std::vector<float> probs;
 
+   game->set_state(node_state);
+
    for (int i = 0; i < actions.size(); i++)
    {
         std::string action = actions[i];
@@ -216,9 +213,9 @@ void Node::expand(xt::xtensor<float, 3> action_probs)
         // state new_state;
         // copy_state(new_state, node_state);
 
-        copy_alpha_board(game);
+        copy_alpha_board(game->m_Board);
 
-        int valid_move = game->make_move(game->parse_move(action.c_str()), 0);
+        int valid_move = game->m_Board->make_move(game->m_Board->parse_move(action.c_str()), 0);
 
         if (valid_move)
         {
@@ -226,7 +223,7 @@ void Node::expand(xt::xtensor<float, 3> action_probs)
             pChildren.push_back(new_node);
         }
 
-        restore_alpha_board(game);
+        restore_alpha_board(game->m_Board);
 
    }
 
@@ -243,12 +240,14 @@ void Node::backpropagate(float value)
 }
 
 
-SPG::SPG(BitBoard* board)
+SPG::SPG(Game* game)
 {
 
-    game = board->clone(); // Game is a pointer to the clone
+    // game = board->clone(); // Game is a pointer to the clone
 
-    copy_state_from_board(initial_state, board);
+    this->game = game;
+
+    copy_state_from_board(initial_state, game->m_Board);
     copy_state(current_state, initial_state);
 
 }
