@@ -20,6 +20,30 @@ int knight_jumps[5][5] =
     {-1,  5, -1,  4, -1},
 };
 
+int kj_row[8] =
+{
+     2, // 0 -> [4][1]
+     2, // 1 -> [4][3]
+     1, // 2 -> [3][4]
+    -1, // 3 -> [1][4]
+    -2, // 4 -> [0][3]
+    -2, // 5 -> [0][1]
+    -1, // 6 -> [1][0]
+     1  // 7 -> [3][0]
+};
+
+int kj_cols[8] =
+{
+    -1, // 0 -> [4][1]
+     1, // 1 -> [4][3]
+     2, // 2 -> [3][4]
+     2, // 3 -> [1][4]
+     1, // 4 -> [0][3]
+    -1, // 5 -> [0][1]
+    -2, // 6 -> [1][0]
+    -2  // 7 -> [3][0]
+};
+
 Game::Game()
 {
     m_Board = std::make_unique<BitBoard>();
@@ -63,7 +87,7 @@ state Game::get_next_state(state current_state, std::string action)
 
 
 
-xt::xtensor<float, 4> Game::get_encoded_state(state current_state)
+xt::xtensor<float, 3> Game::get_encoded_state(state current_state)
 {
     std::array<std::size_t, 4> shape = {1, 19, 8, 8}; 
     xt::xtensor<float, 4> encoded_state(shape);
@@ -152,21 +176,21 @@ xt::xtensor<float, 4> Game::get_encoded_state(state current_state)
     //     }
     //     getchar();
     // }
-
-    return encoded_state;
+    return xt::view(encoded_state, 0, xt::all(), xt::all(), xt::all());
 }
 
-xt::xtensor<float, 4> Game::get_valid_moves_encoded(state current_state)
+xt::xtensor<float, 3> Game::get_valid_moves_encoded(state current_state)
 {
     set_state(current_state);
 
     moves move_list;
     m_Board->get_alpha_moves(&move_list);
 
-    std::array<std::size_t, 4> shape = {1, 8, 8, 73};
-    xt::xtensor<float, 4> encoded_valid_moves(shape);
+    std::array<std::size_t, 3> shape = {8, 8, 73};
+    xt::xtensor<float, 3> encoded_valid_moves(shape);
+    encoded_valid_moves.fill(0.0f);
 
-    std::cout << "Number of moves: " << move_list.count << std::endl;
+    // std::cout << "Number of moves: " << move_list.count << std::endl;
 
     for (int i = 0; i < move_list.count; i++)
     {
@@ -181,14 +205,14 @@ xt::xtensor<float, 4> Game::get_valid_moves_encoded(state current_state)
         int index_plane = direction * 7 + length - 1;
 
         int row = (side == 0) ? source_square / 8 : 7 - source_square / 8;
-        int col = (side == 0) ? source_square % 8 :  7 - source_square % 8;
+        int col = (side == 0) ? source_square % 8 :  source_square % 8;
 
         if (is_knight)
-            encoded_valid_moves(0, row, col, 56 + knight_move) = 1;
+            encoded_valid_moves(row, col, 56 + knight_move) = 1;
         else if (underpromote)
-            encoded_valid_moves(0, row, col, 64 + (underpromote - 1)) = 1;
+            encoded_valid_moves(row, col, 64 + (underpromote - 1)) = 1;
         else
-            encoded_valid_moves(0, row, col, index_plane) = 1;
+            encoded_valid_moves(row, col, index_plane) = 1;
 
 
         // std::cout << "Source Square: " << square_to_coordinates[source_square] << std::endl;
@@ -207,7 +231,7 @@ xt::xtensor<float, 4> Game::get_valid_moves_encoded(state current_state)
         // getchar();
 
     }
-
+    // m_Board->print_board();
     // int count = 0;
     // for (int i = 0; i < 73; i++)
     // {
@@ -227,13 +251,10 @@ xt::xtensor<float, 4> Game::get_valid_moves_encoded(state current_state)
     //     std::cout << std::endl;
     //     getchar();
     // }
-
-    // std::cout << "Total moves: " << count << std::endl;
-
     return encoded_valid_moves;
 }
 
-xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
+xt::xtensor<float, 3> Game::get_encoded_action(std::string move, int side)
 {
 
     std::array<std::size_t, 4> shape = {1, 8, 8, 73};
@@ -241,20 +262,17 @@ xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
     encoded_move.fill(0.0f);
 
     // Make move player agnostic
-    int source_col = (side == 0) ? move[0] - 'a' : 7 - (move[0] - 'a') ;
-    int source_row = (side == 0) ? 8 - (move[1] - '0') : (move[1] - '0' - 1);
-    int dest_col = (side == 0) ? (move[2] - 'a') : 7 - (move[2] - 'a');
-    int dest_row = (side == 0) ? 8 -  (move[3] - '0') : (move[3] - '0' - 1);
+
+    int source_row = (side == 0) ? 7 - (move[1] - '0' - 1) : (move[1] - '0' - 1); 
+    int dest_row = (side == 0) ? 7 - (move[3] - '0' - 1) : (move[3] - '0' - 1);
+    int source_col =  (int)(move[0] - 'a');
+    int dest_col =  (int)(move[2] - 'a');
+
     char promotion = ' ';
     if (move.size() == 5)
     {
         promotion = move[4];
     }
-
-    std::cout << "Source Row: " << source_row << std::endl;
-    std::cout << "Source Col: " << source_col << std::endl;
-    std::cout << "Dest Row: " << dest_row << std::endl;
-    std::cout << "Dest Col: " << dest_col << std::endl;
 
     int delta_row = dest_row - source_row;
     int delta_col = dest_col - source_col;
@@ -270,7 +288,7 @@ xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
             else if (promotion == 'r')
                 encoded_move(0, source_row, source_col, 70) = 1;
 
-            return encoded_move;
+            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
         }
         if (delta_col == 0)
         {   
@@ -281,7 +299,7 @@ xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
             else if (promotion == 'r')
                 encoded_move(0, source_row, source_col, 71) = 1;
 
-            return encoded_move;
+            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
         }
         if (delta_col == -1)
         {   
@@ -292,7 +310,7 @@ xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
             else if (promotion == 'r')
                 encoded_move(0, source_row, source_col, 72) = 1;
 
-            return encoded_move;
+            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
         }
     }
 
@@ -300,84 +318,94 @@ xt::xtensor<float, 4> Game::get_encoded_action(std::string move, int side)
     {
         if (delta_col > 0)
         {
-            encoded_move(0, source_row, source_col, 14 + (abs(delta_col) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 2 * 7 + (abs(delta_col) - 1)) = 1;
         }
         else
         {
             encoded_move(0, source_row, source_col, 6 * 7 + (abs(delta_col) - 1)) = 1;
         }
 
-        return encoded_move;
+        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
     }
 
     if (delta_col == 0) // Vertical Moves
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 0 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 4 * 7 + (abs(delta_row) - 1)) = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 4 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 0 + (abs(delta_row) - 1)) = 1;
         }
 
-        return encoded_move;
+        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
     }
 
     if (abs(delta_col) != abs(delta_row)) // Knight jumps
     {
         int knight_plane = knight_jumps[delta_row+2][delta_col+2];
-        std::cout << "Knight Plane: " << knight_plane << std::endl;
 
         encoded_move(0, source_row, source_col, 56 + knight_plane) = 1;
-        return encoded_move;
+        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
     }
 
     if (delta_row == delta_col) // Diagonal Moves
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 3 * 7 + (abs(delta_row) - 1)) = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 5 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 7 * 7   + (abs(delta_row) - 1)) = 1;
         }
 
-        return encoded_move;
+        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
     }
     else
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 7 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 5 * 7 + (abs(delta_row) - 1)) = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 3 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move(0, source_row, source_col, 1 * 7 + (abs(delta_row) - 1)) = 1;
         }
 
-        return encoded_move;
+        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
     }
 
-
-    return encoded_move;
+     
+    return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
 
 }
 
-final_state Game::get_value_and_terminated(state current_state, std::string action)
+final_state Game::get_next_state_and_value(state current_state, std::string action)
 {
-    set_state(current_state);
-    final_state final;
-    final.terminated = false;
+    state new_state;
+    final_state sFinal;
 
-    m_Board->make_move(m_Board->parse_move(action.c_str()), 0);
+    set_state(current_state);
+
+    copy_alpha_board(m_Board);
+
+    int move = m_Board->parse_move(action.c_str());
+    
+    if (m_Board->make_move(move, 0))
+    {
+        copy_state_from_board(new_state, m_Board);
+    }
+
+    sFinal.board_state = new_state;
 
     if (m_Board->get_halfmove() >= 100)
     {
-        final.value = 0.0f;
-        final.terminated = true;
-        return final;
+        sFinal.value = 0.0f;
+        sFinal.terminated = true;
+        restore_alpha_board(m_Board);
+        return sFinal;
     }
 
     int valid_state_count = 0;
@@ -404,17 +432,333 @@ final_state Game::get_value_and_terminated(state current_state, std::string acti
 
         if (is_check)
         {
-            final.value = 1.0f;
-            final.terminated = true;
-            return final;
+            sFinal.value = 1.0f;
+            sFinal.terminated = true;
+            restore_alpha_board(m_Board);
+            return sFinal;
         }
 
-        final.value = 0.0f;
-        final.terminated = true;
+        sFinal.value = 0.0f;
+        sFinal.terminated = true;
         
-        return final;
+        restore_alpha_board(m_Board);
+
+        return sFinal;
 
     }
 
-    return final;
+    restore_alpha_board(m_Board);
+
+    return sFinal;
+}
+
+final_state Game::get_value_and_terminated(state current_state)
+{
+    set_state(current_state);
+    final_state sFinal;
+    sFinal.terminated = false;
+
+    if (m_Board->get_halfmove() >= 100)
+    {
+        sFinal.value = 0.0f;
+        sFinal.terminated = true;
+        return sFinal;
+    }
+
+    int valid_state_count = 0;
+
+    moves move_list;
+    m_Board->generate_moves(&move_list);
+
+    for (int i = 0; i < move_list.count; i++)
+    {
+        copy_alpha_board(m_Board);
+
+        if (m_Board->make_move(move_list.moves[i], 0))
+        {
+            valid_state_count++;
+            restore_alpha_board(m_Board);
+        }
+
+        restore_alpha_board(m_Board);
+    }
+    if (valid_state_count == 0)
+    {
+        int side = m_Board->get_side();
+        int is_check = m_Board->is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
+
+        if (is_check)
+        {
+            sFinal.value = 1.0f;
+            sFinal.terminated = true;
+            return sFinal;
+        }
+
+        sFinal.value = 0.0f;
+        sFinal.terminated = true;
+        
+        return sFinal;
+
+    }
+
+    return sFinal;
+}
+
+std::string Game::decode_action(state current_state, xt::xtensor<float, 3> action)
+{   
+    int maximum = -1;
+    int max_row;
+    int max_col;
+    int max_plane;
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            for (int k = 0; k < 73; k++)
+            {
+                if (action(i, j, k) > maximum)
+                {
+                    maximum = action(i, j, k);
+                    max_row = i;
+                    max_col = j;
+                    max_plane = k;
+                }
+            }
+        }
+    }
+
+    // std::cout << "Maximum: " << maximum << " in position (" << max_row << ", " << max_col << ", " << max_plane << ") for player " << current_state.side << std::endl;
+
+    int index_dir = max_plane / 7;
+    int index_knight = (max_plane - 56) % 8;
+    int index_length = (max_plane % 7) + 1;
+
+    int source_square = (current_state.side == 0) ? max_row * 8 + max_col : (7 - max_row) * 8 + max_col;
+
+    std::string move = square_to_coordinates[source_square];
+    std::string dest_square;
+
+    if (index_dir == 0)
+    {  
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (max_row - index_length) * 8 + max_col : 
+                    (7 - max_row + index_length) * 8 + max_col];
+        
+        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+            dest_square += "q"; 
+    }
+    else if (index_dir == 1)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                        (max_row - index_length) * 8 + (max_col + index_length) : 
+                        (7 - max_row + index_length) * 8 + (max_col + index_length)];
+
+        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+            dest_square += "q";
+    }
+    else if (index_dir == 2)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row) * 8 + (max_col + index_length) : 
+            (7 - max_row) * 8 + (max_col + index_length)];
+    }
+    else if (index_dir == 3)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row + index_length) * 8 + (max_col + index_length) : 
+            (7 - max_row - index_length) * 8 + (max_col + index_length)];
+    }
+    else if (index_dir == 4)
+    {
+        
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row + index_length) * 8 + (max_col) : 
+            (7 - max_row - index_length) * 8 + (max_col)];
+    }
+    else if (index_dir == 5)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row + index_length) * 8 + (max_col - index_length) : 
+            (7 - max_row - index_length) * 8 + (max_col - index_length)];
+    }
+    else if (index_dir == 6)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row) * 8 + (max_col - index_length) : 
+            (7 - max_row) * 8 + (max_col - index_length)];
+    }
+    else if (index_dir == 7)
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row - index_length) * 8 + (max_col - index_length) : 
+            (7 - max_row + index_length) * 8 + (max_col - index_length)];
+
+        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+            dest_square += "q";
+    }
+    else if ( max_plane >= 56 && max_plane < 64) // Knights Jumps
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+            (max_row - kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight]) : 
+            (7 - max_row + kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight])];
+    }
+    else // Underpromotion
+    {
+        int underpromote = max_plane - 64;
+
+        if (underpromote % 3 == 0)
+            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (max_row - 1) * 8 + (max_col + 1) : 
+                    (7 - max_row + 1) * 8 + (max_col + 1)];
+
+        if (underpromote % 3 == 1)
+            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (max_row - 1) * 8 + max_col : 
+                    (7 - max_row + 1) * 8 + max_col];
+        
+        if (underpromote % 3 == 2)
+            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                (max_row - 1) * 8 + (max_col - 1) : 
+                (7 - max_row + 1) * 8 + (max_col - 1)];
+
+        if (underpromote >=0 && underpromote < 3) dest_square += "n";
+        if (underpromote >=3 && underpromote < 6) dest_square += "b";
+        if (underpromote >=6 && underpromote < 9) dest_square += "r";
+    }
+
+    move += dest_square;
+
+    return move;
+
+}
+
+std::vector<decoded_action> Game::decode_actions(state current_state, xt::xtensor<float, 3> action)
+{
+
+    std::vector<decoded_action> actions;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            for (int k = 0; k < 73; k++)
+            {
+                if (action(i, j, k) > 0.0f)
+                {
+
+                    // std::cout << "Action: " << action(0, i, j, k) << " in position (" << i << ", " << j << ", " << k << ")" << std::endl;
+                    decoded_action dAction;
+
+                    int plane = k;
+                    int col = j;
+                    int row = i;
+
+                    int index_dir = plane / 7;
+                    int index_knight = (plane - 56) % 8;
+                    int index_length = (plane % 7) + 1;
+ 
+                    int source_square = (current_state.side == 0) ? row * 8 + col : (7 - row) * 8 + col;
+
+                    std::string move = square_to_coordinates[source_square];
+                    std::string dest_square;
+
+                    if (index_dir == 0)
+                    {  
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                    (row - index_length) * 8 + col : 
+                                    (7 - row + index_length) * 8 + col];
+                        
+                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                            dest_square += "q"; 
+                    }
+                    else if (index_dir == 1)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                        (row - index_length) * 8 + (col + index_length) : 
+                                        (7 - row + index_length) * 8 + (col + index_length)];
+
+                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                            dest_square += "q";
+                    }
+                    else if (index_dir == 2)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row) * 8 + (col + index_length) : 
+                            (7 - row) * 8 + (col + index_length)];
+                    }
+                    else if (index_dir == 3)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row + index_length) * 8 + (col + index_length) : 
+                            (7 - row - index_length) * 8 + (col + index_length)];
+                    }
+                    else if (index_dir == 4)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row + index_length) * 8 + (col) : 
+                            (7 - row - index_length) * 8 + (col)];
+                    }
+                    else if (index_dir == 5)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row + index_length) * 8 + (col - index_length) : 
+                            (7 - row - index_length) * 8 + (col - index_length)];
+                    }
+                    else if (index_dir == 6)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row) * 8 + (col - index_length) : 
+                            (7 - row) * 8 + (col - index_length)];
+                    }
+                    else if (index_dir == 7)
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row - index_length) * 8 + (col - index_length) : 
+                            (7 - row + index_length) * 8 + (col - index_length)];
+
+                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                            dest_square += "q";
+                    }
+                    else if ( plane >= 56 && plane < 64) // Knights Jumps
+                    {
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row - kj_row[index_knight]) * 8 + (col + kj_cols[index_knight]) : 
+                            (7 - row + kj_row[index_knight]) * 8 + (col + kj_cols[index_knight])];
+                    }
+                    else // Underpromotion
+                    {
+                        int underpromote = plane - 64;
+
+                        if (underpromote % 3 == 0)
+                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                    (row - 1) * 8 + (col + 1) : 
+                                    (7 - row + 1) * 8 + (col + 1)];
+
+                        if (underpromote % 3 == 1)
+                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                    (row - 1) * 8 + col : 
+                                    (7 - row + 1) * 8 + col];
+                        
+                        if (underpromote % 3 == 2)
+                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                (row - 1) * 8 + (col - 1) : 
+                                (7 - row + 1) * 8 + (col - 1)];
+
+                        if (underpromote >=0 && underpromote < 3) dest_square += "n";
+                        if (underpromote >=3 && underpromote < 6) dest_square += "b";
+                        if (underpromote >=6 && underpromote < 9) dest_square += "r";
+                    }
+
+                    move += dest_square;
+
+                    dAction.probability = action(i, j, k);
+                    dAction.action = move;
+
+                    actions.push_back(dAction);
+                }
+            }
+        }
+    }
+
+    return actions;
 }

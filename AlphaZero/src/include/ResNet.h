@@ -72,18 +72,22 @@ struct ResNetChess : torch::nn::Module {
     }
 
     chess_output forward(torch::Tensor x) {
+        // std::cout << "Fowarding" << std::endl;
         x = startBlock->forward(x);
 
         int cout = 0;
+        // std::cout << "ResBlocks: " << ptrs_backBone.size() << std::endl;
         for (auto& ptr_resBlock : ptrs_backBone) {
             x = ptr_resBlock->forward(x);
         }
 
+        // std::cout << "PolicyHead" << std::endl;
         auto policy = policyHead->forward(x);
+        // std::cout << "ValueHead" << std::endl;
         auto value = valueHead->forward(x);
 
-        // policy = policy.view({-1, 8, 8, 73});
-        
+        policy = policy.view({-1, 8, 8, 73});
+        // std::cout << "Forwarded" << std::endl;
         return chess_output({policy, value});
     }
 };

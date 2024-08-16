@@ -41,7 +41,14 @@ struct memory_item
 {
     state board_state;
     xt::xtensor<float, 3> action_probs;
-    int player;
+    int side;
+};
+
+struct sp_memory_item
+{
+    xt::xtensor<float, 3> encoded_state;
+    xt::xtensor<float, 3> action_probs;
+    int value;
 };
 
 class SPG
@@ -67,7 +74,7 @@ class SPG
 class MCTS
 {
     public:
-        MCTS(int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
+        MCTS(ResNetChess* model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
         ~MCTS();
     
     void search(std::vector<SPG*>* spGames);
@@ -76,6 +83,8 @@ class MCTS
         int num_searches;
         float dichirlet_alpha;
         float dichirlet_epsilon;
+
+        ResNetChess* m_model;
 
         float C;
 

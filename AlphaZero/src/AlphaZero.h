@@ -1,10 +1,9 @@
 #pragma once
 
-#include <torch/torch.h>
-#include "include/ResNet.h"
 #include <memory>
 #include "mcts.h"
 #include "game.h"
+
 
 class AlphaZero
 {
@@ -25,14 +24,17 @@ class AlphaZero
                   int num_resblocks);
 
         ~AlphaZero();
+
+        void learn();
+        void train(std::vector<sp_memory_item> memory);
     private:
 
-        void SelfPlay();
+        std::vector<sp_memory_item> SelfPlay();
 
         std::vector<memory_item> memory;
 
 
-        std::unique_ptr<ResNetChess> m_ResNetChess;
+        ResNetChess* m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;
         std::unique_ptr<torch::Device> m_Device;
         

@@ -15,6 +15,7 @@ add_executable(${PROJECT_NAME}
         ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
 
         ${PROJECT_ROOT}/AlphaZero/src/main.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/utils.cpp
         ${PROJECT_ROOT}/AlphaZero/src/mcts.cpp
         ${PROJECT_ROOT}/AlphaZero/src/AlphaZero.cpp
         ${PROJECT_ROOT}/AlphaZero/src/game.cpp

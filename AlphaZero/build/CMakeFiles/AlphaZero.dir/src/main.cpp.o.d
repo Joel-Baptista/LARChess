@@ -309,7 +309,6 @@ CMakeFiles/AlphaZero.dir/src/main.cpp.o: \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xadapt.hpp \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xfixed.hpp \
  /home/joel/projects/YACE/AlphaZero/src/include/xtensor/xtensor.hpp \
- /home/joel/projects/YACE/AlphaZero/src/AlphaZero.h \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/torch.h \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/all.h \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/autograd.h \
@@ -4966,4 +4965,6 @@ CMakeFiles/AlphaZero.dir/src/main.cpp.o: \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/special.h \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/version.h \
  /home/joel/projects/libtorch/include/torch/csrc/api/include/torch/xpu.h \
- /home/joel/projects/YACE/AlphaZero/src/include/ResNet.h
+ /home/joel/projects/YACE/AlphaZero/src/include/ResNet.h \
+ /home/joel/projects/YACE/AlphaZero/src/utils.h \
+ /home/joel/projects/YACE/AlphaZero/src/AlphaZero.h

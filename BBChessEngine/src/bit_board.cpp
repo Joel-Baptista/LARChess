@@ -1926,7 +1926,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                 {
                     source_square = get_least_significant_bit(bitboard);
 
-                    int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                    int source_col = (side == white) ? source_square % 8 : source_square % 8;
                     int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                     target_square = source_square - 8; 
@@ -2045,7 +2045,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                 while (bitboard)
                 {
                     source_square = get_least_significant_bit(bitboard);
-                    int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                    int source_col = (side == white) ? source_square % 8 : source_square % 8;
                     int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                     target_square = source_square + 8; // Moves up (not an attack, so not present in attack tables)
@@ -2085,7 +2085,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = 7 - target_square % 8;
+                        int target_col = target_square % 8;
                         int target_row = target_square / 8;
                         
                         int direction = (target_col > source_col) ? 1 : 7; // NE or NW
@@ -2118,7 +2118,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                         if (enpassant_attacks)
                         {
                             int target_enpassant = get_least_significant_bit(enpassant_attacks);
-                            int enpassant_col = 7 - target_enpassant % 8;
+                            int enpassant_col = target_enpassant % 8;
                             int enpassant_row = target_enpassant / 8;
 
                             int direction = (enpassant_col > source_col) ? 1 : 7; // NE or NW
@@ -2162,7 +2162,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
             while (bitboard)
             {
                 source_square = get_least_significant_bit(bitboard);
-                int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                int source_col = (side == white) ? source_square % 8 : source_square % 8;
                 int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                 attacks = knight_attacks[source_square] & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
@@ -2172,7 +2172,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = (side == white) ? target_square % 8 : 7 - target_square % 8;
+                        int target_col = (side == white) ? target_square % 8 : target_square % 8;
                         int target_row = (side == white) ? 7 - target_square / 8 : target_square / 8;
                         
                         int row_idx = target_row - source_row + 2;
@@ -2202,7 +2202,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
             while (bitboard)
             {
                 source_square = get_least_significant_bit(bitboard);
-                int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                int source_col = (side == white) ? source_square % 8 :  source_square % 8;
                 int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                 attacks = get_bishop_attacks(source_square, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
@@ -2212,7 +2212,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = (side == white) ? target_square % 8 : 7 - target_square % 8;
+                        int target_col = (side == white) ? target_square % 8 : target_square % 8;
                         int target_row = (side == white) ? 7 - target_square / 8 : target_square / 8;
 
                         int delta_row = target_row - source_row;
@@ -2261,7 +2261,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
             while (bitboard)
             {
                 source_square = get_least_significant_bit(bitboard);
-                int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                int source_col = (side == white) ? source_square % 8 : source_square % 8;
                 int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                 attacks = get_rook_attacks(source_square, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
@@ -2271,7 +2271,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = (side == white) ? target_square % 8 : 7 - target_square % 8;
+                        int target_col = (side == white) ? target_square % 8 : target_square % 8;
                         int target_row = (side == white) ? 7 - target_square / 8 : target_square / 8;
 
                         int delta_row = target_row - source_row;
@@ -2319,7 +2319,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
             while (bitboard)
             {
                 source_square = get_least_significant_bit(bitboard);
-                int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                int source_col = (side == white) ? source_square % 8 : source_square % 8;
                 int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                 attacks = get_queen_attacks(source_square, occupancies[both]) & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
@@ -2329,7 +2329,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = (side == white) ? target_square % 8 : 7 - target_square % 8;
+                        int target_col = (side == white) ? target_square % 8 : target_square % 8;
                         int target_row = (side == white) ? 7 - target_square / 8 : target_square / 8;
 
                         int delta_row = target_row - source_row;
@@ -2395,7 +2395,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
             while (bitboard)
             {
                 source_square = get_least_significant_bit(bitboard);
-                int source_col = (side == white) ? source_square % 8 :  7 - source_square % 8;
+                int source_col = (side == white) ? source_square % 8 :  source_square % 8;
                 int source_row = (side == white) ? 7 - source_square / 8 : source_square / 8;
 
                 attacks = king_attacks[source_square] & ((side == white) ? ~occupancies[white] : ~occupancies[black]);
@@ -2405,7 +2405,7 @@ inline void BitBoard::generate_alpha_moves(moves* move_list, moves* move_list_al
                     while (attacks)
                     {
                         target_square = get_least_significant_bit(attacks);
-                        int target_col = (side == white) ? target_square % 8 : 7 - target_square % 8;
+                        int target_col = (side == white) ? target_square % 8 : target_square % 8;
                         int target_row = (side == white) ? 7 - target_square / 8 : target_square / 8;
 
                         int delta_row = target_row - source_row;

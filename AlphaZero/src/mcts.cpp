@@ -3,12 +3,13 @@
 #include <cmath>
 
 
-MCTS::MCTS(int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(ResNetChess* model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
     this->dichirlet_epsilon = dichirlet_epsilon;
     this->C = C;
+    this->m_model = model;
 }
 
 MCTS::~MCTS()
@@ -19,47 +20,36 @@ MCTS::~MCTS()
 void MCTS::search(std::vector<SPG*>* spGames)
 {
     
-    
-    std::vector<state> node_states;
+    std::array<std::size_t, 4> state_shape = {spGames->size(), 19, 8, 8}; 
+    xt::xtensor<float, 4> states(state_shape);
 
     for (int i = 0; i < spGames->size(); i++)
     {
-        node_states.push_back(spGames->at(i)->current_state);
+        xt::view(states, i, xt::all(), xt::all(), xt::all()) = spGames->at(i)->game->get_encoded_state(spGames->at(i)->current_state);
     }
 
-    /*
-    
-        TORCH INFERENCE CODE GOES HERE
-
-    */
-
-    std::array<std::array<float, 1 * 73 * 8 * 8>, 150> action_probs = {2};
+    auto output = m_model->forward(xtensor_to_torch(states));
 
     for (int i = 0; i < spGames->size(); i++)
     {
         std::array<std::size_t, 3> shape = {8, 8, 73}; 
-        xt::xtensor<float, 3> spg_policy = xt::adapt(action_probs[i].data(), shape); 
-
-        spg_policy.fill(1.0f);
+        xt::xtensor<float, 3> spg_policy = torch_to_tensor(output.policy[i]);
         xt::xtensor<float, 3> valid_moves(shape);
-        valid_moves.fill(2.0f);
+        valid_moves = spGames->at(i)->game->get_valid_moves_encoded(spGames->at(i)->current_state);
 
         spg_policy *= valid_moves;
         spg_policy /= xt::sum(spg_policy)();
 
-        spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "e2e4", C, 0.0, 1);
+        spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "", C, 0.0, 1);
 
         spGames->at(i)->pRoot->expand(spg_policy);
-    }
 
-    std::cout << "Roots Expanded" << std::endl;
+    }
 
     for (int i = 0; i < num_searches; i++)
     {
-        std::cout << "Search: " << i + 1 << std::endl;
         for (int j = 0; j < spGames->size(); j++)
         {
-            // std::cout << "Game: " << j + 1 << std::endl;
             spGames->at(j)->pCurrentNode = nullptr;
             Node* pNode = spGames->at(j)->pRoot;
             
@@ -69,7 +59,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 pNode = pNode->select();
             }
 
-            final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, pNode->action);
+            final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state);
 
             if (fState.terminated)
             {
@@ -92,32 +82,34 @@ void MCTS::search(std::vector<SPG*>* spGames)
             }
         }
 
-        std::array<std::array<float, 1 * 73 * 8 * 8>, 150> policy = {2};
-        std::array<float, 150> values = {2};
 
         if (expandable_games.size() > 0)
         {
-            /*
-            
-                TORCH INFERENCE CODE GOES HERE
-            
-            */   
+            std::array<std::size_t, 4> state_shape = {expandable_games.size(), 19, 8, 8}; 
+            xt::xtensor<float, 4> states(state_shape);
+
+            for (int i = 0; i < expandable_games.size(); i++)
+            {
+                int game_index = expandable_games[i];
+                xt::view(states, i, xt::all(), xt::all(), xt::all()) = spGames->at(game_index)->game->get_encoded_state(spGames->at(i)->current_state);
+            }
+
+            auto output = m_model->forward(xtensor_to_torch(states));   
         }
 
         for (int k = 0; k < expandable_games.size(); k++)
         {
-            // std::cout << "Expanding Game: " << k + 1 << std::endl;
             int game_index = expandable_games[k];
 
             Node* pNode = spGames->at(game_index)->pCurrentNode;
 
             std::array<std::size_t, 3> shape = {8, 8, 73}; 
-            xt::xtensor<float, 3> spg_policy = xt::adapt(policy[k].data(), shape);
+            xt::xtensor<float, 3> spg_policy = torch_to_tensor(output.policy[k]);
             
-            float spg_value = values[k];
+            float spg_value = output.value[k].item<float>();
 
             xt::xtensor<float, 3> valid_moves(shape);
-            valid_moves.fill(2.0f);
+            valid_moves = spGames->at(game_index)->game->get_valid_moves_encoded(pNode->node_state);
 
             spg_policy *= valid_moves;
             spg_policy /= xt::sum(spg_policy)();  
@@ -125,16 +117,12 @@ void MCTS::search(std::vector<SPG*>* spGames)
             pNode->expand(spg_policy);
 
             pNode->backpropagate(spg_value);
-            // std::cout << "Reached this place" << std::endl;
         }
-    }
-
+    }     
 }
 
 Node::Node(Game* game, Node* parent, std::string action, float C, float prior, int visit_count)
 {
-
-    // game = board->clone(); // Game is a pointer to the clone
 
     this->game = game;
 
@@ -197,35 +185,26 @@ float Node::get_ubc(Node* child)
 void Node::expand(xt::xtensor<float, 3> action_probs)
 {
 
-    /*
-        Code for turning action_probs into a list of actions and probabilities
-    */
+    game->set_state(node_state);   
+    auto decoded_actions = game->decode_actions(node_state, action_probs);
+    for (int i = 0; i < decoded_actions.size(); i++)
+    {
+            std::string action = decoded_actions[i].action;
+            float prob = decoded_actions[i].probability;
 
-   std::vector<std::string> actions;
-   std::vector<float> probs;
+            copy_alpha_board(game->m_Board);
 
-   game->set_state(node_state);
+            int valid_move = game->m_Board->make_move(game->m_Board->parse_move(action.c_str()), 0);
 
-   for (int i = 0; i < actions.size(); i++)
-   {
-        std::string action = actions[i];
+            if (valid_move)
+            {
+                Node* new_node = new Node(game, this, action, C, prob, 0);
+                pChildren.push_back(new_node);
+            }
 
-        // state new_state;
-        // copy_state(new_state, node_state);
+            restore_alpha_board(game->m_Board);
 
-        copy_alpha_board(game->m_Board);
-
-        int valid_move = game->m_Board->make_move(game->m_Board->parse_move(action.c_str()), 0);
-
-        if (valid_move)
-        {
-            Node* new_node = new Node(game, this, action, C, probs[i], 0);
-            pChildren.push_back(new_node);
-        }
-
-        restore_alpha_board(game->m_Board);
-
-   }
+    }   
 
 }
 void Node::backpropagate(float value)
@@ -242,8 +221,6 @@ void Node::backpropagate(float value)
 
 SPG::SPG(Game* game)
 {
-
-    // game = board->clone(); // Game is a pointer to the clone
 
     this->game = game;
 

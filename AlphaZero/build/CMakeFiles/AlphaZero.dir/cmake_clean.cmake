@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/AlphaZero.dir/src/main.cpp.o.d"
   "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o"
   "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o.d"
+  "CMakeFiles/AlphaZero.dir/src/utils.cpp.o"
+  "CMakeFiles/AlphaZero.dir/src/utils.cpp.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

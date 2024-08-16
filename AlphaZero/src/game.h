@@ -9,6 +9,10 @@
 
 #include "include/xtensor/xtensor.hpp"
 
+#include <torch/torch.h>
+#include "include/ResNet.h"
+#include "utils.h"
+
 
 #define copy_state_from_board(dest, src)    memcpy(dest.bitboards, src->get_bitboards(), sizeof(dest.bitboards)); \
                                             memcpy(dest.occupancies, src->get_occupancies(), sizeof(dest.occupancies)); \
@@ -64,8 +68,15 @@ struct state
 
 struct final_state
 {
-    float value;
-    bool terminated;
+    state board_state;
+    float value = 0.0f;
+    bool terminated = false;
+};
+
+struct decoded_action
+{
+    std::string action;
+    float probability;
 };
 
 class Game
@@ -74,16 +85,18 @@ class Game
         Game();
         ~Game();
 
-        xt::xtensor<float, 4> get_encoded_state(state current_state);
-        xt::xtensor<float, 4> get_valid_moves_encoded(state current_state);
-        xt::xtensor<float, 4> get_encoded_action(std::string move, int side);
+        xt::xtensor<float, 3> get_encoded_state(state current_state);
+        xt::xtensor<float, 3> get_valid_moves_encoded(state current_state);
+        xt::xtensor<float, 3> get_encoded_action(std::string move, int side);
+        std::vector<decoded_action> decode_actions(state current_state, xt::xtensor<float, 3> action);
         state get_next_state(state current_state, std::string action);
         void set_state(state current_state);
-        final_state get_value_and_terminated(state current_state, std::string action);
+        final_state get_value_and_terminated(state current_state);
+        std::string decode_action(state current_state, xt::xtensor<float, 3> action);
+        final_state get_next_state_and_value(state current_state, std::string action);
     
         void get_opponent_value();
         void get_board_state();
-        void decode_actions();
         std::unique_ptr<BitBoard> m_Board;
 
     private:

@@ -97,10 +97,24 @@ CMakeFiles/AlphaZero.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/AlphaZero.dir/src/main.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/joel/projects/YACE/AlphaZero/src/main.cpp -o CMakeFiles/AlphaZero.dir/src/main.cpp.s
 
+CMakeFiles/AlphaZero.dir/src/utils.cpp.o: CMakeFiles/AlphaZero.dir/flags.make
+CMakeFiles/AlphaZero.dir/src/utils.cpp.o: /home/joel/projects/YACE/AlphaZero/src/utils.cpp
+CMakeFiles/AlphaZero.dir/src/utils.cpp.o: CMakeFiles/AlphaZero.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/AlphaZero.dir/src/utils.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AlphaZero.dir/src/utils.cpp.o -MF CMakeFiles/AlphaZero.dir/src/utils.cpp.o.d -o CMakeFiles/AlphaZero.dir/src/utils.cpp.o -c /home/joel/projects/YACE/AlphaZero/src/utils.cpp
+
+CMakeFiles/AlphaZero.dir/src/utils.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/AlphaZero.dir/src/utils.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/joel/projects/YACE/AlphaZero/src/utils.cpp > CMakeFiles/AlphaZero.dir/src/utils.cpp.i
+
+CMakeFiles/AlphaZero.dir/src/utils.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/AlphaZero.dir/src/utils.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/joel/projects/YACE/AlphaZero/src/utils.cpp -o CMakeFiles/AlphaZero.dir/src/utils.cpp.s
+
 CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: CMakeFiles/AlphaZero.dir/flags.make
 CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: /home/joel/projects/YACE/AlphaZero/src/mcts.cpp
 CMakeFiles/AlphaZero.dir/src/mcts.cpp.o: CMakeFiles/AlphaZero.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/AlphaZero.dir/src/mcts.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/AlphaZero.dir/src/mcts.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AlphaZero.dir/src/mcts.cpp.o -MF CMakeFiles/AlphaZero.dir/src/mcts.cpp.o.d -o CMakeFiles/AlphaZero.dir/src/mcts.cpp.o -c /home/joel/projects/YACE/AlphaZero/src/mcts.cpp
 
 CMakeFiles/AlphaZero.dir/src/mcts.cpp.i: cmake_force
@@ -114,7 +128,7 @@ CMakeFiles/AlphaZero.dir/src/mcts.cpp.s: cmake_force
 CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o: CMakeFiles/AlphaZero.dir/flags.make
 CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o: /home/joel/projects/YACE/AlphaZero/src/AlphaZero.cpp
 CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o: CMakeFiles/AlphaZero.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o -MF CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o.d -o CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o -c /home/joel/projects/YACE/AlphaZero/src/AlphaZero.cpp
 
 CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.i: cmake_force
@@ -128,7 +142,7 @@ CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.s: cmake_force
 CMakeFiles/AlphaZero.dir/src/game.cpp.o: CMakeFiles/AlphaZero.dir/flags.make
 CMakeFiles/AlphaZero.dir/src/game.cpp.o: /home/joel/projects/YACE/AlphaZero/src/game.cpp
 CMakeFiles/AlphaZero.dir/src/game.cpp.o: CMakeFiles/AlphaZero.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/AlphaZero.dir/src/game.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/AlphaZero.dir/src/game.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/AlphaZero.dir/src/game.cpp.o -MF CMakeFiles/AlphaZero.dir/src/game.cpp.o.d -o CMakeFiles/AlphaZero.dir/src/game.cpp.o -c /home/joel/projects/YACE/AlphaZero/src/game.cpp
 
 CMakeFiles/AlphaZero.dir/src/game.cpp.i: cmake_force
@@ -143,6 +157,7 @@ CMakeFiles/AlphaZero.dir/src/game.cpp.s: cmake_force
 AlphaZero_OBJECTS = \
 "CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp.o" \
 "CMakeFiles/AlphaZero.dir/src/main.cpp.o" \
+"CMakeFiles/AlphaZero.dir/src/utils.cpp.o" \
 "CMakeFiles/AlphaZero.dir/src/mcts.cpp.o" \
 "CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o" \
 "CMakeFiles/AlphaZero.dir/src/game.cpp.o"
@@ -152,6 +167,7 @@ AlphaZero_EXTERNAL_OBJECTS =
 
 AlphaZero: CMakeFiles/AlphaZero.dir/home/joel/projects/YACE/BBChessEngine/src/bit_board.cpp.o
 AlphaZero: CMakeFiles/AlphaZero.dir/src/main.cpp.o
+AlphaZero: CMakeFiles/AlphaZero.dir/src/utils.cpp.o
 AlphaZero: CMakeFiles/AlphaZero.dir/src/mcts.cpp.o
 AlphaZero: CMakeFiles/AlphaZero.dir/src/AlphaZero.cpp.o
 AlphaZero: CMakeFiles/AlphaZero.dir/src/game.cpp.o
@@ -161,7 +177,7 @@ AlphaZero: /home/joel/projects/libtorch/lib/libc10.so
 AlphaZero: /home/joel/projects/libtorch/lib/libkineto.a
 AlphaZero: /home/joel/projects/libtorch/lib/libc10.so
 AlphaZero: CMakeFiles/AlphaZero.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable AlphaZero"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/joel/projects/YACE/AlphaZero/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable AlphaZero"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/AlphaZero.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
