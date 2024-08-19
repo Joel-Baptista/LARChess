@@ -1,0 +1,19 @@
+{
+    "num_searches": 5,
+    "num_iterations": 1,
+    "num_selfPlay_iterations": 2,
+    "num_parallel_games": 2,
+    "num_epochs": 6,
+    "batch_size": 12,
+    "temperature": 1.0,
+    "learning_rate": 0.0003,
+    "dichirlet_alpha": 0.5,
+    "dichirlet_epsilon": 0.8,
+    "dichirlet_epsilon_decay": 0.995,
+    "dichirlet_epsilon_min": 0.01,
+    "C": 5.0,
+    "weight_decay": 0.0001,
+    "num_resblocks": 7,
+    "num_channels": 256,
+    "model_name": "model"
+}

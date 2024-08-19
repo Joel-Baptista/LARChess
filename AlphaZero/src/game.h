@@ -2,12 +2,12 @@
 
 #include "../../BBChessEngine/src/bit_board.h"
 #include <memory>
-#include "include/xtensor/xarray.hpp"
-#include "include/xtensor/xio.hpp"
-#include "include/xtensor/xview.hpp"
-#include "include/xtensor/xadapt.hpp"
+// #include "include/xtensor/xarray.hpp"
+// #include "include/xtensor/xio.hpp"
+// #include "include/xtensor/xview.hpp"
+// #include "include/xtensor/xadapt.hpp"
 
-#include "include/xtensor/xtensor.hpp"
+// #include "include/xtensor/xtensor.hpp"
 
 #include <torch/torch.h>
 #include "include/ResNet.h"
@@ -85,14 +85,14 @@ class Game
         Game();
         ~Game();
 
-        xt::xtensor<float, 3> get_encoded_state(state current_state);
-        xt::xtensor<float, 3> get_valid_moves_encoded(state current_state);
-        xt::xtensor<float, 3> get_encoded_action(std::string move, int side);
-        std::vector<decoded_action> decode_actions(state current_state, xt::xtensor<float, 3> action);
+        torch::Tensor get_encoded_state(state current_state);
+        torch::Tensor get_valid_moves_encoded(state current_state);
+        torch::Tensor get_encoded_action(std::string move, int side);
+        std::vector<decoded_action> decode_actions(state current_state, torch::Tensor action);
         state get_next_state(state current_state, std::string action);
         void set_state(state current_state);
         final_state get_value_and_terminated(state current_state);
-        std::string decode_action(state current_state, xt::xtensor<float, 3> action);
+        std::string decode_action(state current_state, torch::Tensor action);
         final_state get_next_state_and_value(state current_state, std::string action);
     
         void get_opponent_value();

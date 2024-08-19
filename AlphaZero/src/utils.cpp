@@ -1,39 +1,58 @@
 #include "utils.h"
 
-
-torch::Tensor xtensor_to_torch(xt::xtensor<float, 4> xtensor)
-{
-    // Obtain the shape of the xtensor array
-    std::vector<int64_t> shape(xtensor.shape().begin(), xtensor.shape().end());
-
-    // Create a libtorch tensor from the raw data pointer of xtensor
-    torch::Tensor torch_tensor = torch::from_blob(xtensor.data(), shape, torch::kFloat32);
-
-    return torch_tensor;
+// Function to get the current timestamp
+std::string getCurrentTimestamp() {
+    std::time_t now = std::time(nullptr);
+    char buf[100];
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
+    return buf;
 }
 
-torch::Tensor xtensor_to_torch(xt::xtensor<float, 2> xtensor)
-{
-    // Obtain the shape of the xtensor array
-    std::vector<int64_t> shape(xtensor.shape().begin(), xtensor.shape().end());
+// Function to log a message to a file
+void logMessage(const std::string& message, const std::string& filename) {
+    // Open the file in append mode
+    std::ofstream logFile;
+    logFile.open(filename, std::ios_base::app);
+    std::cout << message << std::endl;
+    // Check if the file opened successfully
+    if (!logFile.is_open()) {
+        std::cerr << "Failed to open log file: " << filename << std::endl;
+        return;
+    }
 
-    // Create a libtorch tensor from the raw data pointer of xtensor
-    torch::Tensor torch_tensor = torch::from_blob(xtensor.data(), shape, torch::kFloat32);
+    // Write the timestamp and message to the log file
+    logFile << "[" << getCurrentTimestamp() << "] " << message << std::endl;
 
-    return torch_tensor;
+    // Close the file
+    logFile.close();
 }
 
-
-xt::xtensor<float, 3> torch_to_tensor(torch::Tensor torch_tensor)
-{
-    auto torch_shape = torch_tensor.sizes().vec();
-    // Create an xtensor array that uses the raw data from the torch tensor
-    xt::xtensor<float, 3> xarray = xt::adapt(
-        torch_tensor.data_ptr<float>(),  // Pointer to the data
-        torch_tensor.numel(),            // Number of elements
-        xt::no_ownership(),              // Memory management (no ownership)
-        torch_shape                      // Shape of the tensor
-    ); 
-
-    return xarray;
+// Function to generate Dirichlet noise
+torch::Tensor dirichlet_noise(double alpha, int batch_size) {
+    std::random_device rd;
+    std::mt19937 rng(rd());
+    std::gamma_distribution<> gamma_dist(alpha, 1.0);
+    
+    torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
+    
+    for (int i = 0; i < batch_size; ++i) {
+        std::vector<double> sample(8 * 8 * 73);
+        double sum = 0.0;
+        for (int j = 0; j < 8 * 8 * 73; ++j) {
+            sample[j] = gamma_dist(rng);
+            sum += sample[j];
+        }
+        for (int j = 0; j < 73; ++j) {
+            for (int k = 0; k < 8; ++k) 
+            {
+                for (int l = 0; l < 8; ++l) 
+                {
+                    int idx_sample = j * 8 * 8 + k * 8 + l;
+                    noise[i][l][k][j] = sample[idx_sample] / sum;
+                }
+            }
+        }
+    }
+    
+    return noise;
 }

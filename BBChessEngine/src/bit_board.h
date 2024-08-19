@@ -126,6 +126,7 @@ class BitBoard {
         int parse_move(const char* move_string);
         inline int make_move(int move, int move_flag);
         void get_alpha_moves(moves* move_list);
+        void get_moves(moves* move_list);
         inline void generate_moves(moves* move_list);
         inline int is_square_attacked(int square, int side);
         

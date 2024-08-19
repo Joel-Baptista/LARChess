@@ -15,12 +15,15 @@ AlphaZero::AlphaZero(Game* game,
                      float learning_rate, 
                      float dichirlet_alpha, 
                      float dichirlet_epsilon, 
+                     float dichirlet_epsilon_decay, 
+                     float dichirlet_epsilon_min, 
                      float C,
                      float weight_decay,
-                     int num_resblocks)
+                     int num_resblocks,
+                     int num_channels)
 {
-    m_ResNetChess = new ResNetChess(num_resblocks, 256, torch::kCPU);
-
+    m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, torch::kCPU);
+    
     m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
     m_Device = std::make_unique<torch::Device>(torch::kCPU);
 
@@ -37,6 +40,8 @@ AlphaZero::AlphaZero(Game* game,
     this->learning_rate = learning_rate;
     this->dichirlet_alpha = dichirlet_alpha;
     this->dichirlet_epsilon = dichirlet_epsilon;
+    this->dichirlet_epsilon_decay = dichirlet_epsilon_decay;
+    this->dichirlet_epsilon_min = dichirlet_epsilon_min;
     this->C = C;
     this->weight_decay = weight_decay;
     this->num_resblocks = num_resblocks;
@@ -44,9 +49,14 @@ AlphaZero::AlphaZero(Game* game,
 
 AlphaZero::~AlphaZero()
 {
-    delete m_ResNetChess;
 }
 
+void AlphaZero::update_dichirlet()
+{
+    dichirlet_epsilon = std::max(dichirlet_epsilon * dichirlet_epsilon_decay, dichirlet_epsilon_min);
+    m_mcts->set_dichirlet_epsilon(dichirlet_epsilon);
+    logMessage("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha), "log.txt");   
+}
 
 std::vector<sp_memory_item> AlphaZero::SelfPlay()
 {
@@ -64,17 +74,17 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
     while (spGames.size() > 0)
     {
 
+        auto st = get_time_ms();
+
         count++;
-        std::cout << "Game Iteration: " << count << std::endl;
 
         m_mcts->search(&spGames);
 
         for (int i = spGames.size() - 1; i >= 0; i--)
         {
-            std::array<std::size_t, 3> shape = {8, 8, 73}; 
 
-            xt::xtensor<float, 3> action_probs(shape);
-            action_probs.fill(0.0f);
+            std::vector<int64_t> shape = {8, 8, 73};
+            torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
             
             for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
             {
@@ -83,11 +93,57 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
                     * spGames.at(i)->pRoot->pChildren.at(j)->visit_count;
             }
 
-            action_probs /= xt::sum(action_probs)();
+            action_probs /= action_probs.sum();
 
             spGames.at(i)->memory.push_back({spGames.at(i)->current_state, action_probs, spGames.at(i)->current_state.side});
+            
+            torch::Tensor temperature_action_probs = action_probs.pow(1.0 / temperature);
+            temperature_action_probs /= temperature_action_probs.sum();
 
-            // TODO Implement the temperature scaling
+            std::vector<double> probabilities(spGames.at(i)->pRoot->pChildren.size());
+            int move_count = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int k = 0; k < 73; k++)
+                    {
+                        if (temperature_action_probs[i][j][k].item<double>() > 0.0f)
+                        {
+                            probabilities[move_count] = temperature_action_probs[i][j][k].item<double>();
+                            move_count++;
+                        }
+                    }
+                }
+            }
+
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
+
+            int action_idx = dist(gen);
+
+            int action_count = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    for (int k = 0; k < 73; k++)
+                    {
+                        if (temperature_action_probs[i][j][k].item<double>() > 0.0f)
+                        {
+                            if (action_count == action_idx)
+                            {
+                                action_probs = torch::zeros(shape, torch::kFloat32);
+                                action_probs[i][j][k] = 1.0f;
+                                break;
+                            }
+                            action_count++;
+                        }
+                    }
+                }
+            }
+
 
             std::string  action = spGames.at(i)->game->decode_action(spGames.at(i)->current_state, action_probs);
 
@@ -96,10 +152,9 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
 
             if (fs.terminated)
             {
-                std::cout << "GAME TERMINATED" << std::endl;
                 for (int j = 0; j < spGames.at(i)->memory.size(); j++)
                 {
-                    int value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
+                    float value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
                                 ? fs.value
                                 : -fs.value;
 
@@ -109,14 +164,12 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
                             spGames.at(i)->game->get_encoded_state(spGames.at(i)->memory.at(j).board_state),
                             spGames.at(i)->memory.at(j).action_probs,
                             value
-                            
                         }
                     );
                 }
-                std::cout << "Deleting game" << std::endl;
+                logMessage("Game " + std::to_string(i) + " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves", "log.txt");
                 delete spGames.at(i);
                 spGames.erase(spGames.begin() + i);
-                std::cout << "Deleted game" << std::endl;
             }
             else
             {
@@ -124,6 +177,7 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
                 spGames.at(i)->game->set_state(fs.board_state);
             }
         }
+        logMessage("Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", "log.txt");
     }
 
     return memory;
@@ -139,15 +193,18 @@ void AlphaZero::learn()
         std::vector<sp_memory_item> memory;
         for (int i = 0; i < num_selfPlay_iterations / num_parallel_games ; i++)
         {
-            std::cout << "Self Play Iteration: " << i + 1 << std::endl;
+            logMessage("Self Play Iteration: " + std::to_string(i + 1), "log.txt");
             auto sp_memory = SelfPlay();
             memory.insert(memory.end(), sp_memory.begin(), sp_memory.end());
         }
+        update_dichirlet();
 
         for (int j = 0; j < num_epochs; j++)
         {
             train(memory);
         }
+
+        save_model();
     }
 }
 
@@ -172,9 +229,14 @@ void AlphaZero::train(std::vector<sp_memory_item> memory)
 
     m_ResNetChess->train();
 
+    float running_loss = 0.0;
+    float batch_count = 0.0;
+    auto st = get_time_ms();
+
+    if (batch_size > n) batch_size = n;
+
     for (int i = 0; i < n / batch_size; i++)
     {
-
         int idx_st = i * batch_size;
         int idx_end = (i + 1) * batch_size;
 
@@ -182,47 +244,49 @@ void AlphaZero::train(std::vector<sp_memory_item> memory)
 
         unsigned int b_size = abs(idx_end - idx_st);
         
-        std::array<std::size_t, 4> state_shape = {b_size, 19, 8, 8}; 
-        std::array<std::size_t, 4> action_shape = {b_size, 8, 8, 73}; 
-        std::array<std::size_t, 2> value_shape = {b_size, 1}; 
-        xt::xtensor<float, 4> states(state_shape);
-        xt::xtensor<float, 4> action_targets(action_shape);
-        xt::xtensor<float, 2> values_targets(value_shape);
+        torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+        torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, torch::kFloat32); // Initialize the tensor with zeros
+        torch::Tensor values = torch::zeros({b_size, 1}, torch::kFloat32); // Initialize the tensor with zeros
 
-        for (int j = idx_st; j < idx_end - 1; j++)
+        for (int j = 0; j < b_size; j++)
         {
-            xt::view(states, idx_st + j, xt::all(), xt::all(), xt::all()) = memory.at(pArr[j]).encoded_state;
-            xt::view(action_targets, idx_st + j, xt::all(), xt::all(), xt::all()) = memory.at(pArr[j]).action_probs;
-            xt::view(values_targets, idx_st + j, xt::all()) = memory.at(pArr[j]).value;
+            encoded_states[j] = memory.at(pArr[idx_st + j]).encoded_state.squeeze(0);
+            encoded_actions[j] = memory.at(pArr[idx_st + j]).action_probs.squeeze(0);
+            values[j] = memory.at(pArr[idx_st + j]).value;
         }
 
-        std::cout << "Training Iteration: " << i + 1 << std::endl;
 
-        auto torch_states = xtensor_to_torch(states);
-        auto torch_action_targets = xtensor_to_torch(action_targets);
-        auto torch_values_targets = xtensor_to_torch(values_targets);
-        
-        // std::cout << "State size: " << states << std::endl; 
-        // auto output = m_ResNetChess->forward(torch_states);
-        // std::cout << "Forward pass completed" << std::endl;
+        auto output = m_ResNetChess->forward(encoded_states);
 
-        // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, torch_action_targets);
-        // std::cout << "Policy loss calculated" << std::endl;
-        // std::cout << "Value size: " << output.value.sizes() << std::endl;
-        // std::cout << "Value size: " << xtensor_to_torch(values_targets).sizes() << std::endl;
-        // auto value_loss = torch::nn::functional::mse_loss(output.value, torch_values_targets);
+
+        auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+        auto value_loss = torch::nn::functional::mse_loss(output.value, values);
         // std::cout << "Value loss calculated" << std::endl;
-        // auto loss = policy_loss + value_loss;
+        auto loss = policy_loss + value_loss;
 
-        // m_Optimizer->zero_grad();
+        m_Optimizer->zero_grad();
         // std::cout << "Zeroed the gradients" << std::endl;
-        // loss.backward();
+        loss.backward();
         // std::cout << "Backward pass completed" << std::endl;
-        // m_Optimizer->step();
+        m_Optimizer->step();
         // std::cout << "Optimizer step completed" << std::endl;
 
         // std::cout << "Loss: " << loss.item<float>() << std::endl;
+        // std::cout << "Value loss: " << policy_loss.item<float>() << std::endl;
+        running_loss += loss.item<float>();
+        batch_count += 1.0;
 
     }
+    std::cout << " Loss: " << (running_loss / batch_count) << " Time: " << ((float)(get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
 
+}
+
+void AlphaZero::save_model(std::string path)
+{
+    torch::save(m_ResNetChess, path + "model.pt");
+}
+
+void AlphaZero::load_model(std::string path)
+{
+    torch::load(m_ResNetChess, path + "model.pt");
 }

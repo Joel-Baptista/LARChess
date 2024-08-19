@@ -87,30 +87,28 @@ state Game::get_next_state(state current_state, std::string action)
 
 
 
-xt::xtensor<float, 3> Game::get_encoded_state(state current_state)
+torch::Tensor Game::get_encoded_state(state current_state)
 {
-    std::array<std::size_t, 4> shape = {1, 19, 8, 8}; 
-    xt::xtensor<float, 4> encoded_state(shape);
-    encoded_state.fill(0.0f);
+    std::vector<int64_t> shape = {1, 19, 8, 8};
+    torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
     if (current_state.side == 0) // White to move
-        xt::view(encoded_state, 0, 0, xt::range(0, 8)) = 1;
+        encoded_state[0][0].fill_(1);
 
     if (current_state.castle_rights & 1) // White can castle kingside
-        xt::view(encoded_state, 0, 1, xt::range(0, 8)) = 1;
-    
+        encoded_state[0][1].fill_(1);
+
     if (current_state.castle_rights & 2) // White can castle queenside
-        xt::view(encoded_state, 0, 2, xt::range(0, 8)) = 1;
-    
+        encoded_state[0][2].fill_(1);
+
     if (current_state.castle_rights & 4) // Black can castle kingside
-        xt::view(encoded_state, 0, 3, xt::range(0, 8)) = 1;
+        encoded_state[0][3].fill_(1);
 
     if (current_state.castle_rights & 8) // Black can castle queenside
-        xt::view(encoded_state, 0, 4, xt::range(0, 8)) = 1;
+        encoded_state[0][4].fill_(1);
 
     if (current_state.halfmove > 100)
-        xt::view(encoded_state, 0, 5, xt::range(0, 8)) = 1;
-
+        encoded_state[0][5].fill_(1);
     
     int idxsP[12];
 
@@ -145,9 +143,9 @@ xt::xtensor<float, 3> Game::get_encoded_state(state current_state)
             if (piece != -1)
             {
                 if (current_state.side == 0)
-                    encoded_state(0, idxsP[piece] + 6, rank, file) = 1;
+                    encoded_state[0][idxsP[piece] + 6][rank][file] = 1;
                 else
-                    encoded_state(0, idxsP[piece] + 6, 7 - rank, file) = 1;
+                    encoded_state[0][idxsP[piece] + 6][7 - rank][file] = 1;
             }
         }
     }
@@ -158,9 +156,9 @@ xt::xtensor<float, 3> Game::get_encoded_state(state current_state)
         int rank = current_state.en_passant_square / 8;
 
         if (current_state.side == 0)
-            encoded_state(0, 18, rank, file) = 1;
+            encoded_state[0][18][rank][file] = 1;
         else
-            encoded_state(0, 18, 7 - rank, file) = 1;
+            encoded_state[0][18][7 - rank][file] = 1;
     }
 
     // for (int i = 0; i < 19; i++)
@@ -170,25 +168,25 @@ xt::xtensor<float, 3> Game::get_encoded_state(state current_state)
     //     {
     //         for (int k = 0; k < 8; k++)
     //         {
-    //             std::cout << encoded_state(0, i, j, k) << " ";
+    //             std::cout << encoded_state[0][i][j][k].item() << " ";
     //         }
     //         std::cout << std::endl;
     //     }
     //     getchar();
     // }
-    return xt::view(encoded_state, 0, xt::all(), xt::all(), xt::all());
+
+    return encoded_state;
 }
 
-xt::xtensor<float, 3> Game::get_valid_moves_encoded(state current_state)
+torch::Tensor Game::get_valid_moves_encoded(state current_state)
 {
     set_state(current_state);
 
     moves move_list;
     m_Board->get_alpha_moves(&move_list);
 
-    std::array<std::size_t, 3> shape = {8, 8, 73};
-    xt::xtensor<float, 3> encoded_valid_moves(shape);
-    encoded_valid_moves.fill(0.0f);
+    std::vector<int64_t> shape = {8, 8, 73};
+    torch::Tensor encoded_valid_moves = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
     // std::cout << "Number of moves: " << move_list.count << std::endl;
 
@@ -208,11 +206,11 @@ xt::xtensor<float, 3> Game::get_valid_moves_encoded(state current_state)
         int col = (side == 0) ? source_square % 8 :  source_square % 8;
 
         if (is_knight)
-            encoded_valid_moves(row, col, 56 + knight_move) = 1;
+            encoded_valid_moves[row][col][56 + knight_move] = 1;
         else if (underpromote)
-            encoded_valid_moves(row, col, 64 + (underpromote - 1)) = 1;
+            encoded_valid_moves[row][col][64 + (underpromote - 1)] = 1;
         else
-            encoded_valid_moves(row, col, index_plane) = 1;
+            encoded_valid_moves[row][col][index_plane] = 1;
 
 
         // std::cout << "Source Square: " << square_to_coordinates[source_square] << std::endl;
@@ -240,11 +238,11 @@ xt::xtensor<float, 3> Game::get_valid_moves_encoded(state current_state)
     //     {
     //         for (int k = 0; k < 8; k++)
     //         {
-    //             std::cout << encoded_valid_moves(0, j, k, i) << " ";
-    //             if (encoded_valid_moves(0, j, k, i) == 1)
-    //             {
-    //                 count++;
-    //             }
+    //             std::cout << encoded_valid_moves[j][k][i].item() << " ";
+    //             // if (encoded_valid_moves[j][k][i].item() == torch::tensor(1.0f).item())
+    //             // {
+    //             //     count++;
+    //             // }
     //         }
     //         std::cout << std::endl;
     //     }
@@ -254,12 +252,11 @@ xt::xtensor<float, 3> Game::get_valid_moves_encoded(state current_state)
     return encoded_valid_moves;
 }
 
-xt::xtensor<float, 3> Game::get_encoded_action(std::string move, int side)
+torch::Tensor Game::get_encoded_action(std::string move, int side)
 {
 
-    std::array<std::size_t, 4> shape = {1, 8, 8, 73};
-    xt::xtensor<float, 4> encoded_move(shape);
-    encoded_move.fill(0.0f);
+    std::vector<int64_t> shape = {8, 8, 73};
+    torch::Tensor encoded_move = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
     // Make move player agnostic
 
@@ -282,35 +279,35 @@ xt::xtensor<float, 3> Game::get_encoded_action(std::string move, int side)
         if (delta_col == 1)
         {   
             if (promotion == 'n')
-                encoded_move(0, source_row, source_col, 64) = 1;
+                encoded_move[source_row][source_col][64] = 1;
             else if (promotion == 'b')
-                encoded_move(0, source_row, source_col, 67) = 1;
+                encoded_move[source_row][source_col][67] = 1;
             else if (promotion == 'r')
-                encoded_move(0, source_row, source_col, 70) = 1;
+                encoded_move[source_row][source_col][70] = 1;
 
-            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+            return encoded_move;
         }
         if (delta_col == 0)
         {   
             if (promotion == 'n')
-                encoded_move(0, source_row, source_col, 65) = 1;
+                encoded_move[source_row][source_col][65] = 1;
             else if (promotion == 'b')
-                encoded_move(0, source_row, source_col, 68) = 1;
+                encoded_move[source_row][source_col][68] = 1;
             else if (promotion == 'r')
-                encoded_move(0, source_row, source_col, 71) = 1;
+                encoded_move[source_row][source_col][71] = 1;
 
-            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+            return encoded_move;
         }
         if (delta_col == -1)
         {   
             if (promotion == 'n')
-                encoded_move(0, source_row, source_col, 66) = 1;
+                encoded_move[source_row][source_col][66] = 1;
             else if (promotion == 'b')
-                encoded_move(0, source_row, source_col, 69) = 1;
+                encoded_move[source_row][source_col][69] = 1;
             else if (promotion == 'r')
-                encoded_move(0, source_row, source_col, 72) = 1;
+                encoded_move[source_row][source_col][72] = 1;
 
-            return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+            return encoded_move;
         }
     }
 
@@ -318,67 +315,67 @@ xt::xtensor<float, 3> Game::get_encoded_action(std::string move, int side)
     {
         if (delta_col > 0)
         {
-            encoded_move(0, source_row, source_col, 2 * 7 + (abs(delta_col) - 1)) = 1;
+            encoded_move[source_row][source_col][2 * 7 + (abs(delta_col) - 1)] = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 6 * 7 + (abs(delta_col) - 1)) = 1;
+            encoded_move[source_row][source_col][6 * 7 + (abs(delta_col) - 1)] = 1;
         }
 
-        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+        return encoded_move;
     }
 
     if (delta_col == 0) // Vertical Moves
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 4 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][4 * 7 + (abs(delta_row) - 1)] = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 0 + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][0 + (abs(delta_row) - 1)] = 1;
         }
 
-        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+        return encoded_move;
     }
 
     if (abs(delta_col) != abs(delta_row)) // Knight jumps
     {
         int knight_plane = knight_jumps[delta_row+2][delta_col+2];
 
-        encoded_move(0, source_row, source_col, 56 + knight_plane) = 1;
-        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+        encoded_move[source_row][source_col][56 + knight_plane] = 1;
+        return encoded_move;
     }
 
     if (delta_row == delta_col) // Diagonal Moves
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 3 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][3 * 7 + (abs(delta_row) - 1)] = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 7 * 7   + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][7 * 7 + (abs(delta_row) - 1)] = 1;
         }
 
-        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+        return encoded_move;
     }
     else
     {
         if (delta_row > 0)
         {
-            encoded_move(0, source_row, source_col, 5 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][5 * 7 + (abs(delta_row) - 1)] = 1;
         }
         else
         {
-            encoded_move(0, source_row, source_col, 1 * 7 + (abs(delta_row) - 1)) = 1;
+            encoded_move[source_row][source_col][1 * 7 + (abs(delta_row) - 1)] = 1;
         }
 
-        return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+        return encoded_move;
     }
 
      
-    return xt::view(encoded_move, 0, xt::all(), xt::all(), xt::all());
+    return encoded_move;
 
 }
 
@@ -504,9 +501,9 @@ final_state Game::get_value_and_terminated(state current_state)
     return sFinal;
 }
 
-std::string Game::decode_action(state current_state, xt::xtensor<float, 3> action)
+std::string Game::decode_action(state current_state, torch::Tensor action)
 {   
-    int maximum = -1;
+    float maximum = -1;
     int max_row;
     int max_col;
     int max_plane;
@@ -516,9 +513,9 @@ std::string Game::decode_action(state current_state, xt::xtensor<float, 3> actio
         {
             for (int k = 0; k < 73; k++)
             {
-                if (action(i, j, k) > maximum)
+                if (action[i][j][k].item<float>() > maximum)
                 {
-                    maximum = action(i, j, k);
+                    maximum = action[i][j][k].item<float>();
                     max_row = i;
                     max_col = j;
                     max_plane = k;
@@ -632,7 +629,7 @@ std::string Game::decode_action(state current_state, xt::xtensor<float, 3> actio
 
 }
 
-std::vector<decoded_action> Game::decode_actions(state current_state, xt::xtensor<float, 3> action)
+std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action)
 {
 
     std::vector<decoded_action> actions;
@@ -643,7 +640,7 @@ std::vector<decoded_action> Game::decode_actions(state current_state, xt::xtenso
         {
             for (int k = 0; k < 73; k++)
             {
-                if (action(i, j, k) > 0.0f)
+                if (action[i][j][k].item<float>() > 0.0f)
                 {
 
                     // std::cout << "Action: " << action(0, i, j, k) << " in position (" << i << ", " << j << ", " << k << ")" << std::endl;
@@ -751,7 +748,7 @@ std::vector<decoded_action> Game::decode_actions(state current_state, xt::xtenso
 
                     move += dest_square;
 
-                    dAction.probability = action(i, j, k);
+                    dAction.probability = action[i][j][k].item<float>();
                     dAction.action = move;
 
                     actions.push_back(dAction);

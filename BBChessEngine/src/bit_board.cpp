@@ -212,6 +212,28 @@ void BitBoard::test_bitboard()
 <=========================================================================================>
 */
 
+void BitBoard::get_moves(moves* move_list)
+{
+
+    moves pseudo_moves;
+    generate_moves(&pseudo_moves);
+
+    for (int i = 0; i < pseudo_moves.count; i++)
+    {
+        copy_board();
+
+        if (!make_move(pseudo_moves.moves[i], all_moves)) 
+        {
+            restore_board();
+            continue;
+        }
+        add_move(move_list, pseudo_moves.moves[i]);
+        
+        restore_board();
+    }
+
+}
+
 inline void BitBoard::generate_moves(moves* move_list) // provides the pseudo-legals moves
 {
     move_list->count = 0;

@@ -18,7 +18,7 @@ class Node
         bool is_fully_expanded();
         Node* select();
         float get_ubc(Node* child);
-        void expand(xt::xtensor<float, 3> action_probs);
+        void expand(torch::Tensor action_probs);
         void backpropagate(float value);
 
         // Pass this variables to private once finished debugging
@@ -40,15 +40,15 @@ class Node
 struct memory_item
 {
     state board_state;
-    xt::xtensor<float, 3> action_probs;
+    torch::Tensor action_probs;
     int side;
 };
 
 struct sp_memory_item
 {
-    xt::xtensor<float, 3> encoded_state;
-    xt::xtensor<float, 3> action_probs;
-    int value;
+    torch::Tensor encoded_state;
+    torch::Tensor action_probs;
+    float value;
 };
 
 class SPG
@@ -74,17 +74,20 @@ class SPG
 class MCTS
 {
     public:
-        MCTS(ResNetChess* model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
+        MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
         ~MCTS();
-    
+
+
+
     void search(std::vector<SPG*>* spGames);
 
+    void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
     private:
         int num_searches;
         float dichirlet_alpha;
         float dichirlet_epsilon;
 
-        ResNetChess* m_model;
+        std::shared_ptr<ResNetChess> m_model;
 
         float C;
 

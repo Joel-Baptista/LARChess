@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-MCTS::MCTS(ResNetChess* model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
@@ -19,26 +19,41 @@ MCTS::~MCTS()
 
 void MCTS::search(std::vector<SPG*>* spGames)
 {
-    
-    std::array<std::size_t, 4> state_shape = {spGames->size(), 19, 8, 8}; 
-    xt::xtensor<float, 4> states(state_shape);
+    std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
+    torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
     for (int i = 0; i < spGames->size(); i++)
     {
-        xt::view(states, i, xt::all(), xt::all(), xt::all()) = spGames->at(i)->game->get_encoded_state(spGames->at(i)->current_state);
+        encoded_state[i] = spGames->at(i)->game->get_encoded_state(spGames->at(i)->current_state).squeeze(0);
     }
 
-    auto output = m_model->forward(xtensor_to_torch(states));
+
+    chess_output output;
+    {
+        torch::NoGradGuard no_grad;
+        output = m_model->forward(encoded_state);
+
+        int batch_size = output.policy.size(0);
+        // int action_size = output.policy.size(1);
+
+        output.policy = torch::softmax(output.policy, 1);
+
+        torch::Tensor noise = dirichlet_noise(dichirlet_alpha, batch_size);
+    
+        // Apply Dirichlet noise to the policy
+        output.policy = (1 - dichirlet_epsilon) * output.policy + dichirlet_epsilon * noise;
+    }
+
 
     for (int i = 0; i < spGames->size(); i++)
     {
-        std::array<std::size_t, 3> shape = {8, 8, 73}; 
-        xt::xtensor<float, 3> spg_policy = torch_to_tensor(output.policy[i]);
-        xt::xtensor<float, 3> valid_moves(shape);
+        std::vector<int64_t> shape = {8, 8, 73}; 
+        torch::Tensor spg_policy = output.policy[i];
+        torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
         valid_moves = spGames->at(i)->game->get_valid_moves_encoded(spGames->at(i)->current_state);
 
         spg_policy *= valid_moves;
-        spg_policy /= xt::sum(spg_policy)();
+        spg_policy /= spg_policy.sum();
 
         spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "", C, 0.0, 1);
 
@@ -85,16 +100,24 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
         if (expandable_games.size() > 0)
         {
-            std::array<std::size_t, 4> state_shape = {expandable_games.size(), 19, 8, 8}; 
-            xt::xtensor<float, 4> states(state_shape);
+
+            std::vector<int64_t> state_shape = {(long)expandable_games.size(), 19, 8, 8};
+            torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
             for (int i = 0; i < expandable_games.size(); i++)
             {
                 int game_index = expandable_games[i];
-                xt::view(states, i, xt::all(), xt::all(), xt::all()) = spGames->at(game_index)->game->get_encoded_state(spGames->at(i)->current_state);
+                encoded_state[i] = spGames->at(game_index)->game->get_encoded_state(spGames->at(game_index)->current_state).squeeze(0);
+            }
+            chess_output output;
+            {
+                torch::NoGradGuard no_grad;
+                output = m_model->forward(encoded_state);
+
+                output.policy = torch::softmax(output.policy, 1);
+
             }
 
-            auto output = m_model->forward(xtensor_to_torch(states));   
         }
 
         for (int k = 0; k < expandable_games.size(); k++)
@@ -103,20 +126,17 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
             Node* pNode = spGames->at(game_index)->pCurrentNode;
 
-            std::array<std::size_t, 3> shape = {8, 8, 73}; 
-            xt::xtensor<float, 3> spg_policy = torch_to_tensor(output.policy[k]);
-            
-            float spg_value = output.value[k].item<float>();
-
-            xt::xtensor<float, 3> valid_moves(shape);
-            valid_moves = spGames->at(game_index)->game->get_valid_moves_encoded(pNode->node_state);
+            std::vector<int64_t> shape = {8, 8, 73}; 
+            torch::Tensor spg_policy = output.policy[k];
+            torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
+            valid_moves = spGames->at(game_index)->game->get_valid_moves_encoded(spGames->at(game_index)->current_state);
 
             spg_policy *= valid_moves;
-            spg_policy /= xt::sum(spg_policy)();  
+            spg_policy /= spg_policy.sum();
 
             pNode->expand(spg_policy);
 
-            pNode->backpropagate(spg_value);
+            pNode->backpropagate(output.value[k].item<float>());
         }
     }     
 }
@@ -182,7 +202,7 @@ float Node::get_ubc(Node* child)
     return q_value + child->prior * C * std::sqrt(visit_count) / (1 + child->visit_count);
 
 }
-void Node::expand(xt::xtensor<float, 3> action_probs)
+void Node::expand(torch::Tensor action_probs)
 {
 
     game->set_state(node_state);   
