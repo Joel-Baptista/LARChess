@@ -56,3 +56,33 @@ torch::Tensor dirichlet_noise(double alpha, int batch_size) {
     
     return noise;
 }
+
+void initLogFile(const std::string& filename) {
+    // Check if the file exists
+    std::ifstream file(filename);
+    if (file) {
+        // If it exists, delete the file
+        file.close();
+        if (std::remove(filename.c_str()) != 0) {
+            std::cerr << "Error deleting log file: " << filename << std::endl;
+        } else {
+            std::cout << "Previous log file deleted: " << filename << std::endl;
+        }
+    }
+}
+
+void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {
+    auto source_params = source.parameters();
+    auto target_params = target.parameters();
+    
+    // Ensure the number of parameters match
+    if (source_params.size() != target_params.size()) {
+        throw std::runtime_error("Source and target networks have different numbers of parameters.");
+    }
+    
+    // Copy parameters
+    for (size_t i = 0; i < source_params.size(); ++i) {
+        target_params[i].data().copy_(source_params[i]);
+    }
+}
+

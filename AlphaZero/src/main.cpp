@@ -1,8 +1,9 @@
 #include <iostream>
-// #include <torch/torch.h>
-// #include "include/network.h"
-// #include "include/ResNet.h"
+#include <torch/torch.h>
+#include "include/network.h"
+#include "include/ResNet.h"
 #include "mcts.h"
+#include "AlphaZeroMT.h"
 #include "AlphaZero.h"
 #include "game.h"
 
@@ -12,6 +13,9 @@ using json = nlohmann::json;
 
 int main()
 {
+
+
+
      std::ifstream config_file("../cfg/config.json");
     if (!config_file.is_open()) {
         std::cerr << "Could not open the config file!" << std::endl;
@@ -45,11 +49,13 @@ int main()
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
     std::string model_name = config.value("model_name", "default_model");
+    std::string device = config.value("device", "cpu");
+    int threads = config.value("threads", 1);
 
     Game game;
     int start = get_time_ms();    
 
-    AlphaZero az(&game,     
+    AlphaZeroMT az(&game,     
                  num_searches,         
                  num_iterations,       
                  num_selfPlay_iterations,
@@ -65,8 +71,29 @@ int main()
                  C,      
                  weight_decay, 
                  num_resblocks,
-                num_channels
+                num_channels,
+                device,
+                threads
                 );       
+    // AlphaZero az(&game,     
+    //              num_searches,         
+    //              num_iterations,       
+    //              num_selfPlay_iterations,
+    //              num_parallel_games,
+    //              num_epochs,        
+    //              batch_size,        
+    //              temperature,      
+    //              learning_rate,    
+    //              dichirlet_alpha,  
+    //              dichirlet_epsilon,
+    //              dichirlet_epsilon_decay,
+    //              dichirlet_epsilon_min,
+    //              C,      
+    //              weight_decay, 
+    //              num_resblocks,
+    //             num_channels,
+    //             device                
+    //             );       
 
     az.learn();
 

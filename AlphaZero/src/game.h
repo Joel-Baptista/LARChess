@@ -91,9 +91,11 @@ class Game
         std::vector<decoded_action> decode_actions(state current_state, torch::Tensor action);
         state get_next_state(state current_state, std::string action);
         void set_state(state current_state);
-        final_state get_value_and_terminated(state current_state);
         std::string decode_action(state current_state, torch::Tensor action);
-        final_state get_next_state_and_value(state current_state, std::string action);
+        final_state get_value_and_terminated(state current_state, 
+        std::unordered_map<BitboardKey, int, BitboardHash>& state_counter);
+        final_state get_next_state_and_value(state current_state, std::string action, 
+        std::unordered_map<BitboardKey, int, BitboardHash>& state_counter);
     
         void get_opponent_value();
         void get_board_state();

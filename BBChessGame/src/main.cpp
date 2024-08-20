@@ -8,9 +8,15 @@
 #include <sstream>
 #include <thread>
 #include <future>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
 
 // ChessGUI
 #include "../../ChessGUI/src/ChessGUI.h"
+
+
+#include "include/json.hpp"
 
 struct BotResult{
     int move;
@@ -20,8 +26,87 @@ struct BotResult{
 
 BotResult bot_callback(BitBoard board, int depth, bool quien);
 
-int main() {
+// Backend to frontend queue
+std::queue<std::array<std::array<int, 8>, 8>> backendToFrontendQueue;
+std::mutex mtxBackendToFrontend;
+std::condition_variable cvBackendToFrontend;
 
+// Frontend to backend queue
+std::queue<std::string> frontendToBackendQueue;
+std::mutex mtxFrontendToBackend;
+std::condition_variable cvFrontendToBackend;
+
+std::queue<bool> lockBoardQueue;
+std::mutex mtxLockBoard;
+std::condition_variable cvLockBoard;
+
+bool backendDone = false;
+bool frontendDone = false;
+
+void backend(bool human_vs_human, int human_player, int depth, std::string initial_position)
+{
+
+    BitBoard board;
+
+    board.parse_fen(initial_position.c_str());
+
+    { // Use scopes to elegantly eliminate the lock guard
+        std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+        backendToFrontendQueue.push(board.bitboard_to_board());
+        cvBackendToFrontend.notify_one();
+    }
+
+    while (!frontendDone)
+    {
+        if (board.get_side() == !human_player && !human_vs_human)
+        {   
+            {
+                std::lock_guard<std::mutex> lock(mtxLockBoard);
+                lockBoardQueue.push(true);
+                cvLockBoard.notify_one();
+            }
+
+
+            board.reset_leaf_nodes();
+            float eval = board.alpha_beta(depth, -1000000, 1000000, true);
+            board.make_bot_move(board.get_bot_best_move());
+            {
+                std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+                backendToFrontendQueue.push(board.bitboard_to_board());
+                cvBackendToFrontend.notify_one();
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(mtxLockBoard);
+                lockBoardQueue.push(false);
+                cvLockBoard.notify_one();
+            }
+        }
+        else
+        {
+            std::string gui_move;
+            {
+                std::unique_lock<std::mutex> lock(mtxFrontendToBackend);
+                cvFrontendToBackend.wait(lock, [] { return !frontendToBackendQueue.empty(); });
+                std::string receivedData = frontendToBackendQueue.front();
+                frontendToBackendQueue.pop();
+                gui_move = receivedData;
+            }
+
+            if (gui_move != ""){
+                board.make_player_move(gui_move.c_str());  
+                { 
+                    std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+                    backendToFrontendQueue.push(board.bitboard_to_board());
+                    cvBackendToFrontend.notify_one();
+                }
+            }
+        }
+    }
+}
+
+int frontend()
+{
     GLFWwindow* window;
     int count;
     GLFWmonitor** monitors = glfwGetMonitors(&count);
@@ -71,22 +156,20 @@ int main() {
 
     ImGui::StyleColorsDark();
 
+
     ChessGUI chessGUI(window, "/home/joel/projects/YACE/ChessGUI/res");
 
-    BitBoard board;
+    {
+        std::unique_lock<std::mutex> lock(mtxBackendToFrontend);
+        cvBackendToFrontend.wait(lock, [] { return !backendToFrontendQueue.empty() || backendDone; });
+        std::array<std::array<int, 8>, 8> board_data = backendToFrontendQueue.front();
+        backendToFrontendQueue.pop();
+        chessGUI.set_board(board_data);
+    }
 
-    board.parse_fen("6k2/4Q3/6K2/8/8/8/8/8 b - 0 22");
-    bool human_vs_human = false;
-    int human_player = 0;
-    int depth = 4;
-    BotResult result;
-    bool processing_flag = false;
-    std::future<BotResult> future;
-    board.parse_fen(start_position);
-    chessGUI.set_board(board.bitboard_to_board());
     
     // /* Loop until the user closes the window */
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(window) && !backendDone)
     {   
         /* Render here */
         GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f)); // Set the clear color
@@ -119,58 +202,31 @@ int main() {
         /* Poll for and process events */
         glfwPollEvents();
 
-        // std::cout << "5.PollEvents" << std::endl;
-        // std::cout << "Engine" << std::endl;
-
-        if (human_vs_human){
-            // std::cout << "Quering the GUI" << std::endl;
-            std::string gui_move = chessGUI.get_player_move();
-            // std::cout << "GUI move" << gui_move << std::endl;
-            if (gui_move != ""){
-                board.make_player_move(gui_move.c_str());
-                chessGUI.set_board(board.bitboard_to_board());
-            }
-        }else if (board.get_side() == human_player){
-            std::string gui_move = chessGUI.get_player_move();
-            if (gui_move != ""){
-                board.make_player_move(gui_move.c_str());   
-                chessGUI.set_board(board.bitboard_to_board());
-            }
-        }else if (board.get_side() == !human_player || human_player == -1){
-            // std::thread bt(bot_callback, std::ref(result), std::ref(board), std::ref(depth), std::ref(human_player));
-
-            if (!processing_flag){
-                future = std::async(std::launch::async, bot_callback, board, depth, true);
-                processing_flag = true;
+        if (!lockBoardQueue.empty()) {
+            std::lock_guard<std::mutex> lock(mtxLockBoard);
+            bool lockBoard = lockBoardQueue.front();
+            lockBoardQueue.pop();
+            if (lockBoard){
                 chessGUI.lock_board();
-            }
-
-            if (future.wait_for(std::chrono::milliseconds(10)) == std::future_status::ready) {
-                // std::cout << "Future is ready" << std::endl;
-                result = future.get();
-                // std::cout << "Result: " << result.move << std::endl;
-                // std::cout << "Processed: " << result.processed << std::endl;
-            } 
-
-            if (result.processed){
-                std::cout << "Bot Move: " << board.move_to_uci(result.move) << " Evaluation: " << result.evaluation << std::endl;
-                board.make_bot_move(result.move);
-                chessGUI.set_board(board.bitboard_to_board());
+            } else {
                 chessGUI.unlock_board();
-                processing_flag = false;
-                result.move = 0;
-                result.evaluation = 0.0;
-                result.processed = false;
             }
-        
         }
 
-        // if (board.is_checkmate()){
-        //     break;
-        // }
+        if (!backendToFrontendQueue.empty()) {
+            std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+            std::array<std::array<int, 8>, 8> board_data = backendToFrontendQueue.front();
+            backendToFrontendQueue.pop();
+            chessGUI.set_board(board_data);
+        }
 
-        // std::cout << "6.Make Move" << std::endl;
-        //  std::cout << "----------------------------------------------------------" << std::endl;
+        if (chessGUI.is_move_stored()){ 
+            std::lock_guard<std::mutex> lock(mtxFrontendToBackend);
+            frontendToBackendQueue.push(chessGUI.get_player_move()); // Just an example of processing
+            chessGUI.reset_move_stored();
+            cvFrontendToBackend.notify_one();
+            lock.~lock_guard();
+        }
     }
 
      std::cout << "7.End Program" << std::endl;
@@ -178,28 +234,38 @@ int main() {
     ImGui::DestroyContext();
     glfwTerminate();
 
+    return 0;
 }
 
-BotResult bot_callback(BitBoard board, int depth, bool quien){
-    BotResult result;
-    int bot_move;
-    // std::cout << "Inside thread" << std::endl;
-    int start = get_time_ms();
-    board.reset_leaf_nodes();
-    float eval = board.alpha_beta(depth, -1000000, 1000000, quien);
-    int end = get_time_ms();
-    long nodes = board.get_leaf_nodes();
-    std::cout << "-----------------------------------" << std::endl;
-    std::cout << "Time taken: " << end - start << "ms - Visited " << nodes << " nodes"  << std::endl;
-    // std::cout << "Minmax calculated" << std::endl;
-    result.move = board.get_bot_best_move();
-    result.evaluation = eval;
-    result.processed = true;
+using json = nlohmann::json; 
 
-    while (get_time_ms() - start < 500){
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+int main() {
+    std::ifstream config_file("../cfg/config.json");
+    if (!config_file.is_open()) {
+        std::cerr << "Could not open the config file!" << std::endl;
+        return 1;
     }
 
-    return result;
+    // Parse the JSON data
+    json config;
+    try {
+        config_file >> config;
+    } catch (const json::parse_error& e) {
+        std::cerr << "JSON parse error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    // Extract values from the JSON object
+    int depth = config.value("depth", 4);
+    bool human_vs_human = config.value("human_vs_human", false);
+    std::string initial_position = config.value("initial_position", initial_position);
+    std::string human_player = config.value("human_player", "w");
+
+    std::thread frontendThread(frontend);
+    std::thread backendThread(backend, human_vs_human, human_player == "w" ? 0 : 1, depth, initial_position);
+
+    backendThread.join();
+    frontendThread.join();
+
 }
 

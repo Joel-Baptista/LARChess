@@ -31,6 +31,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
     chess_output output;
     {
         torch::NoGradGuard no_grad;
+        // encoded_state = encoded_state.to(m_model->device);
         output = m_model->forward(encoded_state);
 
         int batch_size = output.policy.size(0);
@@ -74,7 +75,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 pNode = pNode->select();
             }
 
-            final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state);
+            final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);
 
             if (fState.terminated)
             {

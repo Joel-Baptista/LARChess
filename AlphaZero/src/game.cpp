@@ -74,7 +74,6 @@ state Game::get_next_state(state current_state, std::string action)
 
     int move = m_Board->parse_move(action.c_str());
     
-    
     if (m_Board->make_move(move, 0))
     {
         copy_state_from_board(new_state, m_Board);
@@ -379,10 +378,11 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
 
 }
 
-final_state Game::get_next_state_and_value(state current_state, std::string action)
+final_state Game::get_next_state_and_value(state current_state, std::string action, std::unordered_map<BitboardKey, int, BitboardHash>& state_counter)
 {
     state new_state;
     final_state sFinal;
+    sFinal.terminated = false;
 
     set_state(current_state);
 
@@ -397,7 +397,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
     sFinal.board_state = new_state;
 
-    if (m_Board->get_halfmove() >= 100)
+    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2)
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;
@@ -449,13 +449,13 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     return sFinal;
 }
 
-final_state Game::get_value_and_terminated(state current_state)
+final_state Game::get_value_and_terminated(state current_state, std::unordered_map<BitboardKey, int, BitboardHash>& state_counter)
 {
     set_state(current_state);
     final_state sFinal;
     sFinal.terminated = false;
 
-    if (m_Board->get_halfmove() >= 100)
+    if (m_Board->get_halfmove() >= 100 || state_counter[current_state.bitboards] >= 2)
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;

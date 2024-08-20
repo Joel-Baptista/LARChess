@@ -5,6 +5,7 @@
 #include "game.h"
 #include <array>
 #include <memory>
+#include <unordered_map>
 
 #define  matrix4D(b, c, h, w, type) std::array<std::array<std::array<std::array<type, w>, h>, c>, b>
 
@@ -65,7 +66,7 @@ class SPG
         Node* pRoot;
         Node* pCurrentNode;
         Game* game;
-
+        std::unordered_map<BitboardKey, int, BitboardHash> repeated_states;
     private:
 
 

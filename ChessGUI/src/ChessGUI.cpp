@@ -115,7 +115,7 @@ ChessGUI::ChessGUI(GLFWwindow* window, std::string res_path):
 
     size_t size = sizeof(sampler) / sizeof(sampler[0]);
     m_Shader->SetUniform1iv("u_Textures", size, sampler); // That's how we select textures in the shader
-    
+    std::cout << "ChessGUI Initialized" << std::endl;
 }
 ChessGUI::~ChessGUI()
 {
@@ -172,7 +172,7 @@ void ChessGUI::OnUpdate(float deltaTime)
                     m_PlayerMove += "q";
                     board[7-y][x] = 5 * selected_square.piece;
                 }
-                
+                move_stored = true;
                 selected_square.selected = false;
                 selected_square.piece = 0;
             }else if (x == selected_square.x && y == selected_square.y && selected_square.selected){ // Unselect
@@ -195,7 +195,7 @@ void ChessGUI::OnUpdate(float deltaTime)
                 selected_square.selected = false;
                 m_PlayerMove = "";
             }      
-        } else if (iMouse.mode == GLFW_RELEASE && !iMouse.updated && elapsed_seconds.count() < 0.1){
+        } else if (iMouse.mode == GLFW_RELEASE && !iMouse.updated && elapsed_seconds.count() < 0.025){
             iMouse.updated = true; 
             if (x == selected_square.x && y == selected_square.y && selected_square.selected){ // Select
                 board[7-y][x] = selected_square.piece;
@@ -217,6 +217,7 @@ void ChessGUI::OnUpdate(float deltaTime)
                     m_PlayerMove += "q";
                     board[7-y][x] = 5 * selected_square.piece;
                 }
+                move_stored = true;
                 selected_square.selected = false;
                 selected_square.piece = 0;
             }     
