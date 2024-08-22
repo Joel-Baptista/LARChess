@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/ChessEngine.dir/src/main.cpp.o CMakeFiles/ChessEngine.dir/src/board.cpp.o CMakeFiles/ChessEngine.dir/src/move.cpp.o CMakeFiles/ChessEngine.dir/src/minmax.cpp.o CMakeFiles/ChessEngine.dir/home/joel/projects/YACE/utils/utils.cpp.o -o ChessEngine 

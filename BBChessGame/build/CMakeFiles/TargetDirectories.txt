@@ -1,4 +1,0 @@
-/home/joel/projects/YACE/BBChessGame/build/CMakeFiles/BBChessGame.dir
-/home/joel/projects/YACE/BBChessGame/build/CMakeFiles/test.dir
-/home/joel/projects/YACE/BBChessGame/build/CMakeFiles/edit_cache.dir
-/home/joel/projects/YACE/BBChessGame/build/CMakeFiles/rebuild_cache.dir

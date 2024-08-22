@@ -1,3 +1,0 @@
-/home/joel/projects/YACE/AlphaZero/build/CMakeFiles/AlphaZero.dir
-/home/joel/projects/YACE/AlphaZero/build/CMakeFiles/edit_cache.dir
-/home/joel/projects/YACE/AlphaZero/build/CMakeFiles/rebuild_cache.dir
