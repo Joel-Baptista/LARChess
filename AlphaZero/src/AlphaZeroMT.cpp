@@ -132,12 +132,21 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             std::vector<int64_t> shape = {8, 8, 73};
             torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
             
+            std::vector<int> visited_childs;
+            // std::cout << "Visit Counts: [";
             for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
             {
+                // std::cout << spGames.at(i)->pRoot->pChildren.at(j)->visit_count << " ";
+                if (spGames.at(i)->pRoot->pChildren.at(j)->visit_count > 0)
+                {
+                    visited_childs.push_back(j);
+                }
+
                 action_probs += 
                     spGames.at(i)->game->get_encoded_action(spGames.at(i)->pRoot->pChildren.at(j)->action, spGames.at(i)->current_state.side) 
                     * spGames.at(i)->pRoot->pChildren.at(j)->visit_count;
             }
+            // std::cout << "]" << std::endl;
 
             action_probs /= action_probs.sum();
 
@@ -156,7 +165,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                     {
                         if (temperature_action_probs[i][j][k].item<double>() > 0.0f)
                         {
-                            probabilities[move_count] = temperature_action_probs[i][j][k].item<double>();
+                            probabilities[visited_childs[move_count]] = temperature_action_probs[i][j][k].item<double>();
                             move_count++;
                         }
                     }
@@ -166,7 +175,6 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             std::random_device rd;
             std::mt19937 gen(rd());
             std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
-
             int action_idx = dist(gen);
 
             int action_count = 0;
@@ -193,7 +201,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             // spGames.at(i)->game->set_state(spGames.at(i)->current_state);
             // spGames.at(i)->game->m_Board->print_board();
             std::string  action = spGames.at(i)->game->decode_action(spGames.at(i)->current_state, action_probs);
-
+            // std::cout << "Action: " << action << std::endl;
             final_state fs = spGames.at(i)->game->get_next_state_and_value(spGames.at(i)->current_state, action, spGames.at(i)->repeated_states);
 
             spGames.at(i)->repeated_states[fs.board_state.bitboards] += 1;
