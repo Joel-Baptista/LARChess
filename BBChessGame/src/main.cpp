@@ -1,5 +1,6 @@
 // Chess Engine
 #include "../../BBChessEngine/src/bit_board.h"
+#include "../../AlphaZero/src/alphabot.h"
 
 // Misc Imports
 #include <iostream>
@@ -17,14 +18,13 @@
 
 
 #include "include/json.hpp"
+using json = nlohmann::json; 
 
 struct BotResult{
     int move;
     float evaluation;
     bool processed = false;
 };
-
-BotResult bot_callback(BitBoard board, int depth, bool quien);
 
 // Backend to frontend queue
 std::queue<std::array<std::array<int, 8>, 8>> backendToFrontendQueue;
@@ -98,6 +98,90 @@ void backend(bool human_vs_human, int human_player, int depth, std::string initi
                 { 
                     std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
                     backendToFrontendQueue.push(board.bitboard_to_board());
+                    cvBackendToFrontend.notify_one();
+                }
+            }
+        }
+    }
+}
+
+void alphabackend(bool human_vs_human, int human_player, std::string initial_position, json config)
+{
+
+    int num_searches = config.value("num_searches", 5);
+    float dichirlet_alpha = config.value("dichirlet_alpha", 0.5);
+    float dichirlet_epsilon = config.value("dichirlet_epsilon", 0.3);
+    float C = config.value("C", 1.41);
+    int num_resblocks = config.value("num_resblocks", 7);
+    int num_channels = config.value("num_channels", 256);
+    std::string model_path = config.value("model_path", "");
+    std::string device = config.value("device", "cpu");
+
+
+    AlphaBot bot(std::make_shared<Game>(), 
+                 num_searches, 
+                 C, 
+                 dichirlet_alpha, 
+                 dichirlet_epsilon, 
+                 num_resblocks, 
+                 num_channels, 
+                 device);
+
+    if (model_path != "")
+        bot.load_model(model_path);
+        
+    bot.m_Game->m_Board->parse_fen(initial_position.c_str());
+
+    { // Use scopes to elegantly eliminate the lock guard
+        std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+        backendToFrontendQueue.push(bot.m_Game->m_Board->bitboard_to_board());
+        cvBackendToFrontend.notify_one();
+    }
+
+    while (!frontendDone)
+    {
+        if (bot.m_Game->m_Board->get_side() == !human_player && !human_vs_human)
+        {   
+            {
+                std::lock_guard<std::mutex> lock(mtxLockBoard);
+                lockBoardQueue.push(true);
+                cvLockBoard.notify_one();
+            }
+
+            // std::cout << "Bot is thinking..." << std::endl;
+            std::string move = bot.predict();
+            // std::cout << "Bot move: " << move << std::endl;
+            bot.make_bot_move(move);
+            // std::cout << "Bot move made" << std::endl;
+
+            {
+                std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+                backendToFrontendQueue.push(bot.m_Game->m_Board->bitboard_to_board());
+                cvBackendToFrontend.notify_one();
+            }
+
+            {
+                std::lock_guard<std::mutex> lock(mtxLockBoard);
+                lockBoardQueue.push(false);
+                cvLockBoard.notify_one();
+            }
+        }
+        else
+        {
+            std::string gui_move;
+            {
+                std::unique_lock<std::mutex> lock(mtxFrontendToBackend);
+                cvFrontendToBackend.wait(lock, [] { return !frontendToBackendQueue.empty(); });
+                std::string receivedData = frontendToBackendQueue.front();
+                frontendToBackendQueue.pop();
+                gui_move = receivedData;
+            }
+
+            if (gui_move != ""){
+                bot.m_Game->m_Board->make_player_move(gui_move.c_str());  
+                { 
+                    std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
+                    backendToFrontendQueue.push(bot.m_Game->m_Board->bitboard_to_board());
                     cvBackendToFrontend.notify_one();
                 }
             }
@@ -237,7 +321,7 @@ int frontend()
     return 0;
 }
 
-using json = nlohmann::json; 
+
 
 int main() {
     std::ifstream config_file("../cfg/config.json");
@@ -261,8 +345,35 @@ int main() {
     std::string initial_position = config.value("initial_position", initial_position);
     std::string human_player = config.value("human_player", "w");
 
+    std::ifstream alpha_config_file("../cfg/alpha_config.json");
+    if (!alpha_config_file.is_open()) {
+        std::cerr << "Could not open the config file!" << std::endl;
+        return 1;
+    }
+
+    // Parse the JSON data
+    json alpha_config;
+    try {
+        alpha_config_file >> alpha_config;
+    } catch (const json::parse_error& e) {
+        std::cerr << "JSON parse error: " << e.what() << std::endl;
+        return 1;
+    }
+    //     "num_searches": 5,
+    // "num_iterations": 10,
+    // "dichirlet_alpha": 0.5,
+    // "dichirlet_epsilon": 1.0,
+    // "C": 10.0,
+    // "num_resblocks": 7,
+    // "num_channels": 256,
+    // "model_name": "model",
+    // "device": "cpu"
+
+
+
     std::thread frontendThread(frontend);
-    std::thread backendThread(backend, human_vs_human, human_player == "w" ? 0 : 1, depth, initial_position);
+    // std::thread backendThread(backend, human_vs_human, human_player == "w" ? 0 : 1, depth, initial_position);
+    std::thread backendThread(alphabackend, human_vs_human, human_player == "w" ? 0 : 1, initial_position, alpha_config);
 
     backendThread.join();
     frontendThread.join();

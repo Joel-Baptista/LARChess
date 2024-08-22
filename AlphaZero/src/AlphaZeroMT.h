@@ -12,7 +12,7 @@
 class AlphaZeroMT
 {
     public:
-        AlphaZeroMT(Game* game,
+        AlphaZeroMT(
                     int num_searches, 
                     int num_iterations, 
                     int num_selfPlay_iterations, 
@@ -20,6 +20,8 @@ class AlphaZeroMT
                     int num_epochs, 
                     int batch_size, 
                     float temperature, 
+                    float temperature_decay, 
+                    float temperature_min, 
                     float learning_rate, 
                     float dichirlet_alpha, 
                     float dichirlet_epsilon, 
@@ -42,7 +44,8 @@ class AlphaZeroMT
         void save_model() { save_model(""); }
         void load_model() { load_model(""); }
 
-        chess_output predict(torch::Tensor state) { return m_ResNetChess->forward(state); }
+        std::string predict(std::shared_ptr<Game> games);
+
     private:
 
         std::vector<sp_memory_item> SelfPlay(int thread_id);
@@ -50,15 +53,16 @@ class AlphaZeroMT
         std::vector<memory_item> memory;
 
         void update_dichirlet();
+        void update_temperature();
 
         std::shared_ptr<ResNetChess> m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;
-        std::unique_ptr<torch::Device> m_Device;
+        std::shared_ptr<torch::Device> m_Device;
         
         std::vector<std::shared_ptr<ResNetChess>> m_ResNetSwarm;
         std::vector<std::shared_ptr<MCTS>> m_mcts;
 
-        Game* game;
+        std::vector<std::shared_ptr<Game>> games;
 
         int num_searches;
         int num_iterations;
@@ -67,6 +71,8 @@ class AlphaZeroMT
         int num_epochs;
         int batch_size;
         float temperature;
+        float temperature_decay;
+        float temperature_min;
         float learning_rate;
         float dichirlet_alpha;
         float dichirlet_epsilon;

@@ -13,13 +13,13 @@
 class Node
 {
     public:
-        Node(Game* board, Node* parent, std::string action, float C, float prior, int visit_count);
+        Node(std::shared_ptr<Game> game, Node* parent, std::string action, float C, float prior, int visit_count);
         ~Node();
 
         bool is_fully_expanded();
         Node* select();
         float get_ubc(Node* child);
-        void expand(torch::Tensor action_probs);
+        void expand(torch::Tensor action_probs, torch::Tensor valid_moves);
         void backpropagate(float value);
 
         // Pass this variables to private once finished debugging
@@ -30,7 +30,7 @@ class Node
 
     private:
 
-        Game* game;
+        std::shared_ptr<Game> game;
         float value_sum;
         Node* parent;
         float C;
@@ -55,7 +55,7 @@ struct sp_memory_item
 class SPG
 {
     public:
-        SPG(Game* board);
+        SPG(std::shared_ptr<Game> board);
         ~SPG();
 
         state initial_state;
@@ -65,7 +65,7 @@ class SPG
 
         Node* pRoot;
         Node* pCurrentNode;
-        Game* game;
+        std::shared_ptr<Game> game;
         std::unordered_map<BitboardKey, int, BitboardHash> repeated_states;
     private:
 

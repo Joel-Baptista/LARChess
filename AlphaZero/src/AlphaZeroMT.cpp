@@ -4,7 +4,7 @@
 #include <chrono>    // For std::chrono::system_clock
 
 
-AlphaZeroMT::AlphaZeroMT(Game* game,
+AlphaZeroMT::AlphaZeroMT(
                         int num_searches, 
                         int num_iterations, 
                         int num_selfPlay_iterations, 
@@ -12,6 +12,8 @@ AlphaZeroMT::AlphaZeroMT(Game* game,
                         int num_epochs, 
                         int batch_size, 
                         float temperature, 
+                        float temperature_decay, 
+                        float temperature_min, 
                         float learning_rate, 
                         float dichirlet_alpha, 
                         float dichirlet_epsilon, 
@@ -51,7 +53,12 @@ AlphaZeroMT::AlphaZeroMT(Game* game,
         m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), num_searches, dichirlet_alpha, dichirlet_epsilon, C));
     }
 
-    this->game = game;
+
+    for (int i = 0; i < num_threads; i++)
+    {
+        games.push_back(std::make_shared<Game>());
+    }
+
     this->num_searches = num_searches;
     this->num_iterations = num_iterations;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
@@ -59,6 +66,8 @@ AlphaZeroMT::AlphaZeroMT(Game* game,
     this->num_epochs = num_epochs;
     this->batch_size = batch_size;
     this->temperature = temperature;
+    this->temperature_decay = temperature_decay;
+    this->temperature_min = temperature_min;
     this->learning_rate = learning_rate;
     this->dichirlet_alpha = dichirlet_alpha;
     this->dichirlet_epsilon = dichirlet_epsilon;
@@ -68,6 +77,7 @@ AlphaZeroMT::AlphaZeroMT(Game* game,
     this->weight_decay = weight_decay;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
+
 }
 
 AlphaZeroMT::~AlphaZeroMT()
@@ -83,17 +93,24 @@ void AlphaZeroMT::update_dichirlet()
 
     logMessage("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha), log_file);   
 }
+void AlphaZeroMT::update_temperature()
+{
+    temperature = std::max(temperature * temperature_decay, temperature_min);
+
+    logMessage("Temperature: " + std::to_string(temperature), log_file);   
+}
 
 std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 {
     std::vector<sp_memory_item> memory;
     std::vector<SPG*> spGames;
     std::vector<int*> spg_times;
-    game->m_Board->parse_fen(start_position);
 
     for (int i = 0; i < num_parallel_games; i++)
     {
-        SPG* spg = new SPG(game);
+        games.at(thread_id)->m_Board->parse_fen(start_position);
+        // games.at(thread_id)->m_Board->parse_fen("7k/5K1P/8/8/8/8/8/8 b - - 0 1");
+        SPG* spg = new SPG(games.at(thread_id));
         spGames.push_back(spg);
         int* p = new int(get_time_ms());
         spg_times.push_back(p);
@@ -202,10 +219,10 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                         }
                     );
                 }
-                logMessage("Thread: " + std::to_string(thread_id + 1) + 
-                    " Game " + std::to_string(i + 1) + 
-                    " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
-                    " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" , log_file);
+                // logMessage("Thread: " + std::to_string(thread_id + 1) + 
+                //     " Game " + std::to_string(i + 1) + 
+                //     " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
+                //     " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" , log_file);
             
                 delete spGames.at(i);
                 spGames.erase(spGames.begin() + i);
@@ -236,9 +253,10 @@ void AlphaZeroMT::learn()
         // Launch multiple threads to perform self-play
         for (int i = 0; i < num_selfPlay_iterations / (num_threads * num_parallel_games); i++)
         {
+            int st = get_time_ms();
             for (int j = 0; j < num_threads; ++j) {
+                // logMessage("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1), log_file);
                 futures.push_back(std::async(std::launch::async, &AlphaZeroMT::SelfPlay, this, j));
-                logMessage("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1), log_file);
             }
             for (auto& future : futures) {
                 try
@@ -252,13 +270,18 @@ void AlphaZeroMT::learn()
                 }
             }
             futures.clear(); // Clear the futures vector before the next iteration
+            logMessage("Self Play Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
         }
         update_dichirlet();
+        update_temperature();
 
+        std::cout << "Memory size: " << memory.size() << std::endl;
+        int st = get_time_ms();
         for (int j = 0; j < num_epochs; j++)
         {
             train(memory);
         }
+        logMessage("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
 
         for (int i = 0; i < num_threads; i++)
         {
@@ -316,6 +339,10 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
             values[j] = memory.at(pArr[idx_st + j]).value;
         }
 
+        encoded_states = encoded_states.to(*m_Device);
+        encoded_actions = encoded_actions.to(*m_Device);
+        values = values.to(*m_Device);
+
         auto output = m_ResNetChess->forward(encoded_states);
 
         auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
@@ -332,7 +359,7 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
 
         // std::cout << "Loss: " << loss.item<float>() << std::endl;
         // std::cout << "Value loss: " << policy_loss.item<float>() << std::endl;
-        running_loss += loss.item<float>();
+        running_loss += loss.cpu().item<float>();
         batch_count += 1.0;
 
     }

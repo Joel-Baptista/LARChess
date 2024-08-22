@@ -8,7 +8,7 @@
 class AlphaZero
 {
     public:
-        AlphaZero(Game* game,
+        AlphaZero(std::shared_ptr<Game> game,
                   int num_searches, 
                   int num_iterations, 
                   int num_selfPlay_iterations, 
@@ -52,7 +52,7 @@ class AlphaZero
         
         std::unique_ptr<MCTS> m_mcts;
 
-        Game* game;
+        std::shared_ptr<Game> game;
 
         int num_searches;
         int num_iterations;

@@ -9,14 +9,72 @@
 
 #include "include/json.hpp"
 
-using json = nlohmann::json; 
+// Stockfish
+
+#include "include/stockfish/src/bitboard.h"
+#include "include/stockfish/src/movegen.h"
+#include "include/stockfish/src/position.h"
+#include "include/stockfish/src/search.h"
+#include "include/stockfish/src/thread.h"
+#include "include/stockfish/src/uci.h"
+#include "include/stockfish/src/ucioption.h"
+#include <boost/process.hpp>
+
+
+using json = nlohmann::json;
+namespace bp = boost::process;
 
 int main()
 {
 
 
+    // // Path to Stockfish executable
+    // std::string stockfish_path = "/home/joel/projects/YACE/AlphaZero/src/include/stockfish/src/stockfish";
+    
+    // // Create a child process
+    // bp::ipstream out_stream; // Pipe for reading Stockfish's output
+    // bp::opstream in_stream;  // Pipe for sending input to Stockfish
+    // bp::child stockfish_process(stockfish_path, bp::std_out > out_stream, bp::std_in < in_stream);
 
-     std::ifstream config_file("../cfg/config.json");
+    // // Initialize Stockfish (UCI mode)
+    // in_stream << "uci" << std::endl;
+
+    // // Read Stockfish's initialization response
+    // std::string line;
+    // while (out_stream && std::getline(out_stream, line) && line != "uciok") {
+    //     std::cout << line << std::endl;
+    // }
+
+    // // Send custom commands to Stockfish
+    // std::string user_input;
+    // while (true) {
+    //     std::cout << "Enter command (or 'quit' to exit): ";
+    //     std::getline(std::cin, user_input);
+
+    //     if (user_input == "quit") {
+    //         break;
+    //     }
+
+    //     // Send the user input to Stockfish
+    //     in_stream << user_input << std::endl;
+
+    //     // Read and print Stockfish's response
+    //     while (std::getline(out_stream, line) && !line.empty()) {
+    //         std::cout << line << std::endl;
+
+    //         if (line.find("bestmove") != std::string::npos) {
+    //             std::cout << "Stockfish's move: " << line << std::endl;
+    //             break;
+    //         }
+    //     }
+    //     std::cout << "I'm here" << std::endl;
+    // }
+
+    // // Clean up
+    // in_stream << "quit" << std::endl; // Send quit command to Stockfish
+    // stockfish_process.wait();          // Wait for the process to finish
+
+    std::ifstream config_file("../cfg/config.json");
     if (!config_file.is_open()) {
         std::cerr << "Could not open the config file!" << std::endl;
         return 1;
@@ -39,6 +97,8 @@ int main()
     int num_epochs = config.value("num_epochs", 0);
     int batch_size = config.value("batch_size", 0);
     double temperature = config.value("temperature", 0.0);
+    double temperature_decay = config.value("temperature_decay", 0.0);
+    double temperature_min = config.value("temperature_min", 0.0);
     double learning_rate = config.value("learning_rate", 0.0);
     double dichirlet_alpha = config.value("dichirlet_alpha", 0.0);
     double dichirlet_epsilon = config.value("dichirlet_epsilon", 0.0);
@@ -55,7 +115,7 @@ int main()
     Game game;
     int start = get_time_ms();    
 
-    AlphaZeroMT az(&game,     
+    AlphaZeroMT az(  
                  num_searches,         
                  num_iterations,       
                  num_selfPlay_iterations,
@@ -63,6 +123,8 @@ int main()
                  num_epochs,        
                  batch_size,        
                  temperature,      
+                 temperature_decay,      
+                 temperature_min,      
                  learning_rate,    
                  dichirlet_alpha,  
                  dichirlet_epsilon,
@@ -75,31 +137,31 @@ int main()
                 device,
                 threads
                 );       
-    // AlphaZero az(&game,     
-    //              num_searches,         
-    //              num_iterations,       
-    //              num_selfPlay_iterations,
-    //              num_parallel_games,
-    //              num_epochs,        
-    //              batch_size,        
-    //              temperature,      
-    //              learning_rate,    
-    //              dichirlet_alpha,  
-    //              dichirlet_epsilon,
-    //              dichirlet_epsilon_decay,
-    //              dichirlet_epsilon_min,
-    //              C,      
-    //              weight_decay, 
-    //              num_resblocks,
-    //             num_channels,
-    //             device                
-    //             );       
+    // // AlphaZero az(&game,     
+    // //              num_searches,         
+    // //              num_iterations,       
+    // //              num_selfPlay_iterations,
+    // //              num_parallel_games,
+    // //              num_epochs,        
+    // //              batch_size,        
+    // //              temperature,      
+    // //              learning_rate,    
+    // //              dichirlet_alpha,  
+    // //              dichirlet_epsilon,
+    // //              dichirlet_epsilon_decay,
+    // //              dichirlet_epsilon_min,
+    // //              C,      
+    // //              weight_decay, 
+    // //              num_resblocks,
+    // //             num_channels,
+    // //             device                
+    // //             );       
 
     az.learn();
 
-    int end = get_time_ms();
+    // int end = get_time_ms();
 
-    std::cout << "Time taken: " << end - start << "ms" << std::endl;
+    // std::cout << "Time taken: " << end - start << "ms" << std::endl;
 
     
 }

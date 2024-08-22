@@ -1,8 +1,8 @@
 # Use the latest Debian image
-FROM nvidia/cuda:11.6.1-devel-ubuntu20.04
+FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 
 # Define the USERNAME variable (default to 'sagan')
-ARG USERNAME=sagan
+ARG USERNAME=sangan
 
 # Copy your zsh setup script into the container
 COPY zsh-in-docker.sh /tmp
@@ -21,19 +21,17 @@ RUN /tmp/zsh-in-docker.sh \
     -a 'bindkey "\$terminfo[kcuu1]" history-substring-search-up' \
     -a 'bindkey "\$terminfo[kcud1]" history-substring-search-down'
 
-# Create the sagan user and set up the home directory
-RUN useradd -m -s /bin/zsh $USERNAME
-
 # Set up CUDA environment variables
 ENV CUDA_HOME=/usr/local/cuda
 ENV PATH=$CUDA_HOME/bin:$PATH
 ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
+RUN mkdir -p /home/$USERNAME
+
 # Copy the zsh configuration files from root to the new user
 RUN cp /root/.zshrc /home/$USERNAME/ && \
     cp /root/.profile /home/$USERNAME/ && \
-    cp -r /root/.oh-my-zsh /home/$USERNAME/ && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME
+    cp -r /root/.oh-my-zsh /home/$USERNAME/ 
 
 # Replace /root with /home/sagan in the user's .zshrc
 RUN sed -i "s|/root|/home/$USERNAME|g" /home/$USERNAME/.zshrc
@@ -52,11 +50,6 @@ RUN apt-get update && \
 
 
 RUN mkdir -p /home/$USERNAME/projects
-RUN mkdir -p /home/$USERNAME/projects/YACE
-RUN mkdir -p /home/$USERNAME/projects/libtorch
-
-# Switch to the sagan user
-USER $USERNAME
 
 # Set the working directory to the user's home directory
 WORKDIR /home/$USERNAME

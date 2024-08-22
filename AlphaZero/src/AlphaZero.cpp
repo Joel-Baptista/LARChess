@@ -4,7 +4,7 @@
 #include <chrono>    // For std::chrono::system_clock
 
 
-AlphaZero::AlphaZero(Game* game,
+AlphaZero::AlphaZero(std::shared_ptr<Game> game,
                      int num_searches, 
                      int num_iterations, 
                      int num_selfPlay_iterations, 
@@ -205,7 +205,7 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
                 spGames.at(i)->game->set_state(fs.board_state);
             }
         }
-        // logMessage("Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
+        logMessage("Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
     }
 
     return memory;

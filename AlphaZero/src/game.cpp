@@ -84,8 +84,6 @@ state Game::get_next_state(state current_state, std::string action)
     return new_state;
 }
 
-
-
 torch::Tensor Game::get_encoded_state(state current_state)
 {
     std::vector<int64_t> shape = {1, 19, 8, 8};
@@ -183,7 +181,8 @@ torch::Tensor Game::get_valid_moves_encoded(state current_state)
 
     moves move_list;
     m_Board->get_alpha_moves(&move_list);
-
+    
+    // std::cout << "Number of moves: " << move_list.count << std::endl;
     std::vector<int64_t> shape = {8, 8, 73};
     torch::Tensor encoded_valid_moves = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
 
@@ -205,11 +204,11 @@ torch::Tensor Game::get_valid_moves_encoded(state current_state)
         int col = (side == 0) ? source_square % 8 :  source_square % 8;
 
         if (is_knight)
-            encoded_valid_moves[row][col][56 + knight_move] = 1;
+            encoded_valid_moves[row][col][56 + knight_move] = 1.0f;
         else if (underpromote)
-            encoded_valid_moves[row][col][64 + (underpromote - 1)] = 1;
+            encoded_valid_moves[row][col][64 + (underpromote - 1)] = 1.0f;
         else
-            encoded_valid_moves[row][col][index_plane] = 1;
+            encoded_valid_moves[row][col][index_plane] = 1.0f;
 
 
         // std::cout << "Source Square: " << square_to_coordinates[source_square] << std::endl;
@@ -232,22 +231,24 @@ torch::Tensor Game::get_valid_moves_encoded(state current_state)
     // int count = 0;
     // for (int i = 0; i < 73; i++)
     // {
-    //     std::cout << "\nNew Plane " << i  << std::endl;
+    //     // std::cout << "\nNew Plane " << i  << std::endl;
     //     for (int j = 0; j < 8; j++)
     //     {
     //         for (int k = 0; k < 8; k++)
     //         {
-    //             std::cout << encoded_valid_moves[j][k][i].item() << " ";
-    //             // if (encoded_valid_moves[j][k][i].item() == torch::tensor(1.0f).item())
-    //             // {
-    //             //     count++;
-    //             // }
+    //             // std::cout << encoded_valid_moves[j][k][i].item() << " ";
+    //             if (encoded_valid_moves[j][k][i].item<float>() == 1.0f)
+    //             {
+    //                 count++;
+    //             }
     //         }
-    //         std::cout << std::endl;
+    //         // std::cout << std::endl;
     //     }
-    //     std::cout << std::endl;
-    //     getchar();
+    //     // std::cout << std::endl;
+    //     // getchar();
     // }
+
+    // std::cout << "Number of encoded valid moves: " << count << std::endl;
     return encoded_valid_moves;
 }
 
@@ -278,33 +279,33 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
         if (delta_col == 1)
         {   
             if (promotion == 'n')
-                encoded_move[source_row][source_col][64] = 1;
+                encoded_move[source_row][source_col][64] =1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][67] = 1;
+                encoded_move[source_row][source_col][67] =1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][70] = 1;
+                encoded_move[source_row][source_col][70] =1.0f;
 
             return encoded_move;
         }
         if (delta_col == 0)
         {   
             if (promotion == 'n')
-                encoded_move[source_row][source_col][65] = 1;
+                encoded_move[source_row][source_col][65] =1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][68] = 1;
+                encoded_move[source_row][source_col][68] =1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][71] = 1;
+                encoded_move[source_row][source_col][71] =1.0f;
 
             return encoded_move;
         }
         if (delta_col == -1)
         {   
             if (promotion == 'n')
-                encoded_move[source_row][source_col][66] = 1;
+                encoded_move[source_row][source_col][66] =1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][69] = 1;
+                encoded_move[source_row][source_col][69] =1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][72] = 1;
+                encoded_move[source_row][source_col][72] =1.0f;
 
             return encoded_move;
         }
@@ -314,11 +315,11 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     {
         if (delta_col > 0)
         {
-            encoded_move[source_row][source_col][2 * 7 + (abs(delta_col) - 1)] = 1;
+            encoded_move[source_row][source_col][2 * 7 + (abs(delta_col) - 1)] =1.0f;
         }
         else
         {
-            encoded_move[source_row][source_col][6 * 7 + (abs(delta_col) - 1)] = 1;
+            encoded_move[source_row][source_col][6 * 7 + (abs(delta_col) - 1)] =1.0f;
         }
 
         return encoded_move;
@@ -328,11 +329,11 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     {
         if (delta_row > 0)
         {
-            encoded_move[source_row][source_col][4 * 7 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][4 * 7 + (abs(delta_row) - 1)] = 1.0f;
         }
         else
         {
-            encoded_move[source_row][source_col][0 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][0 + (abs(delta_row) - 1)] = 1.0f;
         }
 
         return encoded_move;
@@ -350,11 +351,11 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     {
         if (delta_row > 0)
         {
-            encoded_move[source_row][source_col][3 * 7 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][3 * 7 + (abs(delta_row) - 1)] = 1.0f;
         }
         else
         {
-            encoded_move[source_row][source_col][7 * 7 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][7 * 7 + (abs(delta_row) - 1)] = 1.0f;
         }
 
         return encoded_move;
@@ -363,17 +364,17 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     {
         if (delta_row > 0)
         {
-            encoded_move[source_row][source_col][5 * 7 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][5 * 7 + (abs(delta_row) - 1)] = 1.0f;
         }
         else
         {
-            encoded_move[source_row][source_col][1 * 7 + (abs(delta_row) - 1)] = 1;
+            encoded_move[source_row][source_col][1 * 7 + (abs(delta_row) - 1)] = 1.0f;
         }
 
         return encoded_move;
     }
 
-     
+    std::cout << "Error in encoding move" << std::endl;
     return encoded_move;
 
 }
@@ -397,7 +398,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
     sFinal.board_state = new_state;
 
-    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2)
+    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2 || insufficient_material(new_state))
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;
@@ -455,7 +456,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     final_state sFinal;
     sFinal.terminated = false;
 
-    if (m_Board->get_halfmove() >= 100 || state_counter[current_state.bitboards] >= 2)
+    if (m_Board->get_halfmove() >= 100 || state_counter[current_state.bitboards] >= 2 || insufficient_material(current_state))
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;
@@ -467,7 +468,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     moves move_list;
     m_Board->generate_moves(&move_list);
 
-    for (int i = 0; i < move_list.count; i++)
+    for (int i = 0; i < move_list.count; i++) // Check if there are valid moves
     {
         copy_alpha_board(m_Board);
 
@@ -504,9 +505,9 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
 std::string Game::decode_action(state current_state, torch::Tensor action)
 {   
     float maximum = -1;
-    int max_row;
-    int max_col;
-    int max_plane;
+    int max_row = 0;
+    int max_col = 0;
+    int max_plane = 0;
     for (int i = 0; i < 8; i++)
     {
         for (int j = 0; j < 8; j++)
@@ -629,31 +630,32 @@ std::string Game::decode_action(state current_state, torch::Tensor action)
 
 }
 
-std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action)
+std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action, torch::Tensor valid_moves)
 {
 
     std::vector<decoded_action> actions;
-
-    for (int i = 0; i < 8; i++)
+    int count = 0;
+    for (int i = 0; i < 73; i++)
     {
+        // std::cout << "\nNew Plane " << i  << std::endl;
         for (int j = 0; j < 8; j++)
         {
-            for (int k = 0; k < 73; k++)
+            for (int k = 0; k < 8; k++)
             {
-                if (action[i][j][k].item<float>() > 0.0f)
+                if (valid_moves[j][k][i].item<float>() == 1.0f)
                 {
-
-                    // std::cout << "Action: " << action(0, i, j, k) << " in position (" << i << ", " << j << ", " << k << ")" << std::endl;
+                    count++;
+                    // std::cout << "Action: " << action[j][k][i].item<float>() << " in position (" << i << ", " << j << ", " << k << ")" << std::endl;
                     decoded_action dAction;
 
-                    int plane = k;
-                    int col = j;
-                    int row = i;
+                    int plane = i;
+                    int col = k;
+                    int row = j;
 
                     int index_dir = plane / 7;
                     int index_knight = (plane - 56) % 8;
                     int index_length = (plane % 7) + 1;
- 
+
                     int source_square = (current_state.side == 0) ? row * 8 + col : (7 - row) * 8 + col;
 
                     std::string move = square_to_coordinates[source_square];
@@ -748,7 +750,7 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
 
                     move += dest_square;
 
-                    dAction.probability = action[i][j][k].item<float>();
+                    dAction.probability = action[j][k][i].item<float>();
                     dAction.action = move;
 
                     actions.push_back(dAction);
@@ -758,4 +760,47 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
     }
 
     return actions;
+}
+
+void Game::reset_board()
+{
+    m_Board->parse_fen(start_position);
+}
+
+bool Game::insufficient_material(state current_state)
+{
+
+    int white_knight_count = 0;
+    int black_knight_count = 0;
+    int white_bishop_count = 0;
+    int black_bishop_count = 0;
+
+    for (int i = 0; i < 12; i++)
+    {
+        for (int j = 0; j < 64 ; j++)
+        {
+            if (get_bit(current_state.bitboards[i], j))
+            {
+                if (i == 1)
+                    white_knight_count++;
+                if (i == 2)
+                    white_bishop_count++;
+                if (i == 7)
+                    black_knight_count++;
+                if (i == 8)
+                    black_bishop_count++;
+                if (i == 3 || i == 9) return false;; // There is a rook
+                if (i == 0 || i == 6) return false; // Threre is a pawn
+                if (i == 4 || i == 10) return false; // There is a queen
+            }
+        }
+    }
+
+    if (white_bishop_count > 1 || black_bishop_count > 1) return false; // 2 Bishops vs King
+    if ((white_bishop_count >= 1 && white_knight_count >= 1) || (black_bishop_count >= 1 && black_knight_count >= 1)) return false; // Bishop and Knight vs King
+    if ((white_knight_count == 2 && (black_bishop_count >= 1 || black_knight_count >= 1)) || 
+        (black_knight_count == 2 && (white_bishop_count >= 1 || white_knight_count >= 1))) return false; // 2 Knights vs King and minor piece
+
+    return true;
+
 }

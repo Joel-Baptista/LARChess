@@ -7,6 +7,7 @@ SET(CURRENT_USER "joel" CACHE STRING "Some user-specified option")
 # set(CURRENT_USER joel)
 
 message(STATUS "Current user: ${CURRENT_USER}")
+message(STATUS "/home/${CURRENT_USER}/projects/libtorch")
 
 set(CMAKE_PREFIX_PATH /home/${CURRENT_USER}/projects/libtorch)
 # set(CMAKE_PREFIX_PATH /home/${CURRENT_USER}/projects/libtorch-cuda118)

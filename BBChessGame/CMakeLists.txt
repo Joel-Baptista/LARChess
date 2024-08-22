@@ -4,13 +4,21 @@ project(BBChessGame)
 # Find the GLFW library
 # set(glfw_DIR "/home/joel/projects/glfw")
 # find_package(glfw3 REQUIRED)
+message(STATUS "Current user: ${CURRENT_USER}")
 
 set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_PREFIX_PATH /home/${CURRENT_USER}/projects/libtorch)
 
 # Find OpenGL (GL) library
 find_package(OpenGL REQUIRED)
 
-set(PROJECT_ROOT_DIR /home/joel/projects/YACE)
+find_package(Torch REQUIRED)
+
+message(STATUS "/home/${CURRENT_USER}/projects/libtorch")
+
+
+set(PROJECT_ROOT_DIR /home/${CURRENT_USER}/projects/YACE)
 
 add_executable(BBChessGame
     ${PROJECT_ROOT_DIR}/BBChessGame/src/main.cpp
@@ -32,12 +40,19 @@ add_executable(BBChessGame
     ${PROJECT_ROOT_DIR}/ChessGUI/src/include/imgui/imgui_demo.cpp
     ${PROJECT_ROOT_DIR}/ChessGUI/src/include/imgui/imgui_draw.cpp
     ${PROJECT_ROOT_DIR}/ChessGUI/src/include/imgui/imgui.cpp
+    
+    # AlphaBot
+    ${PROJECT_ROOT_DIR}/AlphaZero/src/alphabot.cpp
+    ${PROJECT_ROOT_DIR}/AlphaZero/src/mcts.cpp
+    ${PROJECT_ROOT_DIR}/AlphaZero/src/game.cpp
+    ${PROJECT_ROOT_DIR}/AlphaZero/src/utils.cpp
+
 )
 
 
 
 
-target_link_libraries(BBChessGame PRIVATE glfw GLEW OpenGL::GL)
+target_link_libraries(BBChessGame PRIVATE glfw GLEW OpenGL::GL "${TORCH_LIBRARIES}")
 
 enable_testing()
 

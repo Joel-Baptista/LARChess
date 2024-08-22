@@ -88,7 +88,7 @@ class Game
         torch::Tensor get_encoded_state(state current_state);
         torch::Tensor get_valid_moves_encoded(state current_state);
         torch::Tensor get_encoded_action(std::string move, int side);
-        std::vector<decoded_action> decode_actions(state current_state, torch::Tensor action);
+        std::vector<decoded_action> decode_actions(state current_state, torch::Tensor action, torch::Tensor valid_moves);
         state get_next_state(state current_state, std::string action);
         void set_state(state current_state);
         std::string decode_action(state current_state, torch::Tensor action);
@@ -100,8 +100,11 @@ class Game
         void get_opponent_value();
         void get_board_state();
         std::unique_ptr<BitBoard> m_Board;
+        void reset_board();
 
     private:
+
+        bool insufficient_material(state current_state);
 
 
 };

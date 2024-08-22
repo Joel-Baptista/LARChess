@@ -33,6 +33,7 @@ struct ResNetChess : torch::nn::Module {
     std::vector<std::shared_ptr<ResBlock>> ptrs_backBone;
     torch::nn::Sequential policyHead;
     torch::nn::Sequential valueHead;
+    std::shared_ptr<torch::Device> m_Device;
 
     ResNetChess(int64_t num_resBlocks, int64_t num_hidden, torch::Device device) {
         startBlock = torch::nn::Sequential(
@@ -67,6 +68,8 @@ struct ResNetChess : torch::nn::Module {
             torch::nn::Tanh()
         );
         register_module("valueHead", valueHead);
+
+        m_Device = std::make_shared<torch::Device>(device);
 
         to(device);
     }
