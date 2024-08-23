@@ -181,11 +181,13 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
                     float value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
                                 ? fs.value
                                 : -fs.value;
+                    
+                    torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+                    spGames.at(i)->game->get_encoded_state(state, spGames.at(i)->memory.at(j).board_state);
 
                     memory.push_back(
-                        {
-                            
-                            spGames.at(i)->game->get_encoded_state(spGames.at(i)->memory.at(j).board_state),
+                        {        
+                            state,
                             spGames.at(i)->memory.at(j).action_probs,
                             value
                         }

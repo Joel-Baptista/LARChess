@@ -11,7 +11,7 @@
 
 std::string getCurrentTimestamp();
 void logMessage(const std::string& message, const std::string& filename);
-torch::Tensor dirichlet_noise(double alpha, int batch_size);
+void dirichlet_noise(torch::Tensor& noise, float& alpha, int& batch_size);
 void initLogFile(const std::string& filename);
 
 void copy_weights(const torch::nn::Module& source, torch::nn::Module& target);

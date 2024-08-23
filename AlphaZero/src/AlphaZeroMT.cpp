@@ -132,8 +132,9 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 
         count++;
 
+        auto st_mcts = get_time_ms();
         m_mcts.at(thread_id)->search(&spGames);
-
+        std::cout << "MCTS Time: " << (float)(get_time_ms() - st_mcts) / 1000.0f << " seconds" << std::endl;
         for (int i = spGames.size() - 1; i >= 0; i--)
         {
 
@@ -226,10 +227,13 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                                 ? fs.value
                                 : -fs.value;
 
+                    torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+                    spGames.at(i)->game->get_encoded_state(state, spGames.at(i)->memory.at(j).board_state);
+
                     memory.push_back(
                         {
                             
-                            spGames.at(i)->game->get_encoded_state(spGames.at(i)->memory.at(j).board_state),
+                            state,
                             spGames.at(i)->memory.at(j).action_probs,
                             value
                         }

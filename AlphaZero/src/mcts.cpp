@@ -19,12 +19,15 @@ MCTS::~MCTS()
 
 void MCTS::search(std::vector<SPG*>* spGames)
 {
+    auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
     torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
-
     for (int i = 0; i < spGames->size(); i++)
     {
-        encoded_state[i] = spGames->at(i)->game->get_encoded_state(spGames->at(i)->current_state).squeeze(0);
+        std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
+        torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+        get_encoded_state(state, spGames->at(i)->current_state);
+        encoded_state[i] = state.squeeze(0); 
     }
 
     chess_output output_roots;
@@ -36,40 +39,56 @@ void MCTS::search(std::vector<SPG*>* spGames)
         
         output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
-        torch::Tensor noise = dirichlet_noise(dichirlet_alpha, batch_size).to(*m_model->m_Device);
+        torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
+
+        dirichlet_noise(noise, dichirlet_alpha, batch_size);
+
+        noise = noise.to(*m_model->m_Device);
     
         // // Apply Dirichlet noise to the policy
         output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise;   
     }
-
+    std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    st = get_time_ms();
     for (int i = 0; i < spGames->size(); i++)
     {
         std::vector<int64_t> shape = {8, 8, 73}; 
         torch::Tensor spg_policy = output_roots.policy[i].cpu();
         torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
-        valid_moves = spGames->at(i)->game->get_valid_moves_encoded(spGames->at(i)->current_state);
 
+        spGames->at(i)->game->set_state(spGames->at(i)->current_state);
+
+        moves move_list;
+        spGames->at(i)->game->m_Board->get_alpha_moves(&move_list);
+
+        get_valid_moves_encoded(valid_moves, spGames->at(i)->current_state, move_list);
         spg_policy *= valid_moves;
         spg_policy /= spg_policy.sum();
 
         spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "", C, 0.0, 1);
 
+        
         spGames->at(i)->pRoot->expand(spg_policy, valid_moves);
+        
 
     }
+    std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    st = get_time_ms();
     for (int i = 0; i < num_searches; i++)
     {
         for (int j = 0; j < spGames->size(); j++)
         {
             spGames->at(j)->pCurrentNode = nullptr;
             Node* pNode = spGames->at(j)->pRoot;
-
+            
             while (pNode->is_fully_expanded())
             {
                 pNode = pNode->select();
             }
 
+            
             final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);
+            
 
             if (fState.terminated)
             {
@@ -91,51 +110,57 @@ void MCTS::search(std::vector<SPG*>* spGames)
             }
         }
 
+        
         chess_output output_exapandables;
         if (expandable_games.size() > 0)
         {
-
-            std::vector<int64_t> state_shape = {(long)expandable_games.size(), 19, 8, 8};
-            torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
+            std::vector<int64_t> exp_shape = {(long)expandable_games.size(), 19, 8, 8};
+            torch::Tensor encoded_states = torch::zeros(exp_shape, torch::kFloat32); // Initialize the tensor with zeros
 
             for (int i = 0; i < expandable_games.size(); i++)
             {
                 int game_index = expandable_games[i];
-                encoded_state[i] = spGames->at(game_index)->game->get_encoded_state(spGames->at(game_index)->current_state).squeeze(0);
+                torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+                get_encoded_state(state, spGames->at(game_index)->current_state);
+                encoded_states[i] = state.squeeze(0); 
             }
             {
                 torch::NoGradGuard no_grad;
-                encoded_state = encoded_state.to(*m_model->m_Device);
-                output_exapandables = m_model->forward(encoded_state);
-                int batch_size = output_exapandables.policy.size(0);
+                encoded_states = encoded_states.to(*m_model->m_Device);
+                output_exapandables = m_model->forward(encoded_states);
 
                 output_exapandables.policy = torch::softmax(output_exapandables.policy.view({output_exapandables.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
             }
 
         }
-
+        
         for (int k = 0; k < expandable_games.size(); k++)
         {
             int game_index = expandable_games[k];
-
-            Node* pNode = spGames->at(game_index)->pCurrentNode;
 
             std::vector<int64_t> shape = {8, 8, 73}; 
             torch::Tensor spg_policy = output_exapandables.policy[k].cpu();
             torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
 
-            valid_moves = spGames->at(game_index)->game->get_valid_moves_encoded(pNode->node_state);
+            spGames->at(game_index)->game->set_state(spGames->at(game_index)->current_state);
 
+            moves move_list;
+            spGames->at(game_index)->game->m_Board->get_alpha_moves(&move_list);
+
+            get_valid_moves_encoded(valid_moves, spGames->at(game_index)->current_state, move_list);
 
             spg_policy *= valid_moves;
             spg_policy /= spg_policy.sum();
 
-            pNode->expand(spg_policy, valid_moves);
+            spGames->at(game_index)->pCurrentNode->expand(spg_policy, valid_moves);
 
-            pNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
+            st = get_time_ms();
+            spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
+            std::cout << "Time to expand and backprop: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         }
 
-    }     
+    }
+    std::cout << "Time to search: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
 }
 
 Node::Node(std::shared_ptr<Game> game, Node* parent, std::string action, float C, float prior, int visit_count)
@@ -207,8 +232,9 @@ void Node::expand(torch::Tensor action_probs, torch::Tensor valid_moves)
 {
 
     game->set_state(node_state);  
-
+    auto st = get_time_ms();
     auto decoded_actions = game->decode_actions(node_state, action_probs, valid_moves);
+    std::cout << "Time to decode actions: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     int count = 0;
 
     for (int i = 0; i < decoded_actions.size(); i++)

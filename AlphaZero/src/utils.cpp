@@ -28,12 +28,10 @@ void logMessage(const std::string& message, const std::string& filename) {
 }
 
 // Function to generate Dirichlet noise
-torch::Tensor dirichlet_noise(double alpha, int batch_size) {
+void dirichlet_noise(torch::Tensor& noise,float& alpha, int& batch_size) {
     std::random_device rd;
     std::mt19937 rng(rd());
     std::gamma_distribution<> gamma_dist(alpha, 1.0);
-    
-    torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
     
     for (int i = 0; i < batch_size; ++i) {
         std::vector<double> sample(8 * 8 * 73);
@@ -53,8 +51,6 @@ torch::Tensor dirichlet_noise(double alpha, int batch_size) {
             }
         }
     }
-    
-    return noise;
 }
 
 void initLogFile(const std::string& filename) {

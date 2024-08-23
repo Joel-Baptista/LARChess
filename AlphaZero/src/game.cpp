@@ -93,11 +93,8 @@ state Game::get_next_state(state current_state, std::string action)
     return new_state;
 }
 
-torch::Tensor Game::get_encoded_state(state current_state)
+void Game::get_encoded_state(torch::Tensor& encoded_state, state& current_state)
 {
-    std::vector<int64_t> shape = {1, 19, 8, 8};
-    torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
-
     if (current_state.side == 0) // White to move
         encoded_state[0][0].fill_(1);
 
@@ -181,20 +178,15 @@ torch::Tensor Game::get_encoded_state(state current_state)
     //     getchar();
     // }
 
-    return encoded_state;
 }
 
-torch::Tensor Game::get_valid_moves_encoded(state current_state)
+void Game::get_valid_moves_encoded(torch::Tensor& encoded_valid_moves, state& current_state)
 {
     set_state(current_state);
 
     moves move_list;
     m_Board->get_alpha_moves(&move_list);
     
-    // std::cout << "Number of moves: " << move_list.count << std::endl;
-    std::vector<int64_t> shape = {8, 8, 73};
-    torch::Tensor encoded_valid_moves = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
-
     // std::cout << "Number of moves: " << move_list.count << std::endl;
 
     for (int i = 0; i < move_list.count; i++)
@@ -258,7 +250,6 @@ torch::Tensor Game::get_valid_moves_encoded(state current_state)
     // }
 
     // std::cout << "Number of encoded valid moves: " << count << std::endl;
-    return encoded_valid_moves;
 }
 
 torch::Tensor Game::get_encoded_action(std::string move, int side)
@@ -642,6 +633,7 @@ std::string Game::decode_action(state current_state, torch::Tensor action)
 std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action, torch::Tensor valid_moves)
 {
 
+    auto st = get_time_ms();
     std::vector<decoded_action> actions;
     int count = 0;
     for (int i = 0; i < 73; i++)
@@ -767,7 +759,7 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
             }
         }
     }
-
+    std::cout << "Time inside function " << (get_time_ms() - st) / 1000.0f  << std::endl;
     return actions;
 }
 
