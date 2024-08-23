@@ -34,6 +34,20 @@ add_executable(${PROJECT_NAME}
         
 )
 
+add_executable(${PROJECT_NAME}_sl 
+        
+        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/utils.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/dataset.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/supLearn.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
+        ${PROJECT_ROOT}/AlphaZero/src/include/network.h
+        
+)
+
 target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}" pthread)
+target_link_libraries(${PROJECT_NAME}_sl "${TORCH_LIBRARIES}" pthread)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

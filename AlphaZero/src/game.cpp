@@ -64,6 +64,15 @@ void Game::set_state(state current_state)
     m_Board->set_fullmove(current_state.fullmove);
 }
 
+state Game::get_state()
+{
+    state current_state;
+
+    copy_state_from_board(current_state, m_Board);
+
+    return current_state;
+}
+
 state Game::get_next_state(state current_state, std::string action)
 {
     state new_state;

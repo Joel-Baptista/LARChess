@@ -98,7 +98,7 @@ class Game
         std::unordered_map<BitboardKey, int, BitboardHash>& state_counter);
     
         void get_opponent_value();
-        void get_board_state();
+        state get_state();
         std::unique_ptr<BitBoard> m_Board;
         void reset_board();
 

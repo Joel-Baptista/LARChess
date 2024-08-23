@@ -31,17 +31,25 @@ AlphaZeroMT::AlphaZeroMT(
     log_file = "log.txt";
     initLogFile(log_file);
 
-    if (device == "cuda")
+    if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
-        m_Device = std::make_unique<torch::Device>(torch::kCUDA);
-        logMessage("Using CUDA", log_file);
+
+        auto dots = device.find(":");
+        int device_id = 0;
+        if (dots != device.npos)
+        {
+            device_id = std::stoi(device.substr(dots + 1, device.npos - dots));
+        }
+
+        m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
+        logMessage("Using CUDA " + std::to_string(device_id), log_file);
     }
     else
     {
         logMessage("Using CPU", log_file);
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
-
+    
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device);
     
     m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));

@@ -11,18 +11,18 @@
 
 // Stockfish
 
-#include "include/stockfish/src/bitboard.h"
-#include "include/stockfish/src/movegen.h"
-#include "include/stockfish/src/position.h"
-#include "include/stockfish/src/search.h"
-#include "include/stockfish/src/thread.h"
-#include "include/stockfish/src/uci.h"
-#include "include/stockfish/src/ucioption.h"
-#include <boost/process.hpp>
+// #include "include/stockfish/src/bitboard.h"
+// #include "include/stockfish/src/movegen.h"
+// #include "include/stockfish/src/position.h"
+// #include "include/stockfish/src/search.h"
+// #include "include/stockfish/src/thread.h"
+// #include "include/stockfish/src/uci.h"
+// #include "include/stockfish/src/ucioption.h"
+// #include <boost/process.hpp>
 
 
 using json = nlohmann::json;
-namespace bp = boost::process;
+// namespace bp = boost::process;
 
 int main()
 {
@@ -73,6 +73,8 @@ int main()
     // // Clean up
     // in_stream << "quit" << std::endl; // Send quit command to Stockfish
     // stockfish_process.wait();          // Wait for the process to finish
+
+    
 
     std::ifstream config_file("../cfg/config.json");
     if (!config_file.is_open()) {
@@ -137,31 +139,31 @@ int main()
                 device,
                 threads
                 );       
-    // // AlphaZero az(&game,     
-    // //              num_searches,         
-    // //              num_iterations,       
-    // //              num_selfPlay_iterations,
-    // //              num_parallel_games,
-    // //              num_epochs,        
-    // //              batch_size,        
-    // //              temperature,      
-    // //              learning_rate,    
-    // //              dichirlet_alpha,  
-    // //              dichirlet_epsilon,
-    // //              dichirlet_epsilon_decay,
-    // //              dichirlet_epsilon_min,
-    // //              C,      
-    // //              weight_decay, 
-    // //              num_resblocks,
-    // //             num_channels,
-    // //             device                
-    // //             );       
+    // AlphaZero az(&game,     
+    //              num_searches,         
+    //              num_iterations,       
+    //              num_selfPlay_iterations,
+    //              num_parallel_games,
+    //              num_epochs,        
+    //              batch_size,        
+    //              temperature,      
+    //              learning_rate,    
+    //              dichirlet_alpha,  
+    //              dichirlet_epsilon,
+    //              dichirlet_epsilon_decay,
+    //              dichirlet_epsilon_min,
+    //              C,      
+    //              weight_decay, 
+    //              num_resblocks,
+    //             num_channels,
+    //             device                
+    //             );       
 
     az.learn();
 
-    // int end = get_time_ms();
+    int end = get_time_ms();
 
-    // std::cout << "Time taken: " << end - start << "ms" << std::endl;
+    std::cout << "Time taken: " << end - start << "ms" << std::endl;
 
     
 }
