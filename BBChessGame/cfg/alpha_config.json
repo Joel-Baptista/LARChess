@@ -1,10 +1,10 @@
 {
     "num_searches": 100,
     "dichirlet_alpha": 0.5,
-    "dichirlet_epsilon": 1.0,
-    "C": 10.0,
+    "dichirlet_epsilon": 0.1,
+    "C": 5.0,
     "num_resblocks": 15,
     "num_channels": 512,
-    "model_path": "/home/joel/projects/YACE/AlphaZero/models/model1/",
+    "model_path": "/home/joel/projects/YACE/AlphaZero/models/model2/",
     "device": "cpu"
 }
