@@ -283,7 +283,8 @@ void AlphaZeroMT::learn()
         update_dichirlet();
         update_temperature();
 
-        std::cout << "Memory size: " << memory.size() << std::endl;
+        logMessage("Memory size: " + std::to_string(memory.size()), log_file);
+        
         int st = get_time_ms();
         for (int j = 0; j < num_epochs; j++)
         {
@@ -296,7 +297,12 @@ void AlphaZeroMT::learn()
             copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
         }
 
+        logMessage("Weights copied succesfully", log_file);
+
         save_model();
+        
+        logMessage("Model saved!!!", log_file);
+
     }
 }
 
@@ -378,6 +384,7 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
 void AlphaZeroMT::save_model(std::string path)
 {
     torch::save(m_ResNetChess, path + "model.pt");
+    std::cout << "Model saved in: " << path << "model.pt" << std::endl;
 }
 
 void AlphaZeroMT::load_model(std::string path)

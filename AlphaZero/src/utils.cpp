@@ -84,5 +84,6 @@ void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {
     for (size_t i = 0; i < source_params.size(); ++i) {
         target_params[i].data().copy_(source_params[i]);
     }
+    std::cout << "Weights copied successfully." << std::endl;
 }
 
