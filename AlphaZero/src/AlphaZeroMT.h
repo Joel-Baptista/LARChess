@@ -28,6 +28,8 @@ class AlphaZeroMT
                     float dichirlet_epsilon_decay, 
                     float dichirlet_epsilon_min, 
                     float C,
+                    float C_decay,
+                    float C_min,
                     float weight_decay,
                     int num_resblocks,
                     int num_channels,
@@ -79,6 +81,8 @@ class AlphaZeroMT
         float dichirlet_epsilon_decay;
         float dichirlet_epsilon_min;
         float C;
+        float C_decay;
+        float C_min;
         float weight_decay;
         int num_resblocks;
         int num_channels;

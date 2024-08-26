@@ -20,6 +20,8 @@ AlphaZeroMT::AlphaZeroMT(
                         float dichirlet_epsilon_decay, 
                         float dichirlet_epsilon_min, 
                         float C,
+                        float C_decay,
+                        float C_min,
                         float weight_decay,
                         int num_resblocks,
                         int num_channels,
@@ -82,6 +84,8 @@ AlphaZeroMT::AlphaZeroMT(
     this->dichirlet_epsilon_decay = dichirlet_epsilon_decay;
     this->dichirlet_epsilon_min = dichirlet_epsilon_min;
     this->C = C;
+    this->C_decay = C_decay;
+    this->C_min = C_min;
     this->weight_decay = weight_decay;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
@@ -129,14 +133,18 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
     {
 
         auto st = get_time_ms();
+        auto st_total = get_time_ms();
 
         count++;
 
         auto st_mcts = get_time_ms();
         m_mcts.at(thread_id)->search(&spGames);
-        std::cout << "MCTS Time: " << (float)(get_time_ms() - st_mcts) / 1000.0f << " seconds" << std::endl;
+        // std::cout << "MCTS Time: " << (float)(get_time_ms() - st_mcts) / 1000.0f << " seconds" << std::endl;
+        
         for (int i = spGames.size() - 1; i >= 0; i--)
         {
+
+            st = get_time_ms();
 
             std::vector<int64_t> shape = {8, 8, 73};
             torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
@@ -160,25 +168,24 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             action_probs /= action_probs.sum();
 
             spGames.at(i)->memory.push_back({spGames.at(i)->current_state, action_probs, spGames.at(i)->current_state.side});
+
+            // std::cout << "Decode action: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
+            st = get_time_ms();
             
             torch::Tensor temperature_action_probs = action_probs.pow(1.0 / temperature);
             temperature_action_probs /= temperature_action_probs.sum();
 
+            auto temp_indexs = torch::nonzero(temperature_action_probs);
+
             std::vector<double> probabilities(spGames.at(i)->pRoot->pChildren.size());
-            int move_count = 0;
-            for (int i = 0; i < 8; i++)
+
+            for (int idx = 0; idx < temp_indexs.sizes()[0]; idx++)
             {
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int k = 0; k < 73; k++)
-                    {
-                        if (temperature_action_probs[i][j][k].item<double>() > 0.0f)
-                        {
-                            probabilities[visited_childs[move_count]] = temperature_action_probs[i][j][k].item<double>();
-                            move_count++;
-                        }
-                    }
-                }
+                int row = temp_indexs[idx][0].item<int>();
+                int col = temp_indexs[idx][1].item<int>();
+                int plane = temp_indexs[idx][2].item<int>();
+
+                probabilities[visited_childs[idx]] = temperature_action_probs[row][col][plane].item<double>();
             }
 
             std::random_device rd;
@@ -186,26 +193,18 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
             int action_idx = dist(gen);
 
-            int action_count = 0;
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    for (int k = 0; k < 73; k++)
-                    {
-                        if (temperature_action_probs[i][j][k].item<double>() > 0.0f)
-                        {
-                            if (action_count == action_idx)
-                            {
-                                action_probs = torch::zeros(shape, torch::kFloat32);
-                                action_probs[i][j][k] = 1.0f;
-                                break;
-                            }
-                            action_count++;
-                        }
-                    }
-                }
-            }
+            std::vector<int>::iterator it = std::find(visited_childs.begin(), visited_childs.end(), action_idx);
+            int index = std::distance(visited_childs.begin(), it);
+
+            int row = temp_indexs[index][0].item<int>();
+            int col = temp_indexs[index][1].item<int>();
+            int plane = temp_indexs[index][2].item<int>();
+
+            action_probs = torch::zeros(shape, torch::kFloat32);
+            action_probs[row][col][plane] = 1.0f;
+
+            // std::cout << "Temperature choice: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
+            // st = get_time_ms();
 
             // spGames.at(i)->game->set_state(spGames.at(i)->current_state);
             // spGames.at(i)->game->m_Board->print_board();
@@ -214,10 +213,14 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             final_state fs = spGames.at(i)->game->get_next_state_and_value(spGames.at(i)->current_state, action, spGames.at(i)->repeated_states);
 
             spGames.at(i)->repeated_states[fs.board_state.bitboards] += 1;
+
             if (fs.board_state.halfmove == 0) 
             {
                 spGames.at(i)->repeated_states.clear(); // Impossible to repeat states if piece captured or pawn moved
             }
+
+            // std::cout << "Make move: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
+            // st = get_time_ms();
 
             if (fs.terminated)
             {
@@ -256,6 +259,10 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             }
         }
         // logMessage("Thread: " + std::to_string(thread_id + 1) + " Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
+        // std::cout << "Step Time: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
+        // std::cout << "Total Time: " << (float)(get_time_ms() - st_total) / 1000.0f << " seconds" << std::endl;
+        // std::cout << "------------------------------------------------" << std::endl;
+
     }
 
     return memory;

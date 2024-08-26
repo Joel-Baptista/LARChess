@@ -38,10 +38,14 @@ std::string AlphaBot::predict()
     SPG* spg = new SPG(m_Game);
     spGames.push_back(spg);
 
+    auto st = get_time_ms();
+
     copy_alpha_board(m_Game->m_Board);
     m_mcts->search(&spGames);
 
     restore_alpha_board(m_Game->m_Board);
+    std::cout << "Time to search: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    st = get_time_ms();
     std::vector<int64_t> shape = {8, 8, 73};
     torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
     for (int j = 0; j < spGames.at(0)->pRoot->pChildren.size(); j++)
@@ -50,13 +54,13 @@ std::string AlphaBot::predict()
             spGames.at(0)->game->get_encoded_action(spGames.at(0)->pRoot->pChildren.at(j)->action, spGames.at(0)->current_state.side) 
             * spGames.at(0)->pRoot->pChildren.at(j)->visit_count;
     }
-
     action_probs /= action_probs.sum();
     std::string  move = spGames.at(0)->game->decode_action(spGames.at(0)->current_state, action_probs);
+    std::cout << "Time to get action probs: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     return move;
 }
 
 void AlphaBot::make_bot_move(std::string move)
 {
-    m_Game->m_Board->make_move(m_Game->m_Board->parse_move(move.c_str()), 0);
+    m_Game->m_Board->make_move(m_Game->m_Board->parse_move(move.c_str()));
 }

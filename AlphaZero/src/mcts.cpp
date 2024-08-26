@@ -73,9 +73,9 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
     }
     std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-    st = get_time_ms();
     for (int i = 0; i < num_searches; i++)
     {
+        st = get_time_ms();
         for (int j = 0; j < spGames->size(); j++)
         {
             spGames->at(j)->pCurrentNode = nullptr;
@@ -110,6 +110,8 @@ void MCTS::search(std::vector<SPG*>* spGames)
             }
         }
 
+        std::cout << "Time to select node: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        st = get_time_ms();
         
         chess_output output_exapandables;
         if (expandable_games.size() > 0)
@@ -134,6 +136,9 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
         }
         
+        std::cout << "Time to policy expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        st = get_time_ms();
+
         for (int k = 0; k < expandable_games.size(); k++)
         {
             int game_index = expandable_games[k];
@@ -156,11 +161,12 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
             st = get_time_ms();
             spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
-            std::cout << "Time to expand and backprop: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         }
 
+        std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        
     }
-    std::cout << "Time to search: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+
 }
 
 Node::Node(std::shared_ptr<Game> game, Node* parent, std::string action, float C, float prior, int visit_count)
@@ -234,7 +240,7 @@ void Node::expand(torch::Tensor action_probs, torch::Tensor valid_moves)
     game->set_state(node_state);  
     auto st = get_time_ms();
     auto decoded_actions = game->decode_actions(node_state, action_probs, valid_moves);
-    std::cout << "Time to decode actions: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+
     int count = 0;
 
     for (int i = 0; i < decoded_actions.size(); i++)
@@ -244,7 +250,7 @@ void Node::expand(torch::Tensor action_probs, torch::Tensor valid_moves)
             
             copy_alpha_board(game->m_Board);
 
-            int valid_move = game->m_Board->make_move(game->m_Board->parse_move(action.c_str()), 0);
+            int valid_move = game->m_Board->make_move(game->m_Board->parse_move(action.c_str()));
 
             if (valid_move)
             {   

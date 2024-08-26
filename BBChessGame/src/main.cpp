@@ -255,6 +255,8 @@ int frontend()
     // /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window) && !backendDone)
     {   
+        auto st = get_time_ms();
+
         /* Render here */
         GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f)); // Set the clear color
 
@@ -284,7 +286,8 @@ int frontend()
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
-        glfwPollEvents();
+        // glfwPollEvents();
+        glfwWaitEvents();
 
         if (!lockBoardQueue.empty()) {
             std::lock_guard<std::mutex> lock(mtxLockBoard);
@@ -310,6 +313,11 @@ int frontend()
             chessGUI.reset_move_stored();
             cvFrontendToBackend.notify_one();
             lock.~lock_guard();
+        }
+
+        while (get_time_ms() - st < 1000.0f / 30.0f)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
     }
 

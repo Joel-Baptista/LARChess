@@ -83,7 +83,7 @@ state Game::get_next_state(state current_state, std::string action)
 
     int move = m_Board->parse_move(action.c_str());
     
-    if (m_Board->make_move(move, 0))
+    if (m_Board->make_move(move))
     {
         copy_state_from_board(new_state, m_Board);
     }
@@ -391,7 +391,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
     int move = m_Board->parse_move(action.c_str());
     
-    if (m_Board->make_move(move, 0))
+    if (m_Board->make_move(move))
     {
         copy_state_from_board(new_state, m_Board);
     }
@@ -409,13 +409,13 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     int valid_state_count = 0;
 
     moves move_list;
-    m_Board->generate_moves(&move_list);
+    m_Board->get_generate_moves(&move_list);
 
     for (int i = 0; i < move_list.count; i++)
     {
         copy_alpha_board(m_Board);
 
-        if (m_Board->make_move(move_list.moves[i], 0))
+        if (m_Board->make_move(move_list.moves[i]))
         {
             valid_state_count++;
             restore_alpha_board(m_Board);
@@ -426,7 +426,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     if (valid_state_count == 0)
     {
         int side = m_Board->get_side();
-        int is_check = m_Board->is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
+        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
 
         if (is_check)
         {
@@ -466,13 +466,13 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     int valid_state_count = 0;
 
     moves move_list;
-    m_Board->generate_moves(&move_list);
+    m_Board->get_generate_moves(&move_list);
 
     for (int i = 0; i < move_list.count; i++) // Check if there are valid moves
     {
         copy_alpha_board(m_Board);
 
-        if (m_Board->make_move(move_list.moves[i], 0))
+        if (m_Board->make_move(move_list.moves[i]))
         {
             valid_state_count++;
             restore_alpha_board(m_Board);
@@ -483,7 +483,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     if (valid_state_count == 0)
     {
         int side = m_Board->get_side();
-        int is_check = m_Board->is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
+        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
 
         if (is_check)
         {
@@ -632,134 +632,141 @@ std::string Game::decode_action(state current_state, torch::Tensor action)
 
 std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action, torch::Tensor valid_moves)
 {
-
-    auto st = get_time_ms();
     std::vector<decoded_action> actions;
     int count = 0;
-    for (int i = 0; i < 73; i++)
+
+    auto action_indexs = torch::nonzero(action);
+
+    for (int i = 0; i < action_indexs.sizes()[0]; i++)
     {
-        // std::cout << "\nNew Plane " << i  << std::endl;
-        for (int j = 0; j < 8; j++)
+        count++;
+        decoded_action dAction;
+
+        int plane = action_indexs[i][2].item<int>();
+        int col = action_indexs[i][1].item<int>();
+        int row = action_indexs[i][0].item<int>();
+
+        int index_dir = plane / 7;
+        int index_knight = (plane - 56) % 8;
+        int index_length = (plane % 7) + 1;
+
+        int source_square = (current_state.side == 0) ? row * 8 + col : (7 - row) * 8 + col;
+
+        std::string move = square_to_coordinates[source_square];
+        std::string dest_square;
+
+        switch (index_dir)
         {
-            for (int k = 0; k < 8; k++)
+            case 0:
             {
-                if (valid_moves[j][k][i].item<float>() == 1.0f)
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row - index_length) * 8 + col : 
+                            (7 - row + index_length) * 8 + col];
+                
+                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                    dest_square += "q"; 
+                break;
+            }   
+            case 1:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                (row - index_length) * 8 + (col + index_length) : 
+                                (7 - row + index_length) * 8 + (col + index_length)];
+
+                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                    dest_square += "q";
+                break;
+            }
+            case 2:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row) * 8 + (col + index_length) : 
+                    (7 - row) * 8 + (col + index_length)];
+                break;
+            }
+            case 3:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row + index_length) * 8 + (col + index_length) : 
+                    (7 - row - index_length) * 8 + (col + index_length)];
+                break;
+            }
+            case 4:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row + index_length) * 8 + (col) : 
+                    (7 - row - index_length) * 8 + (col)];
+                break;
+            }
+            case 5:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row + index_length) * 8 + (col - index_length) : 
+                    (7 - row - index_length) * 8 + (col - index_length)];
+                break;
+            }
+                
+            case 6:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row) * 8 + (col - index_length) : 
+                    (7 - row) * 8 + (col - index_length)];
+                break;
+            }
+            case 7:
+            {
+                dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                    (row - index_length) * 8 + (col - index_length) : 
+                    (7 - row + index_length) * 8 + (col - index_length)];
+
+                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                    dest_square += "q";
+                break;
+            }
+                
+            default:
+            {
+                if ( plane >= 56 && plane < 64) // Knights Jumps
                 {
-                    count++;
-                    // std::cout << "Action: " << action[j][k][i].item<float>() << " in position (" << i << ", " << j << ", " << k << ")" << std::endl;
-                    decoded_action dAction;
-
-                    int plane = i;
-                    int col = k;
-                    int row = j;
-
-                    int index_dir = plane / 7;
-                    int index_knight = (plane - 56) % 8;
-                    int index_length = (plane % 7) + 1;
-
-                    int source_square = (current_state.side == 0) ? row * 8 + col : (7 - row) * 8 + col;
-
-                    std::string move = square_to_coordinates[source_square];
-                    std::string dest_square;
-
-                    if (index_dir == 0)
-                    {  
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                    (row - index_length) * 8 + col : 
-                                    (7 - row + index_length) * 8 + col];
-                        
-                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                            dest_square += "q"; 
-                    }
-                    else if (index_dir == 1)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                        (row - index_length) * 8 + (col + index_length) : 
-                                        (7 - row + index_length) * 8 + (col + index_length)];
-
-                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                            dest_square += "q";
-                    }
-                    else if (index_dir == 2)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row) * 8 + (col + index_length) : 
-                            (7 - row) * 8 + (col + index_length)];
-                    }
-                    else if (index_dir == 3)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row + index_length) * 8 + (col + index_length) : 
-                            (7 - row - index_length) * 8 + (col + index_length)];
-                    }
-                    else if (index_dir == 4)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row + index_length) * 8 + (col) : 
-                            (7 - row - index_length) * 8 + (col)];
-                    }
-                    else if (index_dir == 5)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row + index_length) * 8 + (col - index_length) : 
-                            (7 - row - index_length) * 8 + (col - index_length)];
-                    }
-                    else if (index_dir == 6)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row) * 8 + (col - index_length) : 
-                            (7 - row) * 8 + (col - index_length)];
-                    }
-                    else if (index_dir == 7)
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row - index_length) * 8 + (col - index_length) : 
-                            (7 - row + index_length) * 8 + (col - index_length)];
-
-                        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                            dest_square += "q";
-                    }
-                    else if ( plane >= 56 && plane < 64) // Knights Jumps
-                    {
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row - kj_row[index_knight]) * 8 + (col + kj_cols[index_knight]) : 
-                            (7 - row + kj_row[index_knight]) * 8 + (col + kj_cols[index_knight])];
-                    }
-                    else // Underpromotion
-                    {
-                        int underpromote = plane - 64;
-
-                        if (underpromote % 3 == 0)
-                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                    (row - 1) * 8 + (col + 1) : 
-                                    (7 - row + 1) * 8 + (col + 1)];
-
-                        if (underpromote % 3 == 1)
-                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                    (row - 1) * 8 + col : 
-                                    (7 - row + 1) * 8 + col];
-                        
-                        if (underpromote % 3 == 2)
-                            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                (row - 1) * 8 + (col - 1) : 
-                                (7 - row + 1) * 8 + (col - 1)];
-
-                        if (underpromote >=0 && underpromote < 3) dest_square += "n";
-                        if (underpromote >=3 && underpromote < 6) dest_square += "b";
-                        if (underpromote >=6 && underpromote < 9) dest_square += "r";
-                    }
-
-                    move += dest_square;
-
-                    dAction.probability = action[j][k][i].item<float>();
-                    dAction.action = move;
-
-                    actions.push_back(dAction);
+                    dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                        (row - kj_row[index_knight]) * 8 + (col + kj_cols[index_knight]) : 
+                        (7 - row + kj_row[index_knight]) * 8 + (col + kj_cols[index_knight])];
                 }
+                else // Underpromotion
+                {
+                    int underpromote = plane - 64;
+
+                    if (underpromote % 3 == 0)
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                (row - 1) * 8 + (col + 1) : 
+                                (7 - row + 1) * 8 + (col + 1)];
+
+                    if (underpromote % 3 == 1)
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                                (row - 1) * 8 + col : 
+                                (7 - row + 1) * 8 + col];
+                    
+                    if (underpromote % 3 == 2)
+                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
+                            (row - 1) * 8 + (col - 1) : 
+                            (7 - row + 1) * 8 + (col - 1)];
+
+                    if (underpromote >=0 && underpromote < 3) dest_square += "n";
+                    if (underpromote >=3 && underpromote < 6) dest_square += "b";
+                    if (underpromote >=6 && underpromote < 9) dest_square += "r";
+                }
+                break;
             }
         }
+
+        move += dest_square;
+
+        dAction.probability = action[row][col][plane].item<float>();
+        dAction.action = move;
+
+        actions.push_back(dAction);
     }
-    std::cout << "Time inside function " << (get_time_ms() - st) / 1000.0f  << std::endl;
+
     return actions;
 }
 

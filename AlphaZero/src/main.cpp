@@ -106,7 +106,9 @@ int main()
     double dichirlet_epsilon = config.value("dichirlet_epsilon", 0.0);
     double dichirlet_epsilon_decay = config.value("dichirlet_epsilon_decay", 0.0);
     double dichirlet_epsilon_min = config.value("dichirlet_epsilon_min", 0.0);
-    double C = config.value("C", 0.0);
+    double C = config.value("C", 1.41);
+    double C_min = config.value("C_min", 1.41);
+    double C_decay = config.value("C_decay", 0.995);
     double weight_decay = config.value("weight_decay", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
@@ -133,6 +135,8 @@ int main()
                  dichirlet_epsilon_decay,
                  dichirlet_epsilon_min,
                  C,      
+                 C_decay,      
+                 C_min,      
                  weight_decay, 
                  num_resblocks,
                 num_channels,

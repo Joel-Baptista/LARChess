@@ -18,6 +18,7 @@ set(PROJECT_ROOT /home/${CURRENT_USER}/projects/YACE)
 find_package(Torch REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -flto")
 
 add_executable(${PROJECT_NAME} 
         
