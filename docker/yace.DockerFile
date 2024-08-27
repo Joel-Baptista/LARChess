@@ -4,6 +4,22 @@ FROM nvidia/cuda:11.8.0-devel-ubuntu22.04
 # Define the USERNAME variable (default to 'sagan')
 ARG USERNAME=sangan
 
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+# Allow for GUI
+RUN     apt-get update && apt-get install -qqy x11-apps  
+RUN     export uid=$USER_GID gid=$USER_GID
+RUN     mkdir -p /home/docker_user
+RUN     mkdir -p /etc/sudoers.d
+RUN     echo "docker_user:x:${uid}:${gid}:docker_user,,,:/home/docker_user:/bin/bash" >> /etc/passwd
+RUN     echo "docker_user:x:${uid}:" >> /etc/group
+RUN     echo "docker_user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/docker_user
+RUN     chmod 0440 /etc/sudoers.d/docker_user
+RUN     chown ${uid}:${gid} -R /home/docker_user 
+
+RUN apt install vim gnupg -y
+
 # Copy your zsh setup script into the container
 COPY zsh-in-docker.sh /tmp
 
@@ -46,7 +62,10 @@ RUN apt-get update && \
     build-essential \
     checkinstall \
     zlib1g-dev \
-    libssl-dev
+    libssl-dev \
+    mesa-utils libglu1-mesa-dev freeglut3-dev mesa-common-dev \
+    libglew-dev libglfw3-dev libglm-dev \
+    libao-dev libmpg123-dev
 
 
 RUN mkdir -p /home/$USERNAME/projects

@@ -8,6 +8,7 @@ class AlphaBot
         AlphaBot(std::shared_ptr<Game> game, 
                    int num_searches, 
                    float C, 
+                   float temp,
                    float dichirlet_alpha, 
                    float dichirlet_epsilon, 
                    int num_resblocks,
@@ -24,6 +25,7 @@ class AlphaBot
 
     int m_NumSearches;
     float m_C;
+    float m_temp;
     std::shared_ptr<torch::Device> m_Device;
     std::shared_ptr<ResNetChess> m_ResNetChess;
     std::unique_ptr<MCTS> m_mcts;

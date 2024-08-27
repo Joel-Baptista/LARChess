@@ -111,6 +111,15 @@ void AlphaZeroMT::update_temperature()
 
     logMessage("Temperature: " + std::to_string(temperature), log_file);   
 }
+void AlphaZeroMT::update_C()
+{
+    C = std::max(C * C_decay, C_min);
+
+    for (int i = 0; i < num_threads; i++)
+        m_mcts.at(i)->set_C(C);
+
+    logMessage("C: " + std::to_string(C), log_file);   
+}
 
 std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 {
@@ -133,6 +142,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
     {
 
         auto st = get_time_ms();
+        // auto st = get_time_ms();
         auto st_total = get_time_ms();
 
         count++;
@@ -144,7 +154,6 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
         for (int i = spGames.size() - 1; i >= 0; i--)
         {
 
-            st = get_time_ms();
 
             std::vector<int64_t> shape = {8, 8, 73};
             torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
@@ -170,7 +179,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             spGames.at(i)->memory.push_back({spGames.at(i)->current_state, action_probs, spGames.at(i)->current_state.side});
 
             // std::cout << "Decode action: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
-            st = get_time_ms();
+            // st = get_time_ms();
             
             torch::Tensor temperature_action_probs = action_probs.pow(1.0 / temperature);
             temperature_action_probs /= temperature_action_probs.sum();
@@ -242,10 +251,10 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                         }
                     );
                 }
-                // logMessage("Thread: " + std::to_string(thread_id + 1) + 
-                //     " Game " + std::to_string(i + 1) + 
-                //     " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
-                //     " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" , log_file);
+                logMessage("Thread: " + std::to_string(thread_id + 1) + 
+                    " Game " + std::to_string(i + 1) + 
+                    " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
+                    " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" , log_file);
             
                 delete spGames.at(i);
                 spGames.erase(spGames.begin() + i);
@@ -258,7 +267,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                 spGames.at(i)->game->set_state(fs.board_state);
             }
         }
-        // logMessage("Thread: " + std::to_string(thread_id + 1) + " Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
+        // logMessage("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
         // std::cout << "Step Time: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
         // std::cout << "Total Time: " << (float)(get_time_ms() - st_total) / 1000.0f << " seconds" << std::endl;
         // std::cout << "------------------------------------------------" << std::endl;
@@ -301,6 +310,7 @@ void AlphaZeroMT::learn()
         }
         update_dichirlet();
         update_temperature();
+        update_C();
 
         logMessage("Memory size: " + std::to_string(memory.size()), log_file);
         

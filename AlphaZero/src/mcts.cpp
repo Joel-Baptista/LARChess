@@ -48,7 +48,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         // // Apply Dirichlet noise to the policy
         output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise;   
     }
-    std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
     for (int i = 0; i < spGames->size(); i++)
     {
@@ -72,7 +72,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         
 
     }
-    std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    // std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     for (int i = 0; i < num_searches; i++)
     {
         st = get_time_ms();
@@ -109,8 +109,8 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 expandable_games.push_back(k);
             }
         }
-
-        std::cout << "Time to select node: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+// 
+        // std::cout << "Time to select node: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         st = get_time_ms();
         
         chess_output output_exapandables;
@@ -136,7 +136,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
         }
         
-        std::cout << "Time to policy expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        // std::cout << "Time to policy expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         st = get_time_ms();
 
         for (int k = 0; k < expandable_games.size(); k++)
@@ -163,7 +163,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
             spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
         }
 
-        std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        // std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         
     }
 

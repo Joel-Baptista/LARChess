@@ -56,6 +56,7 @@ class AlphaZeroMT
 
         void update_dichirlet();
         void update_temperature();
+        void update_C();
 
         std::shared_ptr<ResNetChess> m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;

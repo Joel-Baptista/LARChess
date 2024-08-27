@@ -107,20 +107,20 @@ void backend(bool human_vs_human, int human_player, int depth, std::string initi
 
 void alphabackend(bool human_vs_human, int human_player, std::string initial_position, json config)
 {
-
     int num_searches = config.value("num_searches", 5);
     float dichirlet_alpha = config.value("dichirlet_alpha", 0.5);
     float dichirlet_epsilon = config.value("dichirlet_epsilon", 0.3);
     float C = config.value("C", 1.41);
+    float temperature = config.value("temperature", 1.0);
     int num_resblocks = config.value("num_resblocks", 7);
     int num_channels = config.value("num_channels", 256);
     std::string model_path = config.value("model_path", "");
     std::string device = config.value("device", "cpu");
 
-
     AlphaBot bot(std::make_shared<Game>(), 
                  num_searches, 
                  C, 
+                 temperature,
                  dichirlet_alpha, 
                  dichirlet_epsilon, 
                  num_resblocks, 
@@ -176,9 +176,8 @@ void alphabackend(bool human_vs_human, int human_player, std::string initial_pos
                 frontendToBackendQueue.pop();
                 gui_move = receivedData;
             }
-
             if (gui_move != ""){
-                bot.m_Game->m_Board->make_player_move(gui_move.c_str());  
+                bot.m_Game->m_Board->make_player_move(gui_move.c_str());
                 { 
                     std::lock_guard<std::mutex> lock(mtxBackendToFrontend);
                     backendToFrontendQueue.push(bot.m_Game->m_Board->bitboard_to_board());
@@ -286,8 +285,8 @@ int frontend()
         glfwSwapBuffers(window);
 
         /* Poll for and process events */
-        // glfwPollEvents();
-        glfwWaitEvents();
+        glfwPollEvents();
+        // glfwWaitEvents();
 
         if (!lockBoardQueue.empty()) {
             std::lock_guard<std::mutex> lock(mtxLockBoard);
@@ -312,13 +311,12 @@ int frontend()
             frontendToBackendQueue.push(chessGUI.get_player_move()); // Just an example of processing
             chessGUI.reset_move_stored();
             cvFrontendToBackend.notify_one();
-            lock.~lock_guard();
         }
 
-        while (get_time_ms() - st < 1000.0f / 30.0f)
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
+        // while (get_time_ms() - st < 1000.0f / 30.0f)
+        // {
+        //     std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // }
     }
 
      std::cout << "7.End Program" << std::endl;
@@ -352,6 +350,7 @@ int main() {
     bool human_vs_human = config.value("human_vs_human", false);
     std::string initial_position = config.value("initial_position", initial_position);
     std::string human_player = config.value("human_player", "w");
+    std::string bot = config.value("bot", "minmax");
 
     std::ifstream alpha_config_file("../cfg/alpha_config.json");
     if (!alpha_config_file.is_open()) {
@@ -367,24 +366,27 @@ int main() {
         std::cerr << "JSON parse error: " << e.what() << std::endl;
         return 1;
     }
-    //     "num_searches": 5,
-    // "num_iterations": 10,
-    // "dichirlet_alpha": 0.5,
-    // "dichirlet_epsilon": 1.0,
-    // "C": 10.0,
-    // "num_resblocks": 7,
-    // "num_channels": 256,
-    // "model_name": "model",
-    // "device": "cpu"
 
+    if (bot == "minmax")
+    {
+        std::cout << "Starting MinMax Backend" << std::endl;
+        std::thread frontendThread(frontend);
+        std::thread backendThread(backend, human_vs_human, human_player == "w" ? 0 : 1, depth, initial_position);
+    
+        frontendThread.join();
+        backendThread.join();
+    
+    }
+    else
+    {
+        std::cout << "Starting AlphaZero Backend" << std::endl;
+        std::thread frontendThread(frontend);
+        std::thread backendThread(alphabackend, human_vs_human, human_player == "w" ? 0 : 1, initial_position, alpha_config);
+    
+        frontendThread.join();
+        backendThread.join();
+    }
 
-
-    std::thread frontendThread(frontend);
-    // std::thread backendThread(backend, human_vs_human, human_player == "w" ? 0 : 1, depth, initial_position);
-    std::thread backendThread(alphabackend, human_vs_human, human_player == "w" ? 0 : 1, initial_position, alpha_config);
-
-    backendThread.join();
-    frontendThread.join();
-
+    
 }
 

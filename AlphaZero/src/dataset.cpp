@@ -60,7 +60,10 @@ void Dataset::loadCSV(const std::string& filename) {
 
         auto current_state = game.get_state();
 
-        dp.state = game.get_encoded_state(current_state);
+        torch::Tensor current_state_tensor = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+
+        game.get_encoded_state(current_state_tensor, current_state);
+        dp.state = current_state_tensor;
         dp.action = game.get_encoded_action(row[1], current_state.side);
 
         float value;
@@ -99,7 +102,10 @@ void Dataset::loadCSV(const std::string& filename) {
 
         auto current_state = game.get_state();
 
-        dp.state = game.get_encoded_state(current_state);
+        torch::Tensor current_state_tensor = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+        
+        game.get_encoded_state(current_state_tensor, current_state);
+        dp.state = current_state_tensor;
         dp.action = game.get_encoded_action(row[1], current_state.side);
 
         float value;

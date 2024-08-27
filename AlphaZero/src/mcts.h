@@ -83,6 +83,7 @@ class MCTS
     void search(std::vector<SPG*>* spGames);
 
     void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
+    void set_C(float c) { C = c; }
     private:
         int num_searches;
         float dichirlet_alpha;
