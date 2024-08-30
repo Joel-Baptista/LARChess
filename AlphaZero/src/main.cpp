@@ -114,6 +114,7 @@ int main()
     int num_channels = config.value("num_channels", 0);
     std::string model_name = config.value("model_name", "default_model");
     std::string device = config.value("device", "cpu");
+    std::string pretrained_model_path = config.value("pretrained_model_path", "cpu");
     int threads = config.value("threads", 1);
 
     Game game;
@@ -121,26 +122,27 @@ int main()
 
     AlphaZeroMT az(  
                  num_searches,         
-                 num_iterations,       
-                 num_selfPlay_iterations,
-                 num_parallel_games,
-                 num_epochs,        
-                 batch_size,        
-                 temperature,      
-                 temperature_decay,      
-                 temperature_min,      
-                 learning_rate,    
-                 dichirlet_alpha,  
-                 dichirlet_epsilon,
-                 dichirlet_epsilon_decay,
-                 dichirlet_epsilon_min,
-                 C,      
-                 C_decay,      
-                 C_min,      
-                 weight_decay, 
-                 num_resblocks,
+                num_iterations,       
+                num_selfPlay_iterations,
+                num_parallel_games,
+                num_epochs,        
+                batch_size,        
+                temperature,      
+                temperature_decay,      
+                temperature_min,      
+                learning_rate,    
+                dichirlet_alpha,  
+                dichirlet_epsilon,
+                dichirlet_epsilon_decay,
+                dichirlet_epsilon_min,
+                C,      
+                C_decay,      
+                C_min,      
+                weight_decay, 
+                num_resblocks,
                 num_channels,
                 device,
+                pretrained_model_path,
                 threads
                 );       
     // AlphaZero az(&game,     

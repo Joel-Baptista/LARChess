@@ -86,7 +86,6 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 pNode = pNode->select();
             }
 
-            
             final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);
             
 

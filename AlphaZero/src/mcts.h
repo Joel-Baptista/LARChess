@@ -27,11 +27,11 @@ class Node
         std::string action;
         int visit_count; 
         state node_state;
+        float value_sum;
 
     private:
 
         std::shared_ptr<Game> game;
-        float value_sum;
         Node* parent;
         float C;
         float prior;

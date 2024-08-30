@@ -1,5 +1,5 @@
 {
-    "num_searches": 10,
+    "num_searches": 1,
     "num_iterations": 10,
     "num_selfPlay_iterations": 1,
     "num_parallel_games": 1,
@@ -15,10 +15,10 @@
     "dichirlet_epsilon_min": 0.01,
     "C": 10.0,
     "weight_decay": 0.0001,
-    "num_resblocks": 15,
+    "num_resblocks": 7,
     "num_channels": 512,
     "model_name": "model",
-    "pretrained_model": "",
+    "pretrained_model_path": "../models/modelsl1/",
     "device": "cpu",
     "threads": 1
 }

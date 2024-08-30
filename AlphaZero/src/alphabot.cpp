@@ -1,22 +1,5 @@
 #include "alphabot.h"
 
-void clamp_small_weights(torch::nn::Module& model, float threshold = 1e-6) {
-    // Iterate over all parameters in the model
-    for (auto& param : model.parameters()) {
-        // Create a mask where the absolute value is smaller than the threshold
-        auto mask = torch::abs(param.data()) < threshold;
-        
-        // Get the sign of the weights
-        auto sign = torch::sign(param.data());
-        
-        // Create a tensor with the threshold value, matching the shape of the original tensor
-        auto threshold_tensor = torch::full(param.data().sizes(), threshold, param.data().options());
-        
-        // Apply clamping manually
-        param.data().copy_(torch::where(mask, sign * threshold_tensor, param.data()));
-    }
-}
-
 AlphaBot::AlphaBot(std::shared_ptr<Game> game, 
                    int num_searches, 
                    float C, 
@@ -190,7 +173,14 @@ std::string AlphaBot::predict()
     }
     std::cout << "]" << std::endl;
 
-    std::string  move = spGames.at(0)->game->decode_action(spGames.at(0)->current_state, action_probs);
+    std::cout << "Evaluations: ["; 
+    for (int j = 0; j < spGames.at(0)->pRoot->pChildren.size(); j++)
+    {
+        std::cout << (spGames.at(0)->pRoot->pChildren.at(j)->value_sum / spGames.at(0)->pRoot->pChildren.at(j)->visit_count) << ", ";
+    }
+    std::cout << "]" << std::endl;
+
+    std::string  move = spGames.at(0)->game->decode_action(spGames.at(0)->current_state, action_probs); 
     std::cout << "Time to get action probs: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
 
     std::cout << "Move: " << move << std::endl;

@@ -26,6 +26,7 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_resblocks,
                         int num_channels,
                         std::string device,
+                        std::string pretrained_model_path,
                         int num_threads
                         )
 {
@@ -53,6 +54,11 @@ AlphaZeroMT::AlphaZeroMT(
     }
     
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device);
+
+    if (pretrained_model_path != "")
+    {
+        load_model(pretrained_model_path);
+    }
     
     m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
 
@@ -236,11 +242,12 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                 for (int j = 0; j < spGames.at(i)->memory.size(); j++)
                 {
                     float value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
-                                ? fs.value
-                                : -fs.value;
+                                ? -fs.value
+                                : fs.value;
 
                     torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
                     spGames.at(i)->game->get_encoded_state(state, spGames.at(i)->memory.at(j).board_state);
+                    spGames.at(i)->repeated_states.clear();
 
                     memory.push_back(
                         {
@@ -280,6 +287,8 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 void AlphaZeroMT::learn()
 {
     int st = get_time_ms();
+
+
 
     for (int iter = 0; iter < num_iterations; iter++)
     {
@@ -418,5 +427,31 @@ void AlphaZeroMT::save_model(std::string path)
 
 void AlphaZeroMT::load_model(std::string path)
 {
-    torch::load(m_ResNetChess, path + "model.pt");
+    std::vector<int64_t> shape = {1, 19, 8, 8};
+    torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32); // Initialize the tensor with zeros
+    torch::load(m_ResNetChess, path + "model.pt", torch::kCPU);
+    m_ResNetChess->eval();
+
+    
+    auto st = get_time_ms();
+    auto output1= m_ResNetChess->forward(encoded_state);
+    std::cout << "Before clamp: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    
+    m_ResNetChess->to(*m_Device, torch::kFloat32);
+
+    clamp_small_weights(*m_ResNetChess, 1e-15);
+
+    st = get_time_ms();
+    auto output2 = m_ResNetChess->forward(encoded_state);
+    std::cout << "After clamp: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+
+    if (torch::allclose(output1.policy, output2.policy) || torch::allclose(output1.value, output2.value))
+    {
+        std::cout << "Model loaded successfully" << std::endl;
+    }
+    else
+    {
+        std::cout << "Be carefull! Clamping the weights significantly altered the network" << std::endl;
+    }
+
 }

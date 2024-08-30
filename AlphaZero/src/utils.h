@@ -42,3 +42,5 @@ struct BitboardHash {
         return hash;
     }
 };
+
+void clamp_small_weights(torch::nn::Module& model, float threshold);

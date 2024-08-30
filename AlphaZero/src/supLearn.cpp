@@ -170,8 +170,9 @@ void SupervisedLearning::learn()
         logMessage(" Eval Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
         if (eval_loss < min_eval_loss)
         {
-           save_model(model_name);
-           logMessage("Saved best model!!!", log_file);
+            min_eval_loss = eval_loss;
+            save_model(model_name);
+            logMessage("Saved best model!!!", log_file);
         }
 
         logMessage("<------------------------------------------------------------------------------>", log_file);

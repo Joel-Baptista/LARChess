@@ -34,6 +34,7 @@ class AlphaZeroMT
                     int num_resblocks,
                     int num_channels,
                     std::string device,
+                    std::string pretrained_model_path,
                     int num_threads
                     );
 
