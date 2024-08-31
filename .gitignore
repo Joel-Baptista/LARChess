@@ -1,2 +1,5 @@
-/build/*
+*/build/*
+AlphaZero/build/*
 /.vscode/*
+*/models/*
+*/datasets/*
