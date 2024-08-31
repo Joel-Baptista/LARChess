@@ -84,6 +84,7 @@ void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {
 
 void clamp_small_weights(torch::nn::Module& model, float threshold = 1e-6) {
     // Iterate over all parameters in the model
+
     for (auto& param : model.parameters()) {
         // Create a mask where the absolute value is smaller than the threshold
         auto mask = torch::abs(param.data()) < threshold;

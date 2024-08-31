@@ -14,11 +14,13 @@
     "dichirlet_epsilon_decay": 0.995,
     "dichirlet_epsilon_min": 0.01,
     "C": 10.0,
+    "num_evals": 1,
+    "depth": 2, 
     "weight_decay": 0.0001,
     "num_resblocks": 7,
     "num_channels": 512,
     "model_name": "model",
-    "pretrained_model_path": "../models/modelsl1/",
+    "pretrained_model_path": "",
     "device": "cpu",
     "threads": 1
 }

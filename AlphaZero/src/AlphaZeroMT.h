@@ -30,6 +30,8 @@ class AlphaZeroMT
                     float C,
                     float C_decay,
                     float C_min,
+                    int num_evals,
+                    int depth,
                     float weight_decay,
                     int num_resblocks,
                     int num_channels,
@@ -52,6 +54,7 @@ class AlphaZeroMT
     private:
 
         std::vector<sp_memory_item> SelfPlay(int thread_id);
+        int AlphaEval(int thread_id, int depth);
 
         std::vector<memory_item> memory;
 
@@ -85,6 +88,8 @@ class AlphaZeroMT
         float C;
         float C_decay;
         float C_min;
+        int num_evals;
+        int depth;
         float weight_decay;
         int num_resblocks;
         int num_channels;

@@ -1205,7 +1205,6 @@ inline float BitBoard::quiescence(float alpha, float beta)
 
 
 float BitBoard::alpha_beta(int depth, float alpha, float beta, bool quien)
-
 {
             
     // std::cout << "Depth: " << depth << std::endl;

@@ -109,6 +109,8 @@ int main()
     double C = config.value("C", 1.41);
     double C_min = config.value("C_min", 1.41);
     double C_decay = config.value("C_decay", 0.995);
+    int num_evals = config.value("num_evals", 1);
+    int depth = config.value("depth", 4);
     double weight_decay = config.value("weight_decay", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
@@ -138,6 +140,8 @@ int main()
                 C,      
                 C_decay,      
                 C_min,      
+                num_evals,
+                depth,
                 weight_decay, 
                 num_resblocks,
                 num_channels,

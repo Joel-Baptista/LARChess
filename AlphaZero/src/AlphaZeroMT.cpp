@@ -22,6 +22,8 @@ AlphaZeroMT::AlphaZeroMT(
                         float C,
                         float C_decay,
                         float C_min,
+                        int num_evals,
+                        int depth,
                         float weight_decay,
                         int num_resblocks,
                         int num_channels,
@@ -92,6 +94,8 @@ AlphaZeroMT::AlphaZeroMT(
     this->C = C;
     this->C_decay = C_decay;
     this->C_min = C_min;
+    this->num_evals = num_evals;
+    this->depth = depth;
     this->weight_decay = weight_decay;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
@@ -288,8 +292,6 @@ void AlphaZeroMT::learn()
 {
     int st = get_time_ms();
 
-
-
     for (int iter = 0; iter < num_iterations; iter++)
     {
         std::vector<std::future<std::vector<sp_memory_item>>> futures;
@@ -341,6 +343,39 @@ void AlphaZeroMT::learn()
         
         logMessage("Model saved!!!", log_file);
 
+        // Eval the bot
+        st = get_time_ms();
+        std::vector<std::future<int>> futuresEval;
+        float wins;
+        for (int i = 0; i < (num_evals / num_threads); i++)
+        {
+            for (int j = 0; j < num_threads; ++j) {
+                futuresEval.push_back(std::async(std::launch::async, &AlphaZeroMT::AlphaEval, this, j, depth));
+            }
+            for (auto& future : futuresEval) {
+                try
+                {
+                    auto result = future.get(); // Retrieve result once
+                    wins += result;
+                }
+                catch (const std::exception& e)
+                {
+                    logMessage("Exception caught during future.get(): " + std::string(e.what()), log_file);
+                }
+            }
+            futuresEval.clear(); // Clear the futures vector before the next iteration
+            logMessage("Eval Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        }
+        
+        logMessage("Wins %: " + std::to_string(wins / num_evals) + "%, Eval Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        if (wins / num_evals > 0.9)
+        {
+            depth = (depth + 1 > 5) ? 5 : depth + 1;
+            logMessage("Depth increased to: " + std::to_string(depth), log_file);
+        }
+        logMessage("<--------------------------------------------------------->", log_file);
+        logMessage("<----------------LEARNING ITERATION----------------------->", log_file);
+        logMessage("<--------------------------------------------------------->", log_file);
     }
 }
 
@@ -419,17 +454,102 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
 
 }
 
+int AlphaZeroMT::AlphaEval(int thread_id, int depth)
+{
+    std::vector<SPG*> spGames;
+
+    games.at(thread_id)->m_Board->parse_fen(start_position);
+    SPG* spg = new SPG(games.at(thread_id));
+    spGames.push_back(spg);
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    double random_number = dis(gen);
+
+    int alpha_white;
+    if (random_number < 0.5)
+    {
+        alpha_white = 1;
+    }
+    else
+    {
+        alpha_white = 0;
+    }
+
+    while (true)
+    {
+        if (spGames.at(0)->game->m_Board->get_side() == alpha_white)
+        {
+            copy_alpha_board(spGames.at(0)->game->m_Board);
+
+            m_mcts.at(thread_id)->search(&spGames);
+
+            restore_alpha_board(spGames.at(0)->game->m_Board);
+
+            std::vector<int64_t> shape = {8, 8, 73};
+            torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
+
+            std::vector<int> visited_childs; 
+            for (int j = 0; j < spGames.at(0)->pRoot->pChildren.size(); j++)
+            {
+                if (spGames.at(0)->pRoot->pChildren.at(j)->visit_count > 0)
+                    visited_childs.push_back(j);
+
+                action_probs += 
+                    spGames.at(0)->game->get_encoded_action(spGames.at(0)->pRoot->pChildren.at(j)->action, spGames.at(0)->current_state.side) 
+                    * spGames.at(0)->pRoot->pChildren.at(j)->visit_count;
+            }
+
+            action_probs /= action_probs.sum();
+
+            std::string  move = spGames.at(0)->game->decode_action(spGames.at(0)->current_state, action_probs); 
+
+            games.at(thread_id)->m_Board->make_player_move(move.c_str());
+        }
+        else
+        {
+            games.at(thread_id)->m_Board->reset_leaf_nodes();
+            float eval = games.at(thread_id)->m_Board->alpha_beta(depth, -1000000, 1000000, true);
+            games.at(thread_id)->m_Board->make_bot_move(games.at(thread_id)->m_Board->get_bot_best_move());
+        }
+        
+        state current_state = games.at(thread_id)->get_state();
+        spGames.at(0)->current_state = current_state;
+
+        final_state fState = spGames.at(0)->game->get_value_and_terminated(current_state, spGames.at(0)->repeated_states);
+
+        if (fState.terminated)
+        {
+            if ((current_state.side == alpha_white) && (fState.value == 1.0))
+            {
+                return 0;
+            }
+            else if ((current_state.side != alpha_white) && (fState.value == 1.0))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
+    return 0;
+}
+
 void AlphaZeroMT::save_model(std::string path)
 {
     torch::save(m_ResNetChess, path + "model.pt");
-    std::cout << "Model saved in: " << path << "model.pt" << std::endl;
+    logMessage( "Model saved in: " + path +"model.pt" , log_file);
 }
 
 void AlphaZeroMT::load_model(std::string path)
 {
     std::vector<int64_t> shape = {1, 19, 8, 8};
-    torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32); // Initialize the tensor with zeros
-    torch::load(m_ResNetChess, path + "model.pt", torch::kCPU);
+    torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32).to(*m_Device); // Initialize the tensor with zeros
+    torch::load(m_ResNetChess, path + "model.pt", *m_Device);
     m_ResNetChess->eval();
 
     
@@ -439,7 +559,7 @@ void AlphaZeroMT::load_model(std::string path)
     
     m_ResNetChess->to(*m_Device, torch::kFloat32);
 
-    clamp_small_weights(*m_ResNetChess, 1e-15);
+    // clamp_small_weights(*m_ResNetChess, 1e-15);
 
     st = get_time_ms();
     auto output2 = m_ResNetChess->forward(encoded_state);
