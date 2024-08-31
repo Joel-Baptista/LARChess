@@ -1,8 +1,8 @@
 {
-    "num_searches": 50,
+    "num_searches": 300,
     "dichirlet_alpha": 0.5,
     "dichirlet_epsilon": 0.1,
-    "C": 4.0,
+    "C": 1.41,
     "temperature": 1.0,
     "num_resblocks": 7,
     "num_channels": 512,

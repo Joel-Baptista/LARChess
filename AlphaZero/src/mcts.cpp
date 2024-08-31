@@ -185,6 +185,10 @@ Node::Node(std::shared_ptr<Game> game, Node* parent, std::string action, float C
 
 Node::~Node()
 {
+    for (int i = 0; i < pChildren.size(); i++)
+    {
+        delete pChildren[i];
+    }
 }
 
 bool Node::is_fully_expanded()

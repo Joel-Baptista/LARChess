@@ -241,6 +241,13 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             // std::cout << "Make move: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
             // st = get_time_ms();
 
+            // Delete the root node
+
+            for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
+            {
+                delete spGames.at(i)->pRoot->pChildren.at(j);
+            }
+
             if (fs.terminated)
             {
                 for (int j = 0; j < spGames.at(i)->memory.size(); j++)
