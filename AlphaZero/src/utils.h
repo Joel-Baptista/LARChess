@@ -7,12 +7,16 @@
 #include <random>
 #include <torch/torch.h>
 
+#include <filesystem>
+#include <set>
+
 #define U64 unsigned long long
 
 std::string getCurrentTimestamp();
 void logMessage(const std::string& message, const std::string& filename);
 void dirichlet_noise(torch::Tensor& noise, float& alpha, int& batch_size);
 void initLogFile(const std::string& filename);
+std::string initLogFiles(const std::string& path);
 
 void copy_weights(const torch::nn::Module& source, torch::nn::Module& target);
 

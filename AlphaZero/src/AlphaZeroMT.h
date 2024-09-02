@@ -9,6 +9,13 @@
 #include <future>
 #include <vector>
 
+struct evalResults
+{
+    int win_count = 0;
+    int loss_count = 0;
+    int draw_count = 0;
+};
+
 class AlphaZeroMT
 {
     public:
@@ -56,6 +63,13 @@ class AlphaZeroMT
         std::vector<sp_memory_item> SelfPlay(int thread_id);
         int AlphaEval(int thread_id, int depth);
 
+        void log(std::string message);
+        void logTrain(std::string message);
+        void logEval(std::string message);
+        void logConfig();
+        int train_iter = 0;
+        int eval_iter = 0;
+
         std::vector<memory_item> memory;
 
         void update_dichirlet();
@@ -96,5 +110,6 @@ class AlphaZeroMT
         int num_threads;
 
         std::string log_file;
+        std::string model_path;
 
 };  

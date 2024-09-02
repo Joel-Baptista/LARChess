@@ -1,30 +1,13 @@
 #include "utils.h"
 
+namespace fs = std::filesystem;
+
 // Function to get the current timestamp
 std::string getCurrentTimestamp() {
     std::time_t now = std::time(nullptr);
     char buf[100];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&now));
     return buf;
-}
-
-// Function to log a message to a file
-void logMessage(const std::string& message, const std::string& filename) {
-    // Open the file in append mode
-    std::ofstream logFile;
-    logFile.open(filename, std::ios_base::app);
-    std::cout << message << std::endl;
-    // Check if the file opened successfully
-    if (!logFile.is_open()) {
-        std::cerr << "Failed to open log file: " << filename << std::endl;
-        return;
-    }
-
-    // Write the timestamp and message to the log file
-    logFile << "[" << getCurrentTimestamp() << "] " << message << std::endl;
-
-    // Close the file
-    logFile.close();
 }
 
 // Function to generate Dirichlet noise
@@ -53,6 +36,25 @@ void dirichlet_noise(torch::Tensor& noise,float& alpha, int& batch_size) {
     }
 }
 
+// Function to log a message to a file
+void logMessage(const std::string& message, const std::string& filename) {
+    // Open the file in append mode
+    std::ofstream logFile;
+    logFile.open(filename, std::ios_base::app);
+
+    // Check if the file opened successfully
+    if (!logFile.is_open()) {
+        std::cerr << "Failed to open log file: " << filename << std::endl;
+        return;
+    }
+
+    // Write the timestamp and message to the log file
+    logFile << message << std::endl;
+
+    // Close the file
+    logFile.close();
+}
+
 void initLogFile(const std::string& filename) {
     // Check if the file exists
     std::ifstream file(filename);
@@ -65,6 +67,49 @@ void initLogFile(const std::string& filename) {
             std::cout << "Previous log file deleted: " << filename << std::endl;
         }
     }
+}
+
+std::string initLogFiles(const std::string& path) {
+    std::set<int> existing_numbers;
+
+    // Iterate through the models folder
+    for (const auto& entry : fs::directory_iterator(path)) {
+        if (entry.is_directory()) {
+            std::string folder_name = entry.path().filename().string();
+            if (folder_name.find("model") == 0) {
+                std::string number_str = folder_name.substr(5); // Extract the number part
+                try {
+                    int number = std::stoi(number_str);
+                    existing_numbers.insert(number);
+                } catch (const std::invalid_argument& e) {
+                    // Handle case where the folder name isn't in the expected format
+                    std::cerr << "Invalid folder name format: " << folder_name << std::endl;
+                }
+            }
+        }
+    }
+
+    // Find the smallest unused number
+    int smallest_unused_number = 1;
+    while (existing_numbers.count(smallest_unused_number)) {
+        ++smallest_unused_number;
+    }
+
+    // Create the new folder
+    std::string new_folder_name = path + "/model" + std::to_string(smallest_unused_number);
+    fs::create_directory(new_folder_name);
+
+    std::cout << "Created folder: " << new_folder_name << std::endl;
+
+    // // Create the log file
+    initLogFile(new_folder_name + "/train.csv");
+    logMessage("iter,loss", new_folder_name + "/train.csv");
+    initLogFile(new_folder_name + "/eval.csv");
+    logMessage("iter,win,loss,draw", new_folder_name + "/eval.csv");
+    initLogFile(new_folder_name + "/log.txt");
+    initLogFile(new_folder_name + "/config.json");
+
+    return new_folder_name;
 }
 
 void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {

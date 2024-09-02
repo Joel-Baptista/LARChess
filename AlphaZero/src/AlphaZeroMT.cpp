@@ -33,12 +33,13 @@ AlphaZeroMT::AlphaZeroMT(
                         )
 {
 
-    log_file = "log.txt";
-    initLogFile(log_file);
+
+
+    this->model_path = initLogFiles("../models/alpha");
+    log_file = model_path + "/log.txt";
 
     if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
-
         auto dots = device.find(":");
         int device_id = 0;
         if (dots != device.npos)
@@ -47,11 +48,11 @@ AlphaZeroMT::AlphaZeroMT(
         }
 
         m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
-        logMessage("Using CUDA " + std::to_string(device_id), log_file);
+        log("Using CUDA " + std::to_string(device_id));
     }
     else
     {
-        logMessage("Using CPU", log_file);
+        log("Using CPU");
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
     
@@ -99,7 +100,10 @@ AlphaZeroMT::AlphaZeroMT(
     this->weight_decay = weight_decay;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
+    this->train_iter = 0;
+    this->eval_iter = 0;
 
+    logConfig();
 }
 
 AlphaZeroMT::~AlphaZeroMT()
@@ -113,14 +117,16 @@ void AlphaZeroMT::update_dichirlet()
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_dichirlet_epsilon(dichirlet_epsilon);
 
-    logMessage("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha), log_file);   
+    log("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha));   
 }
+
 void AlphaZeroMT::update_temperature()
 {
     temperature = std::max(temperature * temperature_decay, temperature_min);
 
-    logMessage("Temperature: " + std::to_string(temperature), log_file);   
+    log("Temperature: " + std::to_string(temperature));   
 }
+
 void AlphaZeroMT::update_C()
 {
     C = std::max(C * C_decay, C_min);
@@ -128,7 +134,7 @@ void AlphaZeroMT::update_C()
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_C(C);
 
-    logMessage("C: " + std::to_string(C), log_file);   
+    log("C: " + std::to_string(C));   
 }
 
 std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
@@ -269,10 +275,10 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                         }
                     );
                 }
-                logMessage("Thread: " + std::to_string(thread_id + 1) + 
-                    " Game " + std::to_string(i + 1) + 
-                    " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
-                    " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" , log_file);
+                // log("Thread: " + std::to_string(thread_id + 1) + 
+                //     " Game " + std::to_string(i + 1) + 
+                //     " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
+                //     " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" );
             
                 delete spGames.at(i);
                 spGames.erase(spGames.begin() + i);
@@ -285,7 +291,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
                 spGames.at(i)->game->set_state(fs.board_state);
             }
         }
-        // logMessage("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
+        // log("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds");
         // std::cout << "Step Time: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
         // std::cout << "Total Time: " << (float)(get_time_ms() - st_total) / 1000.0f << " seconds" << std::endl;
         // std::cout << "------------------------------------------------" << std::endl;
@@ -309,7 +315,7 @@ void AlphaZeroMT::learn()
         {
             int st = get_time_ms();
             for (int j = 0; j < num_threads; ++j) {
-                // logMessage("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1), log_file);
+                // log("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1));
                 futures.push_back(std::async(std::launch::async, &AlphaZeroMT::SelfPlay, this, j));
             }
             for (auto& future : futures) {
@@ -320,40 +326,41 @@ void AlphaZeroMT::learn()
                 }
                 catch (const std::exception& e)
                 {
-                    logMessage("Exception caught during future.get(): " + std::string(e.what()), log_file);
+                    log("Exception caught during future.get(): " + std::string(e.what()));
                 }
             }
             futures.clear(); // Clear the futures vector before the next iteration
-            logMessage("Self Play Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+            log("Self Play Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         }
         update_dichirlet();
         update_temperature();
         update_C();
 
-        logMessage("Memory size: " + std::to_string(memory.size()), log_file);
+        log("Memory size: " + std::to_string(memory.size()));
         
         int st = get_time_ms();
         for (int j = 0; j < num_epochs; j++)
         {
             train(memory);
         }
-        logMessage("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        log("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
 
         for (int i = 0; i < num_threads; i++)
         {
             copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
         }
 
-        logMessage("Weights copied succesfully", log_file);
+        log("Weights copied succesfully");
 
-        save_model();
+        save_model(model_path);
         
-        logMessage("Model saved!!!", log_file);
+        log("Model saved!!!");
 
         // Eval the bot
         st = get_time_ms();
         std::vector<std::future<int>> futuresEval;
         float wins;
+        evalResults results;
         for (int i = 0; i < (num_evals / num_threads); i++)
         {
             for (int j = 0; j < num_threads; ++j) {
@@ -363,26 +370,41 @@ void AlphaZeroMT::learn()
                 try
                 {
                     auto result = future.get(); // Retrieve result once
-                    wins += result;
+                    if (result == 1)
+                        results.win_count++;
+                    else if (result == 0)
+                        results.draw_count++;
+                    else
+                        results.loss_count++;                    
                 }
                 catch (const std::exception& e)
                 {
-                    logMessage("Exception caught during future.get(): " + std::string(e.what()), log_file);
+                    log("Exception caught during future.get(): " + std::string(e.what()));
                 }
             }
             futuresEval.clear(); // Clear the futures vector before the next iteration
-            logMessage("Eval Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+            log("Eval Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         }
         
-        logMessage("Wins %: " + std::to_string(wins / num_evals) + "%, Eval Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
-        if (wins / num_evals > 0.9)
+        log("Wins %: " + std::to_string(results.win_count / num_evals) + "%, " +  
+            "Loss %: " + std::to_string(results.loss_count / num_evals) + "%, " +
+            "Draw %: " + std::to_string(results.draw_count / num_evals) +  
+            "%, Eval Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+
+        logEval(std::to_string(eval_iter) + "," + 
+        std::to_string(results.win_count / num_evals) + "," + 
+        std::to_string(results.loss_count / num_evals) + "," + 
+        std::to_string(results.draw_count / num_evals));
+        eval_iter++;
+
+        if (wins / num_evals > 0.5)
         {
             depth = (depth + 1 > 5) ? 5 : depth + 1;
-            logMessage("Depth increased to: " + std::to_string(depth), log_file);
+            log("Depth increased to: " + std::to_string(depth));
         }
-        logMessage("<--------------------------------------------------------->", log_file);
-        logMessage("<----------------LEARNING ITERATION----------------------->", log_file);
-        logMessage("<--------------------------------------------------------->", log_file);
+        log("<--------------------------------------------------------->");
+        log("<----------------LEARNING ITERATION----------------------->");
+        log("<--------------------------------------------------------->");
     }
 }
 
@@ -457,13 +479,16 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
         batch_count += 1.0;
 
     }
-    logMessage(" Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
-
+    log(" Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    logTrain(std::to_string(train_iter) + "," + std::to_string(running_loss / batch_count));
+    train_iter++;
+    delete[] pArr;
 }
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 {
     std::vector<SPG*> spGames;
+    evalResults results;
 
     games.at(thread_id)->m_Board->parse_fen(start_position);
     SPG* spg = new SPG(games.at(thread_id));
@@ -530,7 +555,7 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         {
             if ((current_state.side == alpha_white) && (fState.value == 1.0))
             {
-                return 0;
+                return -1;
             }
             else if ((current_state.side != alpha_white) && (fState.value == 1.0))
             {
@@ -548,8 +573,16 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 
 void AlphaZeroMT::save_model(std::string path)
 {
-    torch::save(m_ResNetChess, path + "model.pt");
-    logMessage( "Model saved in: " + path +"model.pt" , log_file);
+    if (path == "")
+    {
+        torch::save(m_ResNetChess, "model.pt");
+        log( "Model saved in: model.pt" );
+    }
+    else
+    {
+        torch::save(m_ResNetChess, path + "/model.pt");
+        log( "Model saved in: " + path + "/model.pt" );
+    }
 }
 
 void AlphaZeroMT::load_model(std::string path)
@@ -581,4 +614,47 @@ void AlphaZeroMT::load_model(std::string path)
         std::cout << "Be carefull! Clamping the weights significantly altered the network" << std::endl;
     }
 
+}
+
+void AlphaZeroMT::log(std::string message)
+{
+    logMessage( "[" + getCurrentTimestamp() + "] " + message, model_path + "/log.txt");
+    std::cout << "[" << getCurrentTimestamp() << "] " << message << std::endl;
+}
+
+void AlphaZeroMT::logTrain(std::string message)
+{
+    logMessage(message, model_path + "/train.csv");
+}
+
+void AlphaZeroMT::logEval(std::string message)
+{
+    logMessage(message, model_path + "/eval.csv");
+}
+
+void AlphaZeroMT::logConfig()
+{
+    logMessage("{", model_path + "/config.json");
+    logMessage("    \"num_searches\": \"" + std::to_string(num_searches) + "\",", model_path + "/config.json");
+    logMessage("    \"num_iterations\": \"" + std::to_string(num_iterations) + "\",", model_path + "/config.json");
+    logMessage("    \"num_selfPlay_iterations\": \"" + std::to_string(num_selfPlay_iterations) + "\",", model_path + "/config.json");
+    logMessage("    \"num_parallel_games\": \"" + std::to_string(num_parallel_games) + "\",", model_path + "/config.json");
+    logMessage("    \"num_epochs\": \"" + std::to_string(num_epochs) + "\",", model_path + "/config.json");
+    logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
+    logMessage("    \"temperature\": \"" + std::to_string(temperature) + "\",", model_path + "/config.json");
+    logMessage("    \"temperature_min\": \"" + std::to_string(temperature_min) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
+    logMessage("    \"dichirlet_alpha\": \"" + std::to_string(dichirlet_alpha) + "\",", model_path + "/config.json");
+    logMessage("    \"dichirlet_epsilon\": \"" + std::to_string(dichirlet_epsilon) + "\",", model_path + "/config.json");
+    logMessage("    \"dichirlet_epsilon_decay\": \"" + std::to_string(dichirlet_epsilon_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"dichirlet_epsilon_min\": \"" + std::to_string(dichirlet_epsilon_min) + "\",", model_path + "/config.json");
+    logMessage("    \"C\": \"" + std::to_string(C) + "\",", model_path + "/config.json");
+    logMessage("    \"C_decay\": \"" + std::to_string(C_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"C_min\": \"" + std::to_string(C_min) + "\",", model_path + "/config.json");
+    logMessage("    \"num_evals\": \"" + std::to_string(num_evals) + "\",", model_path + "/config.json");
+    logMessage("    \"depth\": \"" + std::to_string(depth) + "\",", model_path + "/config.json");
+    logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
+    logMessage("    \"num_threads\": \"" + std::to_string(num_threads) + "\"", model_path + "/config.json");
+    logMessage("}", model_path + "/config.json");
 }
