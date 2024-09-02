@@ -39,8 +39,8 @@ for filename in os.listdir(folder_path):
         plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 
         # Save the plot as a PNG file (optional)
-        # output_filename = os.path.join(folder_path, f'{filename}_plot.png')
-        # plt.savefig(output_filename, dpi=300, bbox_inches='tight')
+        output_filename = os.path.join(folder_path, f'{filename[:-4]}_plot.png')
+        plt.savefig(output_filename, dpi=300, bbox_inches='tight')
 
         # Show the plot
         plt.show()
