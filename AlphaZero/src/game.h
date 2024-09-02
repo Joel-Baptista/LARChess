@@ -10,6 +10,8 @@
 // #include "include/xtensor/xtensor.hpp"
 
 #include <torch/torch.h>
+#include <torch/cuda.h>
+#include <c10/cuda/CUDAStream.h>
 #include "include/ResNet.h"
 #include "utils.h"
 

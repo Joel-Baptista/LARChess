@@ -4,6 +4,7 @@
 #include <chrono>    // For std::chrono::system_clock
 
 
+
 AlphaZeroMT::AlphaZeroMT(
                         int num_searches, 
                         int num_iterations, 
@@ -49,6 +50,14 @@ AlphaZeroMT::AlphaZeroMT(
 
         m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
         log("Using CUDA " + std::to_string(device_id));
+
+        auto stream1 =  c10::cuda::getStreamFromPool();
+
+        for (int i = 0; i < num_threads; ++i) {
+            auto stream = c10::cuda::getStreamFromPool();
+            cuda_streams.push_back(stream);
+        }
+
     }
     else
     {
@@ -69,7 +78,7 @@ AlphaZeroMT::AlphaZeroMT(
     {
         m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device));
         copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
-        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), num_searches, dichirlet_alpha, dichirlet_epsilon, C));
+        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches, dichirlet_alpha, dichirlet_epsilon, C));
     }
 
 
@@ -164,7 +173,16 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
         count++;
 
         auto st_mcts = get_time_ms();
-        m_mcts.at(thread_id)->search(&spGames);
+
+        if (m_Device->is_cuda())
+        {
+            m_mcts.at(thread_id)->search(&spGames, cuda_streams);
+        }
+        else
+        {
+            m_mcts.at(thread_id)->search(&spGames);
+        }
+
         // std::cout << "MCTS Time: " << (float)(get_time_ms() - st_mcts) / 1000.0f << " seconds" << std::endl;
         
         for (int i = spGames.size() - 1; i >= 0; i--)
@@ -292,6 +310,7 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
             }
         }
         // log("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds");
+        // std::cout << "Num of games: " << spGames.size() << std::endl;
         // std::cout << "Step Time: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
         // std::cout << "Total Time: " << (float)(get_time_ms() - st_total) / 1000.0f << " seconds" << std::endl;
         // std::cout << "------------------------------------------------" << std::endl;
@@ -357,12 +376,11 @@ void AlphaZeroMT::learn()
         log("Model saved!!!");
 
         // Eval the bot
-        st = get_time_ms();
         std::vector<std::future<int>> futuresEval;
-        float wins;
         evalResults results;
         for (int i = 0; i < (num_evals / num_threads); i++)
         {
+            st = get_time_ms();
             for (int j = 0; j < num_threads; ++j) {
                 futuresEval.push_back(std::async(std::launch::async, &AlphaZeroMT::AlphaEval, this, j, depth));
             }
@@ -553,18 +571,23 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 
         if (fState.terminated)
         {
+            int res;
             if ((current_state.side == alpha_white) && (fState.value == 1.0))
             {
-                return -1;
+                res = -1;
             }
             else if ((current_state.side != alpha_white) && (fState.value == 1.0))
             {
-                return 1;
+                res = 1;
             }
             else
             {
-                return 0;
+                res = 0;
             }
+
+            delete spGames.at(0);
+            spGames.erase(spGames.begin());
+            return res;
         }
     }
 

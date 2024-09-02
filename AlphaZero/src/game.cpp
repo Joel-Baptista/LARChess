@@ -398,7 +398,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
     sFinal.board_state = new_state;
 
-    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2 || insufficient_material(new_state))
+    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2 || insufficient_material(new_state) || m_Board->get_fullmove() >= 150)
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;
@@ -456,7 +456,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     final_state sFinal;
     sFinal.terminated = false;
 
-    if (m_Board->get_halfmove() >= 100 || state_counter[current_state.bitboards] >= 2 || insufficient_material(current_state))
+    if (m_Board->get_halfmove() >= 100 || state_counter[current_state.bitboards] >= 2 || insufficient_material(current_state) || m_Board->get_fullmove() >= 150)
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;

@@ -9,6 +9,7 @@
 #include <future>
 #include <vector>
 
+
 struct evalResults
 {
     int win_count = 0;
@@ -79,6 +80,8 @@ class AlphaZeroMT
         std::shared_ptr<ResNetChess> m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;
         std::shared_ptr<torch::Device> m_Device;
+
+        std::vector<c10::cuda::CUDAStream> cuda_streams;
         
         std::vector<std::shared_ptr<ResNetChess>> m_ResNetSwarm;
         std::vector<std::shared_ptr<MCTS>> m_mcts;

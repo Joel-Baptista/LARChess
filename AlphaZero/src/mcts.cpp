@@ -10,6 +10,16 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet
     this->dichirlet_epsilon = dichirlet_epsilon;
     this->C = C;
     this->m_model = model;
+    this->thread_id = 0;
+}
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+{
+    this->num_searches = num_searches;
+    this->dichirlet_alpha = dichirlet_alpha;
+    this->dichirlet_epsilon = dichirlet_epsilon;
+    this->C = C;
+    this->m_model = model;
+    this->thread_id = thread_id;
 }
 
 MCTS::~MCTS()
@@ -17,7 +27,7 @@ MCTS::~MCTS()
 }
 
 
-void MCTS::search(std::vector<SPG*>* spGames)
+void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>& cuda_streams)
 {
     auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
@@ -32,21 +42,51 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
     chess_output output_roots;
     {
-        torch::NoGradGuard no_grad;
-        encoded_state = encoded_state.to(*m_model->m_Device);
-        output_roots = m_model->forward(encoded_state);
-        int batch_size = output_roots.policy.size(0);
+
+        if (m_model->m_Device->is_cuda())
+        {
+            at::cuda::CUDAStream stream = cuda_streams[thread_id];
         
-        output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+            // Set the CUDA stream for the current context
+            at::cuda::setCurrentCUDAStream(stream);
 
-        torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
+            torch::NoGradGuard no_grad;
 
-        dirichlet_noise(noise, dichirlet_alpha, batch_size);
+            encoded_state = encoded_state.to(*m_model->m_Device);
+            output_roots = m_model->forward(encoded_state);
+            int batch_size = output_roots.policy.size(0);
+            
+            output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
-        noise = noise.to(*m_model->m_Device);
-    
-        // // Apply Dirichlet noise to the policy
-        output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise;   
+            torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
+
+            dirichlet_noise(noise, dichirlet_alpha, batch_size);
+
+            noise = noise.to(*m_model->m_Device);
+        
+            // // Apply Dirichlet noise to the policy
+            output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise;   
+        }
+        else
+        {
+            torch::NoGradGuard no_grad;
+
+            encoded_state = encoded_state.to(*m_model->m_Device);
+            output_roots = m_model->forward(encoded_state);
+            int batch_size = output_roots.policy.size(0);
+            
+            output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+
+            torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
+
+            dirichlet_noise(noise, dichirlet_alpha, batch_size);
+
+            noise = noise.to(*m_model->m_Device);
+        
+            // // Apply Dirichlet noise to the policy
+            output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise; 
+        }
+
     }
     // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
@@ -125,12 +165,28 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 get_encoded_state(state, spGames->at(game_index)->current_state);
                 encoded_states[i] = state.squeeze(0); 
             }
+            if (m_model->m_Device->is_cuda())
             {
+                at::cuda::CUDAStream stream = cuda_streams[thread_id];    
+                // Set the CUDA stream for the current context
+                at::cuda::setCurrentCUDAStream(stream);
+
                 torch::NoGradGuard no_grad;
+
                 encoded_states = encoded_states.to(*m_model->m_Device);
                 output_exapandables = m_model->forward(encoded_states);
 
                 output_exapandables.policy = torch::softmax(output_exapandables.policy.view({output_exapandables.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+            }
+            else
+            {
+                torch::NoGradGuard no_grad;
+
+                encoded_states = encoded_states.to(*m_model->m_Device);
+                output_exapandables = m_model->forward(encoded_states);
+
+                output_exapandables.policy = torch::softmax(output_exapandables.policy.view({output_exapandables.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+                
             }
 
         }

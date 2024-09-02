@@ -208,6 +208,7 @@ std::vector<sp_memory_item> AlphaZero::SelfPlay()
             }
         }
         logMessage("Iteration: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds", log_file);
+    
     }
 
     return memory;

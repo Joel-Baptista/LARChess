@@ -76,11 +76,13 @@ class MCTS
 {
     public:
         MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
+        MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
         ~MCTS();
 
 
 
-    void search(std::vector<SPG*>* spGames);
+    void search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>& cuda_streams);
+    void search(std::vector<SPG*>* spGames) { std::vector<c10::cuda::CUDAStream> cuda_streams; search(spGames, cuda_streams); }
 
     void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
     void set_C(float c) { C = c; }
@@ -92,7 +94,7 @@ class MCTS
         std::shared_ptr<ResNetChess> m_model;
 
         float C;
-
+        int thread_id;
 };
 
 
