@@ -415,7 +415,7 @@ void AlphaZeroMT::learn()
         std::to_string(results.draw_count / num_evals));
         eval_iter++;
 
-        if (wins / num_evals > 0.5)
+        if (results.win_count / num_evals > 0.5)
         {
             depth = (depth + 1 > 5) ? 5 : depth + 1;
             log("Depth increased to: " + std::to_string(depth));
