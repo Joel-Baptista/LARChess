@@ -1,5 +1,5 @@
 {
-    "num_searches": 10,
+    "num_searches": 1,
     "num_iterations": 10,
     "num_selfPlay_iterations": 1,
     "num_parallel_games": 1,

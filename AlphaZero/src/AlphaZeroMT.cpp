@@ -533,7 +533,14 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         {
             copy_alpha_board(spGames.at(0)->game->m_Board);
 
-            m_mcts.at(thread_id)->search(&spGames);
+            if (m_Device->is_cuda())
+            {
+                m_mcts.at(thread_id)->search(&spGames, cuda_streams);
+            }
+            else
+            {
+                m_mcts.at(thread_id)->search(&spGames);
+            }
 
             restore_alpha_board(spGames.at(0)->game->m_Board);
 
@@ -584,7 +591,6 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
             {
                 res = 0;
             }
-
             delete spGames.at(0);
             spGames.erase(spGames.begin());
             return res;
