@@ -153,7 +153,7 @@ void AlphaZeroMT::update_C()
 
 void AlphaZeroMT::update_num_searches()
 {
-    num_searches = std::min((int)(num_searches * num_searches_ratio), num_searches);
+    num_searches = std::min((int)(num_searches * num_searches_ratio), num_searches_max);
 
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_num_searches(num_searches);
@@ -400,7 +400,6 @@ void AlphaZeroMT::learn()
                 try
                 {
                     auto result = future.get(); // Retrieve result once
-                    std::cout << "Eval result: " << result << std::endl;
                     if (result == 1)
                         results.win_count++;
                     else if (result == 0)
@@ -417,15 +416,15 @@ void AlphaZeroMT::learn()
             log("Eval Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         }
         
-        log("Wins %: " + std::to_string(results.win_count / num_evals) + "%, " +  
-            "Loss %: " + std::to_string(results.loss_count / num_evals) + "%, " +
-            "Draw %: " + std::to_string(results.draw_count / num_evals) +  
+        log("Wins %: " + std::to_string(results.win_count / (float)num_evals) + "%, " +  
+            "Loss %: " + std::to_string(results.loss_count / (float)num_evals) + "%, " +
+            "Draw %: " + std::to_string(results.draw_count / (float)num_evals) +  
             "%, Eval Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
 
         logEval(std::to_string(eval_iter) + "," + 
-        std::to_string(results.win_count / num_evals) + "," + 
-        std::to_string(results.loss_count / num_evals) + "," + 
-        std::to_string(results.draw_count / num_evals));
+        std::to_string(results.win_count / (float)num_evals) + "," + 
+        std::to_string(results.loss_count / (float)num_evals) + "," + 
+        std::to_string(results.draw_count / (float)num_evals));
         eval_iter++;
 
         if (results.win_count / num_evals > 0.5)
