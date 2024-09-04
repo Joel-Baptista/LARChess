@@ -1,0 +1,13 @@
+{
+    "initial_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    "human_player": "w",
+    "num_searches": 600,
+    "dichirlet_alpha": 0.5,
+    "dichirlet_epsilon": 0.1,
+    "C": 1.41,
+    "temperature": 1.0,
+    "num_resblocks": 7,
+    "num_channels": 512,
+    "model_path": "/home/sangan/projects/YACE/AlphaZero/models/alpha/model1/",
+    "device": "cuda:1"
+}

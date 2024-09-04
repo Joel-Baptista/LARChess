@@ -6,7 +6,9 @@
 
 
 AlphaZeroMT::AlphaZeroMT(
-                        int num_searches, 
+                        int num_searches_init, 
+                        int num_searches_max, 
+                        float num_searches_ratio,
                         int num_iterations, 
                         int num_selfPlay_iterations, 
                         int num_parallel_games, 
@@ -78,7 +80,7 @@ AlphaZeroMT::AlphaZeroMT(
     {
         m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device));
         copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
-        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches, dichirlet_alpha, dichirlet_epsilon, C));
+        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C));
     }
 
 
@@ -87,7 +89,10 @@ AlphaZeroMT::AlphaZeroMT(
         games.push_back(std::make_shared<Game>());
     }
 
-    this->num_searches = num_searches;
+    this->num_searches = num_searches_init;
+    this->num_searches_init = num_searches_init;
+    this->num_searches_max = num_searches_max;
+    this->num_searches_ratio = num_searches_ratio;
     this->num_iterations = num_iterations;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
     this->num_parallel_games = num_parallel_games;
@@ -144,6 +149,16 @@ void AlphaZeroMT::update_C()
         m_mcts.at(i)->set_C(C);
 
     log("C: " + std::to_string(C));   
+}
+
+void AlphaZeroMT::update_num_searches()
+{
+    num_searches = std::min((int)(num_searches * num_searches_ratio), num_searches);
+
+    for (int i = 0; i < num_threads; i++)
+        m_mcts.at(i)->set_num_searches(num_searches);
+
+    log("num_searches: " + std::to_string(num_searches));   
 }
 
 std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
@@ -351,9 +366,6 @@ void AlphaZeroMT::learn()
             futures.clear(); // Clear the futures vector before the next iteration
             log("Self Play Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         }
-        update_dichirlet();
-        update_temperature();
-        update_C();
 
         log("Memory size: " + std::to_string(memory.size()));
         
@@ -388,6 +400,7 @@ void AlphaZeroMT::learn()
                 try
                 {
                     auto result = future.get(); // Retrieve result once
+                    std::cout << "Eval result: " << result << std::endl;
                     if (result == 1)
                         results.win_count++;
                     else if (result == 0)
@@ -420,6 +433,10 @@ void AlphaZeroMT::learn()
             depth = (depth + 1 > 5) ? 5 : depth + 1;
             log("Depth increased to: " + std::to_string(depth));
         }
+        update_dichirlet();
+        update_temperature();
+        update_C();
+        update_num_searches();
         log("<--------------------------------------------------------->");
         log("<----------------LEARNING ITERATION----------------------->");
         log("<--------------------------------------------------------->");
@@ -664,7 +681,9 @@ void AlphaZeroMT::logEval(std::string message)
 void AlphaZeroMT::logConfig()
 {
     logMessage("{", model_path + "/config.json");
-    logMessage("    \"num_searches\": \"" + std::to_string(num_searches) + "\",", model_path + "/config.json");
+    logMessage("    \"num_searches_init\": \"" + std::to_string(num_searches_init) + "\",", model_path + "/config.json");
+    logMessage("    \"num_searches_max\": \"" + std::to_string(num_searches_max) + "\",", model_path + "/config.json");
+    logMessage("    \"num_searches_ratio\": \"" + std::to_string(num_searches_ratio) + "\",", model_path + "/config.json");
     logMessage("    \"num_iterations\": \"" + std::to_string(num_iterations) + "\",", model_path + "/config.json");
     logMessage("    \"num_selfPlay_iterations\": \"" + std::to_string(num_selfPlay_iterations) + "\",", model_path + "/config.json");
     logMessage("    \"num_parallel_games\": \"" + std::to_string(num_parallel_games) + "\",", model_path + "/config.json");

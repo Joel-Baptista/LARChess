@@ -1,5 +1,7 @@
 {
-    "num_searches": 1,
+    "num_searches_init": 1,
+    "num_searches_max": 1,
+    "num_searches_ratio": 1,
     "num_iterations": 10,
     "num_selfPlay_iterations": 1,
     "num_parallel_games": 1,

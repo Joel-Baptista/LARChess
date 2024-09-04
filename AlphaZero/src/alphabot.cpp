@@ -15,13 +15,31 @@ AlphaBot::AlphaBot(std::shared_ptr<Game> game,
     m_C = C;
     m_temp = temp;
     m_Device = std::make_shared<torch::Device>(torch::kCPU);
-    if (device == "cuda")
+
+    if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
-        m_Device = std::make_shared<torch::Device>(torch::kCUDA);
+        auto dots = device.find(":");
+        int device_id = 0;
+        if (dots != device.npos)
+        {
+            device_id = std::stoi(device.substr(dots + 1, device.npos - dots));
+        }
+
+        m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
+        std::cout << "Using CUDA " << device_id << std::endl;
+
+    }
+    else
+    {
+        std::cout << "Using CPU" << std::endl;
+        m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
 
+    auto stream = c10::cuda::getStreamFromPool();
+    cuda_streams.push_back(stream);
+
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device);
-    m_mcts = std::make_unique<MCTS>(m_ResNetChess, num_searches, dichirlet_alpha, dichirlet_epsilon, C);
+    m_mcts = std::make_unique<MCTS>(m_ResNetChess, 0, num_searches, dichirlet_alpha, dichirlet_epsilon, C);
 }
 
 AlphaBot::~AlphaBot()
@@ -32,6 +50,7 @@ void AlphaBot::load_model(std::string path)
 {
     std::vector<int64_t> shape = {1, 19, 8, 8};
     torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32); // Initialize the tensor with zeros
+    encoded_state = encoded_state.to(*m_Device);
     // auto st = get_time_ms();
 
     // m_ResNetChess->forward(encoded_state);
@@ -45,7 +64,7 @@ void AlphaBot::load_model(std::string path)
     // } 
     // std::cout << "Min: " << min << std::endl;
     // torch::save(m_ResNetChess, path + "model_aux.pt");
-    torch::load(m_ResNetChess, path + "model.pt", torch::kCPU);
+    torch::load(m_ResNetChess, path + "model.pt", *m_Device);
     m_ResNetChess->eval();
 
     // min = 100000000;
@@ -123,7 +142,15 @@ std::string AlphaBot::predict()
     auto st = get_time_ms();
 
     copy_alpha_board(m_Game->m_Board);
-    m_mcts->search(&spGames);
+
+    if (m_Device->is_cuda())
+    {
+        m_mcts->search(&spGames, cuda_streams);
+    }
+    else
+    {
+        m_mcts->search(&spGames);
+    }
 
     restore_alpha_board(m_Game->m_Board);
     std::cout << "Time to search: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;

@@ -20,8 +20,10 @@ struct evalResults
 class AlphaZeroMT
 {
     public:
-        AlphaZeroMT(
-                    int num_searches, 
+        AlphaZeroMT(             
+                    int num_searches_init, 
+                    int num_searches_max,  
+                    float num_search_ratio,
                     int num_iterations, 
                     int num_selfPlay_iterations, 
                     int num_parallel_games, 
@@ -76,6 +78,7 @@ class AlphaZeroMT
         void update_dichirlet();
         void update_temperature();
         void update_C();
+        void update_num_searches();
 
         std::shared_ptr<ResNetChess> m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;
@@ -89,6 +92,9 @@ class AlphaZeroMT
         std::vector<std::shared_ptr<Game>> games;
 
         int num_searches;
+        int num_searches_init; 
+        int num_searches_max; 
+        float num_searches_ratio;
         int num_iterations;
         int num_selfPlay_iterations;
         int num_parallel_games;

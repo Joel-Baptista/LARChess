@@ -29,4 +29,5 @@ class AlphaBot
     std::shared_ptr<torch::Device> m_Device;
     std::shared_ptr<ResNetChess> m_ResNetChess;
     std::unique_ptr<MCTS> m_mcts;
+    std::vector<c10::cuda::CUDAStream> cuda_streams;
 };
