@@ -24,5 +24,8 @@
     "model_name": "model",
     "pretrained_model_path": "",
     "device": "cpu",
-    "threads": 1
+    "threads": 1,
+    "sp": true,
+    "sp_batch_size": 256,
+    "dataset_path": "../datasets/games_processed.csv"
 }

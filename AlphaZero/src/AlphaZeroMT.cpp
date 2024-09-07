@@ -32,7 +32,7 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_channels,
                         std::string device,
                         std::string pretrained_model_path,
-                        int num_threads
+                        int num_threads,
                         )
 {
 
@@ -282,10 +282,11 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 
             // Delete the root node
 
-            for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
-            {
-                delete spGames.at(i)->pRoot->pChildren.at(j);
-            }
+            // for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
+            // {
+            //     delete spGames.at(i)->pRoot->pChildren.at(j);
+            // }
+            delete spGames.at(i)->pRoot;
 
             if (fs.terminated)
             {
@@ -573,6 +574,8 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
                     spGames.at(0)->game->get_encoded_action(spGames.at(0)->pRoot->pChildren.at(j)->action, spGames.at(0)->current_state.side) 
                     * spGames.at(0)->pRoot->pChildren.at(j)->visit_count;
             }
+
+            delete spGames.at(0)->pRoot;
 
             action_probs /= action_probs.sum();
 
