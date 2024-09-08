@@ -114,6 +114,7 @@ int main()
     int num_evals = config.value("num_evals", 1);
     int depth = config.value("depth", 4);
     double weight_decay = config.value("weight_decay", 0.0);
+    double dropout = config.value("dropout", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
     std::string model_name = config.value("model_name", "default_model");
@@ -147,6 +148,7 @@ int main()
                 num_evals,
                 depth,
                 weight_decay, 
+                dropout, 
                 num_resblocks,
                 num_channels,
                 device,

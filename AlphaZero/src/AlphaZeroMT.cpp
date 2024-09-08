@@ -28,11 +28,12 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_evals,
                         int depth,
                         float weight_decay,
+                        float dropout,
                         int num_resblocks,
                         int num_channels,
                         std::string device,
                         std::string pretrained_model_path,
-                        int num_threads,
+                        int num_threads
                         )
 {
 
@@ -67,7 +68,7 @@ AlphaZeroMT::AlphaZeroMT(
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
     
-    m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device);
+    m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device);
 
     if (pretrained_model_path != "")
     {
@@ -78,7 +79,7 @@ AlphaZeroMT::AlphaZeroMT(
 
     for (int i = 0; i < num_threads; i++)
     {
-        m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device));
+        m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device));
         copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
         m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C));
     }
@@ -112,6 +113,7 @@ AlphaZeroMT::AlphaZeroMT(
     this->num_evals = num_evals;
     this->depth = depth;
     this->weight_decay = weight_decay;
+    this->dropout = dropout;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
     this->train_iter = 0;
@@ -166,6 +168,8 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
     std::vector<sp_memory_item> memory;
     std::vector<SPG*> spGames;
     std::vector<int*> spg_times;
+
+    m_ResNetSwarm.at(thread_id)->eval();
 
     for (int i = 0; i < num_parallel_games; i++)
     {
@@ -525,6 +529,8 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
     std::vector<SPG*> spGames;
     evalResults results;
 
+    m_ResNetSwarm.at(thread_id)->eval();
+
     games.at(thread_id)->m_Board->parse_fen(start_position);
     SPG* spg = new SPG(games.at(thread_id));
     spGames.push_back(spg);
@@ -704,6 +710,7 @@ void AlphaZeroMT::logConfig()
     logMessage("    \"num_evals\": \"" + std::to_string(num_evals) + "\",", model_path + "/config.json");
     logMessage("    \"depth\": \"" + std::to_string(depth) + "\",", model_path + "/config.json");
     logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
     logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
     logMessage("    \"num_threads\": \"" + std::to_string(num_threads) + "\"", model_path + "/config.json");
     logMessage("}", model_path + "/config.json");

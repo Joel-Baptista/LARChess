@@ -12,6 +12,7 @@ SupervisedLearning::SupervisedLearning(
     int batch_size,
     float train_split,
     float weight_decay,
+    float dropout,
     int num_resblocks,
     int num_channels,
     std::string device,
@@ -19,8 +20,8 @@ SupervisedLearning::SupervisedLearning(
     bool hasHeaders = true
     ) 
 {
-    log_file = "log_sl.txt";
-    initLogFile(log_file);
+    this->model_path = initLogFiles("../models/slearn");
+    log_file = model_path + "/log.txt";
 
     m_dataset = std::make_shared<Dataset>(dataset_path, train_split, hasHeaders);
     m_dataset->shuffle();
@@ -46,13 +47,24 @@ SupervisedLearning::SupervisedLearning(
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
 
-    m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, *m_Device);
+    m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout,*m_Device);
     
     m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
 
     this->num_epochs = num_epochs;
     this->batch_size = batch_size;
     this->model_name = model_name;
+    this->weight_decay = weight_decay;
+    this->dropout = dropout;    
+
+    this->num_resblocks = num_resblocks;
+    this->num_channels = num_channels;
+    this->device = device;
+    this->model_name = model_name;
+    this->learning_rate = learning_rate;
+    this->dataset_path = dataset_path;
+
+    logConfig();
 }
 
 SupervisedLearning::~SupervisedLearning()
@@ -117,6 +129,7 @@ void SupervisedLearning::learn()
             batch_count += 1.0;
         }
         logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         m_dataset->shuffle();
         
 
@@ -168,10 +181,11 @@ void SupervisedLearning::learn()
         }
         float eval_loss = running_loss / batch_count;
         logMessage(" Eval Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        logEval(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         if (eval_loss < min_eval_loss)
         {
             min_eval_loss = eval_loss;
-            save_model(model_name);
+            save_model(model_path);
             logMessage("Saved best model!!!", log_file);
         }
 
@@ -189,6 +203,39 @@ void SupervisedLearning::load_model(std::string path, std::string model_name)
 {
     torch::load(m_ResNetChess, path + model_name + ".pt");
 }
+
+void SupervisedLearning::log(std::string message)
+{
+    logMessage( "[" + getCurrentTimestamp() + "] " + message, model_path + "/log.txt");
+    std::cout << "[" << getCurrentTimestamp() << "] " << message << std::endl;
+}
+
+void SupervisedLearning::logTrain(std::string message)
+{
+    logMessage(message, model_path + "/train.csv");
+}
+
+void SupervisedLearning::logEval(std::string message)
+{
+    logMessage(message, model_path + "/eval.csv");
+}
+
+void SupervisedLearning::logConfig()
+{
+    logMessage("{", model_path + "/config.json");
+    logMessage("    \"num_epochs\": \"" + std::to_string(num_epochs) + "\",", model_path + "/config.json");
+    logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
+    logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
+    logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
+    logMessage("    \"num_channels\": \"" + std::to_string(num_channels) + "\",", model_path + "/config.json");
+    logMessage("    \"device\": \"" + device + "\",", model_path + "/config.json");
+    logMessage("    \"dataset_path\": \"" + dataset_path + "\",", model_path + "/config.json");
+    logMessage("}", model_path + "/config.json");
+ 
+}
+
 
 
 int main()
@@ -216,6 +263,7 @@ int main()
     double learning_rate = config.value("learning_rate", 0.0);
     double train_split = config.value("train_split", 0.0);
     double weight_decay = config.value("weight_decay", 0.0);
+    double dropout = config.value("dropout", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
     std::string model_name = config.value("model_name", "default_model");
@@ -229,6 +277,7 @@ int main()
         batch_size,
         train_split,
         weight_decay,
+        dropout,
         num_resblocks,
         num_channels,
         device,

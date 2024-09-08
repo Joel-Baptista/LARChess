@@ -35,7 +35,7 @@ struct ResNetChess : torch::nn::Module {
     torch::nn::Sequential valueHead;
     std::shared_ptr<torch::Device> m_Device;
 
-    ResNetChess(int64_t num_resBlocks, int64_t num_hidden, torch::Device device) {
+    ResNetChess(int64_t num_resBlocks, int64_t num_hidden, float dropout, torch::Device device) {
         startBlock = torch::nn::Sequential(
             torch::nn::Conv2d(torch::nn::Conv2dOptions(19, num_hidden, 3).padding(1)),
             torch::nn::BatchNorm2d(num_hidden),
@@ -55,6 +55,7 @@ struct ResNetChess : torch::nn::Module {
             torch::nn::BatchNorm2d(32),
             torch::nn::ReLU(),
             torch::nn::Flatten(),
+            torch::nn::Dropout(dropout),
             torch::nn::Linear(32 * 8 * 8, 8 * 8 * 73)
         );
         register_module("policyHead", policyHead);
@@ -64,6 +65,7 @@ struct ResNetChess : torch::nn::Module {
             torch::nn::BatchNorm2d(3),
             torch::nn::ReLU(),
             torch::nn::Flatten(),
+            torch::nn::Dropout(dropout),
             torch::nn::Linear(3 * 8 * 8, 1),
             torch::nn::Tanh()
         );

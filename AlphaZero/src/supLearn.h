@@ -11,6 +11,7 @@ class SupervisedLearning {
                 int batch_size,
                 float train_split,
                 float weight_decay,
+                float dropout,
                 int num_resblocks,
                 int num_channels,
                 std::string device, 
@@ -24,6 +25,10 @@ class SupervisedLearning {
         void load_model(std::string path, std::string model_name);
         void save_model(std::string model_name) { save_model("", model_name); }
         void load_model(std::string model_name) { load_model("", model_name); }
+        void log(std::string message);
+        void logTrain(std::string message);
+        void logEval(std::string message);
+        void logConfig();
 
     private:
         std::shared_ptr<Dataset> m_dataset;
@@ -38,5 +43,15 @@ class SupervisedLearning {
         int batch_size;
         float train_split;
         std::string model_name;
+        std::string model_path;
+
+        std::string dataset_path; 
+        float learning_rate;
+        float weight_decay;
+        float dropout;
+        int num_resblocks;
+        int num_channels;
+        std::string device;
+        bool hasHeaders;
         
 };
