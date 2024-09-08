@@ -103,7 +103,6 @@ std::string initLogFiles(const std::string& path) {
 
     // // Create the log file
     initLogFile(new_folder_name + "/train.csv");
-    logMessage("iter,loss", new_folder_name + "/train.csv");
     initLogFile(new_folder_name + "/eval.csv");
     logMessage("iter,win,loss,draw", new_folder_name + "/eval.csv");
     initLogFile(new_folder_name + "/log.txt");

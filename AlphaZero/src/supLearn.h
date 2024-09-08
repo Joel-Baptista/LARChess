@@ -21,10 +21,10 @@ class SupervisedLearning {
         ~SupervisedLearning();
 
         void learn();
-        void save_model(std::string path, std::string model_name);
-        void load_model(std::string path, std::string model_name);
-        void save_model(std::string model_name) { save_model("", model_name); }
-        void load_model(std::string model_name) { load_model("", model_name); }
+        void save_model(std::string path);
+        void load_model(std::string path);
+        void save_model() { save_model(""); }
+        void load_model() { load_model(""); }
         void log(std::string message);
         void logTrain(std::string message);
         void logEval(std::string message);

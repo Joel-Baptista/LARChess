@@ -23,6 +23,8 @@ SupervisedLearning::SupervisedLearning(
     this->model_path = initLogFiles("../models/slearn");
     log_file = model_path + "/log.txt";
 
+    logMessage("iter,train,eval", model_path + "/train.csv");
+
     m_dataset = std::make_shared<Dataset>(dataset_path, train_split, hasHeaders);
     m_dataset->shuffle();
     logMessage("Train size: " + std::to_string(m_dataset->train_size()), log_file);
@@ -128,7 +130,8 @@ void SupervisedLearning::learn()
             running_loss += loss.cpu().item<float>();
             batch_count += 1.0;
         }
-        logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        float train_loss = running_loss / batch_count;
+        // logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
         logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         m_dataset->shuffle();
         
@@ -181,7 +184,7 @@ void SupervisedLearning::learn()
         }
         float eval_loss = running_loss / batch_count;
         logMessage(" Eval Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
-        logEval(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
+        logTrain(std::to_string(epoch) + "," + std::to_string(train_loss) + "," + std::to_string(eval_loss));
         if (eval_loss < min_eval_loss)
         {
             min_eval_loss = eval_loss;
@@ -193,15 +196,15 @@ void SupervisedLearning::learn()
     }
 }
 
-void SupervisedLearning::save_model(std::string path, std::string model_name)
+void SupervisedLearning::save_model(std::string path)
 {
-    torch::save(m_ResNetChess, path + model_name + ".pt");
-    std::cout << "Model saved in: " << path << model_name << ".pt" << std::endl;
+    torch::save(m_ResNetChess, path + "/model.pt");
+    std::cout << "Model saved in: " << path << "/model.pt" << std::endl;
 }
 
-void SupervisedLearning::load_model(std::string path, std::string model_name)
+void SupervisedLearning::load_model(std::string path)
 {
-    torch::load(m_ResNetChess, path + model_name + ".pt");
+    torch::load(m_ResNetChess, path + "/model.pt");
 }
 
 void SupervisedLearning::log(std::string message)

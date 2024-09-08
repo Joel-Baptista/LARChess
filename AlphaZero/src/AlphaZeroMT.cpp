@@ -42,6 +42,8 @@ AlphaZeroMT::AlphaZeroMT(
     this->model_path = initLogFiles("../models/alpha");
     log_file = model_path + "/log.txt";
 
+    logMessage("iter,loss", model_path + "/train.csv");
+
     if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
         auto dots = device.find(":");
