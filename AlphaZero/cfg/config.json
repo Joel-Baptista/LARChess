@@ -27,7 +27,7 @@
     "model_name": "../models/slearn/modelsl3",
     "pretrained_model_path": "",
     "device": "cuda:0",
-    "threads": 1,
+    "threads": 12,
     "sp": false,
     "sp_batch_size": 256,
     "dataset_path": "../datasets/games_processed.csv"
