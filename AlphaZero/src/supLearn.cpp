@@ -131,8 +131,8 @@ void SupervisedLearning::learn()
             batch_count += 1.0;
         }
         float train_loss = running_loss / batch_count;
-        // logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
-        logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
+        logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        // logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         m_dataset->shuffle();
         
 
