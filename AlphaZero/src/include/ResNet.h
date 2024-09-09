@@ -66,7 +66,7 @@ struct ResNetChess : torch::nn::Module {
             torch::nn::ReLU(),
             torch::nn::Flatten(),
             torch::nn::Dropout(dropout),
-            torch::nn::Linear(num_hidden, 1),
+            torch::nn::Linear(num_hidden * 8 * 8, 1),
             torch::nn::Tanh()
         );
         register_module("valueHead", valueHead);
