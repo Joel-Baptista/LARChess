@@ -51,22 +51,22 @@ struct ResNetChess : torch::nn::Module {
         }
 
         policyHead = torch::nn::Sequential(
-            torch::nn::Conv2d(torch::nn::Conv2dOptions(num_hidden, 32, 3).padding(1)),
-            torch::nn::BatchNorm2d(32),
+            torch::nn::Conv2d(torch::nn::Conv2dOptions(num_hidden, num_hidden, 3).padding(1)),
+            torch::nn::BatchNorm2d(num_hidden),
             torch::nn::ReLU(),
             torch::nn::Flatten(),
             torch::nn::Dropout(dropout),
-            torch::nn::Linear(32 * 8 * 8, 8 * 8 * 73)
+            torch::nn::Linear(num_hidden * 8 * 8, 8 * 8 * 73)
         );
         register_module("policyHead", policyHead);
 
         valueHead = torch::nn::Sequential(
-            torch::nn::Conv2d(torch::nn::Conv2dOptions(num_hidden, 3, 3).padding(1)),
-            torch::nn::BatchNorm2d(3),
+            torch::nn::Conv2d(torch::nn::Conv2dOptions(num_hidden, num_hidden, 3).padding(1)),
+            torch::nn::BatchNorm2d(num_hidden),
             torch::nn::ReLU(),
             torch::nn::Flatten(),
             torch::nn::Dropout(dropout),
-            torch::nn::Linear(3 * 8 * 8, 1),
+            torch::nn::Linear(num_hidden, 1),
             torch::nn::Tanh()
         );
         register_module("valueHead", valueHead);

@@ -3,10 +3,10 @@
     "train_split": 0.7,
     "batch_size": 256,
     "learning_rate": 0.0003,
-    "droupout": 0.2,
-    "weight_decay": 0.00001,
-    "num_resblocks": 27,
-    "num_channels": 512,
+    "dropout": 0.2,
+    "weight_decay": 0.0001,
+    "num_resblocks": 20,
+    "num_channels": 256,
     "model_name": "",
     "device": "cuda:1"
 }

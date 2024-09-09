@@ -7,7 +7,7 @@ import os
 sns.set_theme(style="whitegrid")
 
 # Folder containing your CSV files
-folder_path = '../models/slearn/model2'
+folder_path = '../models/alpha/model2'
 
 # Iterate through each CSV file in the folder
 for filename in os.listdir(folder_path):
@@ -18,10 +18,11 @@ for filename in os.listdir(folder_path):
         
         # Automatically use the first column as the x-axis
         x_column = df.columns[0]
+
         
         # Melt the DataFrame to long-form for seaborn
         df_melted = pd.melt(df, id_vars=[x_column], var_name='Variable', value_name='Value')
-
+        
         # Plotting using seaborn with enhanced styling
         plt.figure(figsize=(12, 8))
         sns.lineplot(x=x_column, y='Value', hue='Variable', data=df_melted, marker='o', palette='tab10')
