@@ -11,9 +11,10 @@
 
 #include <torch/torch.h>
 #include <torch/cuda.h>
-#include <c10/cuda/CUDAStream.h>
 #include "include/ResNet.h"
 #include "utils.h"
+
+#include <c10/cuda/CUDAStream.h>
 
 
 #define copy_state_from_board(dest, src)    memcpy(dest.bitboards, src->get_bitboards(), sizeof(dest.bitboards)); \
@@ -79,6 +80,20 @@ struct decoded_action
 {
     std::string action;
     float probability;
+};
+
+struct memory_item
+{
+    state board_state;
+    torch::Tensor action_probs;
+    int side;
+};
+
+struct sp_memory_item
+{
+    torch::Tensor encoded_state;
+    torch::Tensor action_probs;
+    float value;
 };
 
 class Game

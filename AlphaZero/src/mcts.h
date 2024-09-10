@@ -38,20 +38,6 @@ class Node
 
 };
 
-struct memory_item
-{
-    state board_state;
-    torch::Tensor action_probs;
-    int side;
-};
-
-struct sp_memory_item
-{
-    torch::Tensor encoded_state;
-    torch::Tensor action_probs;
-    float value;
-};
-
 class SPG
 {
     public:
