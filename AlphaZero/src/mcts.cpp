@@ -11,6 +11,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet
     this->C = C;
     this->m_model = model;
     this->thread_id = 0;
+    this->search_depth = 20;
 }
 MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
@@ -20,6 +21,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, 
     this->C = C;
     this->m_model = model;
     this->thread_id = thread_id;
+    this->search_depth = 20; 
 }
 
 MCTS::~MCTS()
@@ -121,9 +123,11 @@ void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>
             spGames->at(j)->pCurrentNode = nullptr;
             Node* pNode = spGames->at(j)->pRoot;
             
-            while (pNode->is_fully_expanded())
+            int cDepth = 0;
+            while (pNode->is_fully_expanded() && cDepth < search_depth)
             {
                 pNode = pNode->select();
+                cDepth++;
             }
 
             final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);

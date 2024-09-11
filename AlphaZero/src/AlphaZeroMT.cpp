@@ -77,6 +77,7 @@ AlphaZeroMT::AlphaZeroMT(
     
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device);
 
+    std::cout << pretrained_model_path << std::endl;
     if (pretrained_model_path != "")
     {
         load_model(pretrained_model_path);
@@ -385,7 +386,7 @@ void AlphaZeroMT::learn()
             continue;
         }
 
-        int st = get_time_ms();
+        st = get_time_ms();
 
         train();
 

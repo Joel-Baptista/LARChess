@@ -77,6 +77,7 @@ class MCTS
         int num_searches;
         float dichirlet_alpha;
         float dichirlet_epsilon;
+        int search_depth;
 
         std::shared_ptr<ResNetChess> m_model;
 
