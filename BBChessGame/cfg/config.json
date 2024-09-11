@@ -1,6 +1,6 @@
 {
     "initial_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-    "depth": 3,
+    "depth": 4,
     "human_player": "w",
     "human_vs_human": false,
     "bot": "minmax"

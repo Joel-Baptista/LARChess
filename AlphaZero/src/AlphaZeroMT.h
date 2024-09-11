@@ -3,11 +3,13 @@
 #include <memory>
 #include "mcts.h"
 #include "game.h"
+#include "ReplayBuffer.h"
 
 #include <iostream>
 #include <thread>
 #include <future>
 #include <vector>
+#include <mutex>
 
 
 struct evalResults
@@ -28,7 +30,10 @@ class AlphaZeroMT
                     int num_selfPlay_iterations, 
                     int num_parallel_games, 
                     int num_epochs, 
+                    int max_state_per_game,
+                    int swarm_update_freq,
                     int batch_size, 
+                    int buffer_size,
                     float temperature, 
                     float temperature_decay, 
                     float temperature_min, 
@@ -54,7 +59,7 @@ class AlphaZeroMT
         ~AlphaZeroMT();
 
         void learn();
-        void train(std::vector<sp_memory_item> memory);
+        void train();
         void save_model(std::string path);
         void load_model(std::string path);
         void save_model() { save_model(""); }
@@ -64,7 +69,7 @@ class AlphaZeroMT
 
     private:
 
-        std::vector<sp_memory_item> SelfPlay(int thread_id);
+        void SelfPlay(int thread_id);
         int AlphaEval(int thread_id, int depth);
 
         void log(std::string message);
@@ -91,6 +96,8 @@ class AlphaZeroMT
         std::vector<std::shared_ptr<MCTS>> m_mcts;
 
         std::vector<std::shared_ptr<Game>> games;
+        std::unique_ptr<ReplayBuffer> m_Buffer; 
+        std::mutex mtxBuffer;
 
         int num_searches;
         int num_searches_init; 
@@ -100,7 +107,10 @@ class AlphaZeroMT
         int num_selfPlay_iterations;
         int num_parallel_games;
         int num_epochs;
+        int max_state_per_game;
+        int swarm_update_freq;
         int batch_size;
+        int buffer_size;
         float temperature;
         float temperature_decay;
         float temperature_min;

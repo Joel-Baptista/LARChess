@@ -99,7 +99,9 @@ int main()
     int num_selfPlay_iterations = config.value("num_selfPlay_iterations", 0);
     int num_parallel_games = config.value("num_parallel_games", 0);
     int num_epochs = config.value("num_epochs", 0);
+    int max_state_per_game = config.value("max_state_per_game", 0);
     int batch_size = config.value("batch_size", 0);
+    int buffer_size = config.value("buffer_size", 0);
     double temperature = config.value("temperature", 0.0);
     double temperature_decay = config.value("temperature_decay", 0.0);
     double temperature_min = config.value("temperature_min", 0.0);
@@ -132,8 +134,10 @@ int main()
                 num_iterations,       
                 num_selfPlay_iterations,
                 num_parallel_games,
-                num_epochs,        
-                batch_size,        
+                num_epochs,   
+                max_state_per_game,     
+                batch_size, 
+                buffer_size,       
                 temperature,      
                 temperature_decay,      
                 temperature_min,      

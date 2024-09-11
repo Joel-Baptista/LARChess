@@ -13,7 +13,10 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_selfPlay_iterations, 
                         int num_parallel_games, 
                         int num_epochs, 
+                        int max_state_per_game,
+                        int swarm_update_freq,
                         int batch_size, 
+                        int buffer_size,
                         float temperature, 
                         float temperature_decay, 
                         float temperature_min, 
@@ -43,6 +46,8 @@ AlphaZeroMT::AlphaZeroMT(
     log_file = model_path + "/log.txt";
 
     logMessage("iter,loss", model_path + "/train.csv");
+
+    m_Buffer = std::make_unique<ReplayBuffer>(buffer_size);
 
     if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
@@ -100,6 +105,8 @@ AlphaZeroMT::AlphaZeroMT(
     this->num_selfPlay_iterations = num_selfPlay_iterations;
     this->num_parallel_games = num_parallel_games;
     this->num_epochs = num_epochs;
+    this->max_state_per_game = max_state_per_game;
+    this->swarm_update_freq = swarm_update_freq;
     this->batch_size = batch_size;
     this->temperature = temperature;
     this->temperature_decay = temperature_decay;
@@ -165,9 +172,8 @@ void AlphaZeroMT::update_num_searches()
     log("num_searches: " + std::to_string(num_searches));   
 }
 
-std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
+void AlphaZeroMT::SelfPlay(int thread_id)
 {
-    std::vector<sp_memory_item> memory;
     std::vector<SPG*> spGames;
     std::vector<int*> spg_times;
 
@@ -296,24 +302,21 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 
             if (fs.terminated)
             {
-                for (int j = 0; j < spGames.at(i)->memory.size(); j++)
                 {
-                    float value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
-                                ? -fs.value
-                                : fs.value;
+                    std::lock_guard<std::mutex> lock(mtxBuffer);
+                    m_Buffer->adding_new_game();
+                    for (int j = 0; j < spGames.at(i)->memory.size(); j++)
+                    {
+                        float value = (spGames.at(i)->memory.at(j).board_state.side == spGames.at(i)->current_state.side)
+                                    ? -fs.value
+                                    : fs.value;
 
-                    torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-                    spGames.at(i)->game->get_encoded_state(state, spGames.at(i)->memory.at(j).board_state);
-                    spGames.at(i)->repeated_states.clear();
+                        torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+                        spGames.at(i)->game->get_encoded_state(state, spGames.at(i)->memory.at(j).board_state);
+                        spGames.at(i)->repeated_states.clear();
 
-                    memory.push_back(
-                        {
-                            
-                            state,
-                            spGames.at(i)->memory.at(j).action_probs,
-                            value
-                        }
-                    );
+                        m_Buffer->add(state,  spGames.at(i)->memory.at(j).action_probs, torch::tensor(value));
+                    }
                 }
                 // log("Thread: " + std::to_string(thread_id + 1) + 
                 //     " Game " + std::to_string(i + 1) + 
@@ -339,56 +342,54 @@ std::vector<sp_memory_item> AlphaZeroMT::SelfPlay(int thread_id)
 
     }
 
-    return memory;
 }
 
 void AlphaZeroMT::learn()
 {
     int st = get_time_ms();
 
-    for (int iter = 0; iter < num_iterations; iter++)
+    while (train_iter < num_iterations)
     {
-        std::vector<std::future<std::vector<sp_memory_item>>> futures;
-        std::vector<sp_memory_item> memory;
+        std::vector<std::future<void>> futures;
 
         // Launch multiple threads to perform self-play
-        for (int i = 0; i < num_selfPlay_iterations / (num_threads * num_parallel_games); i++)
-        {
-            int st = get_time_ms();
-            for (int j = 0; j < num_threads; ++j) {
-                // log("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1));
-                futures.push_back(std::async(std::launch::async, &AlphaZeroMT::SelfPlay, this, j));
-            }
-            for (auto& future : futures) {
-                try
-                {
-                    auto sp_memory = future.get(); // Retrieve result once
-                    memory.insert(memory.end(), sp_memory.begin(), sp_memory.end());
-                }
-                catch (const std::exception& e)
-                {
-                    log("Exception caught during future.get(): " + std::string(e.what()));
-                }
-            }
-            futures.clear(); // Clear the futures vector before the next iteration
-            log("Self Play Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
-        }
 
-        log("Memory size: " + std::to_string(memory.size()));
-        
         int st = get_time_ms();
-        for (int j = 0; j < num_epochs; j++)
-        {
-            train(memory);
+        for (int j = 0; j < num_threads; ++j) {
+            // log("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1));
+            futures.push_back(std::async(std::launch::async, &AlphaZeroMT::SelfPlay, this, j));
         }
+        for (auto& future : futures) {
+            try
+            {
+                future.get(); // Retrieve result once
+            }
+            catch (const std::exception& e)
+            {
+                log("Exception caught during future.get(): " + std::string(e.what()));
+            }
+        }
+        futures.clear(); // Clear the futures vector before the next iteration
+        log("Self Play Iteration Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+        
+
+        if (m_Buffer->size() < batch_size) // Wait until we have enough data and is possible to sample less than 30 positions 
+        {
+            log("Buffer size: " + std::to_string(m_Buffer->size()) + " is less than batch size: " + std::to_string(batch_size));
+            continue;
+        }
+
+        if ( (m_Buffer->get_current_game_id() < (batch_size / max_state_per_game)))
+        {
+            log("Current Game Id: " + std::to_string(m_Buffer->get_current_game_id()) + " is less than batch size: " + std::to_string(batch_size / max_state_per_game));
+            continue;
+        }
+
+        int st = get_time_ms();
+
+        train();
+
         log("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
-
-        for (int i = 0; i < num_threads; i++)
-        {
-            copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
-        }
-
-        log("Weights copied succesfully");
 
         save_model(model_path);
         
@@ -449,24 +450,8 @@ void AlphaZeroMT::learn()
     }
 }
 
-void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
+void AlphaZeroMT::train()
 {
-    int* pArr = new int[memory.size()];
-
-    // Calculate the size of the array
-    int n = memory.size();
-    for (int i = 0; i < n; i++)
-    {
-        pArr[i] = i;
-    }
-    // Obtain a time-based seed
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-
-    // Create a random number generator using mt19937
-    std::mt19937 rng(seed);
-
-    // Shuffle the array using std::shuffle
-    std::shuffle(pArr, pArr + n, rng);
 
     m_ResNetChess->train();
 
@@ -474,28 +459,15 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
     float batch_count = 0.0;
     auto st = get_time_ms();
 
-    if (batch_size > n) batch_size = n;
-
-    for (int i = 0; i < n / batch_size; i++)
+    for (int i = 0; i < num_epochs; i++)
     {
-        int idx_st = i * batch_size;
-        int idx_end = (i + 1) * batch_size;
-
-        if (idx_end > n) idx_end = n;
-
-        unsigned int b_size = abs(idx_end - idx_st);
         
-        torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-        torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, torch::kFloat32); // Initialize the tensor with zeros
-        torch::Tensor values = torch::zeros({b_size, 1}, torch::kFloat32); // Initialize the tensor with zeros
+        auto samples = m_Buffer->sample(batch_size);
 
-        for (int j = 0; j < b_size; j++)
-        {
-            encoded_states[j] = memory.at(pArr[idx_st + j]).encoded_state.squeeze(0);
-            encoded_actions[j] = memory.at(pArr[idx_st + j]).action_probs.squeeze(0);
-            values[j] = memory.at(pArr[idx_st + j]).value;
-        }
-
+        torch::Tensor encoded_states = samples.states;
+        torch::Tensor encoded_actions = samples.action_probs;
+        torch::Tensor values = samples.values;
+        
         encoded_states = encoded_states.to(*m_Device);
         encoded_actions = encoded_actions.to(*m_Device);
         values = values.to(*m_Device);
@@ -512,18 +484,27 @@ void AlphaZeroMT::train(std::vector<sp_memory_item> memory)
         loss.backward();
         // std::cout << "Backward pass completed" << std::endl;
         m_Optimizer->step();
-        // std::cout << "Optimizer step completed" << std::endl;
+        
+        log(" Loss: " + std::to_string(loss.cpu().item<float>()) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+        logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
+        train_iter++;
 
-        // std::cout << "Loss: " << loss.item<float>() << std::endl;
-        // std::cout << "Value loss: " << policy_loss.item<float>() << std::endl;
-        running_loss += loss.cpu().item<float>();
-        batch_count += 1.0;
+        if  (train_iter % swarm_update_freq == 0)
+        {
+            // Hard copy the weights to the swarm (for now)
+            for (int i = 0; i < num_threads; i++)
+            {
+                copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
+            }
+
+            log("Data Aquisition Nets Updated");
+        }
 
     }
-    log(" Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
-    logTrain(std::to_string(train_iter) + "," + std::to_string(running_loss / batch_count));
-    train_iter++;
-    delete[] pArr;
+
+
+
+
 }
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
@@ -698,7 +679,10 @@ void AlphaZeroMT::logConfig()
     logMessage("    \"num_selfPlay_iterations\": \"" + std::to_string(num_selfPlay_iterations) + "\",", model_path + "/config.json");
     logMessage("    \"num_parallel_games\": \"" + std::to_string(num_parallel_games) + "\",", model_path + "/config.json");
     logMessage("    \"num_epochs\": \"" + std::to_string(num_epochs) + "\",", model_path + "/config.json");
+    logMessage("    \"max_state_per_game\": \"" + std::to_string(max_state_per_game) + "\",", model_path + "/config.json");
+    logMessage("    \"swarm_update_freq\": \"" + std::to_string(swarm_update_freq) + "\",", model_path + "/config.json");
     logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
+    logMessage("    \"buffer_size,\": \"" + std::to_string(buffer_size) + "\",", model_path + "/config.json");
     logMessage("    \"temperature\": \"" + std::to_string(temperature) + "\",", model_path + "/config.json");
     logMessage("    \"temperature_min\": \"" + std::to_string(temperature_min) + "\",", model_path + "/config.json");
     logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
