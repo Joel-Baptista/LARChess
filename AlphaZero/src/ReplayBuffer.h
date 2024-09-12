@@ -17,7 +17,7 @@ class ReplayBuffer
         void reset();
         void adding_new_game() { current_game_id++; }
         int get_current_game_id() { return current_game_id; }
-        buffer_items sample(int batch_size);
+        buffer_items sample(int batch_size, int max_state_per_game);
         int size();
     
     private:
@@ -28,7 +28,6 @@ class ReplayBuffer
         torch::Tensor states;
         torch::Tensor action_probs;
         torch::Tensor values;
-        std::unique_ptr<int> indices;
         int* pGameIds;
         int current_game_id;
 

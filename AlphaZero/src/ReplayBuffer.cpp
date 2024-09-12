@@ -10,7 +10,7 @@ ReplayBuffer::ReplayBuffer(int buffer_size)
     this->values = torch::zeros({buffer_size});
     this->current_game_id = 0;
 
-    int* pGameIds = new int[buffer_size];
+    pGameIds = new int[buffer_size];
 }
 
 ReplayBuffer::~ReplayBuffer()
@@ -27,8 +27,8 @@ void ReplayBuffer::add(torch::Tensor encoded_state, torch::Tensor action_probs, 
 {
     int index = this->pos % this->buffer_size;
 
-    this->states[index] = encoded_state;
-    this->action_probs[index] = action_probs;
+    this->states[index] = encoded_state[0];
+    this->action_probs[index] = action_probs[0];
     this->values[index] = value.item<float>();
     this->pGameIds[index] = current_game_id;
 
@@ -41,7 +41,7 @@ void ReplayBuffer::reset()
     this->full = false;
 }
 
-buffer_items ReplayBuffer::sample(int batch_size)
+buffer_items ReplayBuffer::sample(int batch_size, int max_state_per_game)
 {
 
     // Random number generator
@@ -55,9 +55,8 @@ buffer_items ReplayBuffer::sample(int batch_size)
 
     while (random_indices.size() < batch_size) {
         int idx = distrib(gen);  // Generate a random index
-        std::cout << "idx: " << idx << std::endl;
         
-        if (random_indices.find(idx) == random_indices.end() && game_counts[idx] <= 30)  // Check if the index is already in the set
+        if (random_indices.find(idx) == random_indices.end() && game_counts[idx] <= max_state_per_game)  // Check if the index is already in the set
         {
             random_indices.insert(idx);  // Insert it (only if it's not already in the set)
             game_counts[idx]++;

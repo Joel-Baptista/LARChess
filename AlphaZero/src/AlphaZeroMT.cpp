@@ -319,6 +319,8 @@ void AlphaZeroMT::SelfPlay(int thread_id)
                         m_Buffer->add(state,  spGames.at(i)->memory.at(j).action_probs, torch::tensor(value));
                     }
                 }
+
+                // std::cout << "Memory added to the buffer" << std::endl;
                 // log("Thread: " + std::to_string(thread_id + 1) + 
                 //     " Game " + std::to_string(i + 1) + 
                 //     " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
@@ -463,7 +465,7 @@ void AlphaZeroMT::train()
     for (int i = 0; i < num_epochs; i++)
     {
         
-        auto samples = m_Buffer->sample(batch_size);
+        auto samples = m_Buffer->sample(batch_size, max_state_per_game);
 
         torch::Tensor encoded_states = samples.states;
         torch::Tensor encoded_actions = samples.action_probs;
@@ -476,7 +478,7 @@ void AlphaZeroMT::train()
         auto output = m_ResNetChess->forward(encoded_states);
 
         auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-        auto value_loss = torch::nn::functional::mse_loss(output.value, values);
+        auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
         // std::cout << "Value loss calculated" << std::endl;
         auto loss = policy_loss + value_loss;
 
