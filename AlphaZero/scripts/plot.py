@@ -25,7 +25,7 @@ for filename in os.listdir(folder_path):
         
         # Plotting using seaborn with enhanced styling
         plt.figure(figsize=(12, 8))
-        sns.lineplot(x=x_column, y='Value', hue='Variable', data=df_melted, marker='o', palette='tab10')
+        sns.lineplot(x=x_column, y='Value', hue='Variable', data=df_melted, marker=' ', palette='tab10')
 
         # Customize the title and labels
         plt.title(f'{filename}', fontsize=16, weight='bold', color='darkblue', pad=20)

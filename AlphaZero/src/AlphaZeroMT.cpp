@@ -403,9 +403,9 @@ void AlphaZeroMT::learn()
         // Eval the bot
         std::vector<std::future<int>> futuresEval;
         evalResults results;
+        st = get_time_ms();
         for (int i = 0; i < (num_evals / num_threads); i++)
         {
-            st = get_time_ms();
             for (int j = 0; j < num_threads; ++j) {
                 futuresEval.push_back(std::async(std::launch::async, &AlphaZeroMT::AlphaEval, this, j, depth));
             }
@@ -426,7 +426,6 @@ void AlphaZeroMT::learn()
                 }
             }
             futuresEval.clear(); // Clear the futures vector before the next iteration
-            log("Eval Iteration: " + std::to_string(i + 1) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         }
         
         log("Wins %: " + std::to_string(results.win_count / (float)num_evals) + "%, " +  
@@ -489,8 +488,10 @@ void AlphaZeroMT::train()
         loss.backward();
         // std::cout << "Backward pass completed" << std::endl;
         m_Optimizer->step();
+
+        running_loss += loss.cpu().item<float>();
+        batch_count++;
         
-        log(" Loss: " + std::to_string(loss.cpu().item<float>()) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
         train_iter++;
 
@@ -507,7 +508,8 @@ void AlphaZeroMT::train()
 
     }
 
-
+    log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+        
 
 
 }
