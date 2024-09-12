@@ -9,6 +9,7 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_searches_init, 
                         int num_searches_max, 
                         float num_searches_ratio,
+                        int search_depth,
                         int num_iterations, 
                         int num_selfPlay_iterations, 
                         int num_parallel_games, 
@@ -89,7 +90,7 @@ AlphaZeroMT::AlphaZeroMT(
     {
         m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device));
         copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
-        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C));
+        m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches_init, search_depth, dichirlet_alpha, dichirlet_epsilon, C));
     }
 
 
@@ -102,6 +103,7 @@ AlphaZeroMT::AlphaZeroMT(
     this->num_searches_init = num_searches_init;
     this->num_searches_max = num_searches_max;
     this->num_searches_ratio = num_searches_ratio;
+    this->search_depth = search_depth;
     this->num_iterations = num_iterations;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
     this->num_parallel_games = num_parallel_games;
@@ -678,6 +680,7 @@ void AlphaZeroMT::logConfig()
     logMessage("    \"num_searches_init\": \"" + std::to_string(num_searches_init) + "\",", model_path + "/config.json");
     logMessage("    \"num_searches_max\": \"" + std::to_string(num_searches_max) + "\",", model_path + "/config.json");
     logMessage("    \"num_searches_ratio\": \"" + std::to_string(num_searches_ratio) + "\",", model_path + "/config.json");
+    logMessage("    \"search_depth\": \"" + std::to_string(search_depth) + "\",", model_path + "/config.json");
     logMessage("    \"num_iterations\": \"" + std::to_string(num_iterations) + "\",", model_path + "/config.json");
     logMessage("    \"num_selfPlay_iterations\": \"" + std::to_string(num_selfPlay_iterations) + "\",", model_path + "/config.json");
     logMessage("    \"num_parallel_games\": \"" + std::to_string(num_parallel_games) + "\",", model_path + "/config.json");

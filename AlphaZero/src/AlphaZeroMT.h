@@ -26,6 +26,7 @@ class AlphaZeroMT
                     int num_searches_init, 
                     int num_searches_max,  
                     float num_search_ratio,
+                    int search_depth,
                     int num_iterations, 
                     int num_selfPlay_iterations, 
                     int num_parallel_games, 
@@ -103,6 +104,7 @@ class AlphaZeroMT
         int num_searches_init; 
         int num_searches_max; 
         float num_searches_ratio;
+        int search_depth;
         int num_iterations;
         int num_selfPlay_iterations;
         int num_parallel_games;

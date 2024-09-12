@@ -3,7 +3,7 @@
 #include <cmath>
 
 
-MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, int search_depth, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
@@ -11,9 +11,9 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet
     this->C = C;
     this->m_model = model;
     this->thread_id = 0;
-    this->search_depth = 20;
+    this->search_depth = search_depth;
 }
-MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, int search_depth,float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
@@ -21,7 +21,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, 
     this->C = C;
     this->m_model = model;
     this->thread_id = thread_id;
-    this->search_depth = 20; 
+    this->search_depth = search_depth; 
 }
 
 MCTS::~MCTS()
@@ -216,7 +216,10 @@ void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>
             spg_policy *= valid_moves;
             spg_policy /= spg_policy.sum();
 
-            spGames->at(game_index)->pCurrentNode->expand(spg_policy, valid_moves);
+            if (!spGames->at(game_index)->pCurrentNode->is_fully_expanded())
+            {
+                spGames->at(game_index)->pCurrentNode->expand(spg_policy, valid_moves);
+            }
 
             st = get_time_ms();
             spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());

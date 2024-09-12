@@ -95,6 +95,7 @@ int main()
     int num_searches_init = config.value("num_searches_init", 0);
     int num_searches_max = config.value("num_searches_max", 0);
     float num_searches_ratio = config.value("num_searches_ratio", 0.0);
+    int search_depth = config.value("search_depth", 0);
     int num_iterations = config.value("num_iterations", 0);
     int num_selfPlay_iterations = config.value("num_selfPlay_iterations", 0);
     int num_parallel_games = config.value("num_parallel_games", 0);
@@ -131,7 +132,8 @@ int main()
     AlphaZeroMT az(  
                 num_searches_init,  
                 num_searches_max, 
-                num_searches_ratio,      
+                num_searches_ratio,
+                search_depth,      
                 num_iterations,       
                 num_selfPlay_iterations,
                 num_parallel_games,
