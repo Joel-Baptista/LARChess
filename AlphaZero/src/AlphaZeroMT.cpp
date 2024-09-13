@@ -4,7 +4,6 @@
 #include <chrono>    // For std::chrono::system_clock
 
 
-
 AlphaZeroMT::AlphaZeroMT(
                         int num_searches_init, 
                         int num_searches_max, 
@@ -352,6 +351,7 @@ void AlphaZeroMT::SelfPlay(int thread_id)
 void AlphaZeroMT::learn()
 {
     int st = get_time_ms();
+    int st_total = get_time_ms();
 
     while (train_iter < num_iterations)
     {
@@ -381,12 +381,14 @@ void AlphaZeroMT::learn()
         if (m_Buffer->size() < batch_size) // Wait until we have enough data and is possible to sample less than 30 positions 
         {
             log("Buffer size: " + std::to_string(m_Buffer->size()) + " is less than batch size: " + std::to_string(batch_size));
+            update_hyper();
             continue;
         }
 
         if ( (m_Buffer->get_current_game_id() < (batch_size / max_state_per_game)))
         {
             log("Current Game Id: " + std::to_string(m_Buffer->get_current_game_id()) + " is less than batch size: " + std::to_string(batch_size / max_state_per_game));
+            update_hyper();
             continue;
         }
 
@@ -444,10 +446,10 @@ void AlphaZeroMT::learn()
             depth = (depth + 1 > 5) ? 5 : depth + 1;
             log("Depth increased to: " + std::to_string(depth));
         }
-        update_dichirlet();
-        update_temperature();
-        update_C();
-        update_num_searches();
+        
+        update_hyper();
+
+        log("Hours since start: " + std::to_string((get_time_ms() - st_total) / 60000.0f) + " hours");
         log("<--------------------------------------------------------->");
         log("<----------------LEARNING ITERATION----------------------->");
         log("<--------------------------------------------------------->");
@@ -510,8 +512,6 @@ void AlphaZeroMT::train()
 
     log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         
-
-
 }
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
@@ -658,6 +658,14 @@ void AlphaZeroMT::load_model(std::string path)
         std::cout << "Be carefull! Clamping the weights significantly altered the network" << std::endl;
     }
 
+}
+
+void AlphaZeroMT::update_hyper()
+{
+    update_dichirlet();
+    update_temperature();
+    update_C();
+    update_num_searches();
 }
 
 void AlphaZeroMT::log(std::string message)

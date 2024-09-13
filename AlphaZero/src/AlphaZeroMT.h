@@ -86,6 +86,8 @@ class AlphaZeroMT
         void update_temperature();
         void update_C();
         void update_num_searches();
+        
+        void update_hyper();
 
         std::shared_ptr<ResNetChess> m_ResNetChess;
         std::unique_ptr<torch::optim::Adam> m_Optimizer;
