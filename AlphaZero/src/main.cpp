@@ -107,7 +107,10 @@ int main()
     double temperature = config.value("temperature", 0.0);
     double temperature_decay = config.value("temperature_decay", 0.0);
     double temperature_min = config.value("temperature_min", 0.0);
-    double learning_rate = config.value("learning_rate", 0.0);
+    double learning_rate_innit = config.value("learning_rate_innit", 0.0);
+    double learning_rate_decay = config.value("learning_rate_decay", 0.0);
+    double learning_rate_min = config.value("learning_rate_min", 0.0);
+    double learning_rate_update_freq = config.value("learning_rate_update_freq", 0.0);
     double dichirlet_alpha = config.value("dichirlet_alpha", 0.0);
     double dichirlet_epsilon = config.value("dichirlet_epsilon", 0.0);
     double dichirlet_epsilon_decay = config.value("dichirlet_epsilon_decay", 0.0);
@@ -145,7 +148,10 @@ int main()
                 temperature,      
                 temperature_decay,      
                 temperature_min,      
-                learning_rate,    
+                learning_rate_innit,
+                learning_rate_decay,
+                learning_rate_min,
+                learning_rate_update_freq,    
                 dichirlet_alpha,  
                 dichirlet_epsilon,
                 dichirlet_epsilon_decay,

@@ -38,7 +38,10 @@ class AlphaZeroMT
                     float temperature, 
                     float temperature_decay, 
                     float temperature_min, 
-                    float learning_rate, 
+                    float learning_rate_innit,
+                    float learning_rate_decay,
+                    float learning_rate_min,
+                    float learning_rate_update_freq, 
                     float dichirlet_alpha, 
                     float dichirlet_epsilon, 
                     float dichirlet_epsilon_decay, 
@@ -86,6 +89,7 @@ class AlphaZeroMT
         void update_temperature();
         void update_C();
         void update_num_searches();
+        void update_learning_rate();
         
         void update_hyper();
 
@@ -119,6 +123,11 @@ class AlphaZeroMT
         float temperature_decay;
         float temperature_min;
         float learning_rate;
+        float learning_rate_innit;
+        float learning_rate_decay;
+        float learning_rate_min;
+        float learning_rate_update_freq; 
+        int lr_last_update;
         float dichirlet_alpha;
         float dichirlet_epsilon;
         float dichirlet_epsilon_decay;

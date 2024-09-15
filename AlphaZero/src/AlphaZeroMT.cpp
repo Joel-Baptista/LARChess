@@ -20,7 +20,10 @@ AlphaZeroMT::AlphaZeroMT(
                         float temperature, 
                         float temperature_decay, 
                         float temperature_min, 
-                        float learning_rate, 
+                        float learning_rate_innit,
+                        float learning_rate_decay,
+                        float learning_rate_min,
+                        float learning_rate_update_freq, 
                         float dichirlet_alpha, 
                         float dichirlet_epsilon, 
                         float dichirlet_epsilon_decay, 
@@ -83,7 +86,7 @@ AlphaZeroMT::AlphaZeroMT(
         load_model(pretrained_model_path);
     }
     
-    m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
+    m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate_innit).weight_decay(weight_decay));
 
     for (int i = 0; i < num_threads; i++)
     {
@@ -105,6 +108,7 @@ AlphaZeroMT::AlphaZeroMT(
     this->search_depth = search_depth;
     this->num_iterations = num_iterations;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
+    this->buffer_size = buffer_size;
     this->num_parallel_games = num_parallel_games;
     this->num_epochs = num_epochs;
     this->max_state_per_game = max_state_per_game;
@@ -113,7 +117,11 @@ AlphaZeroMT::AlphaZeroMT(
     this->temperature = temperature;
     this->temperature_decay = temperature_decay;
     this->temperature_min = temperature_min;
-    this->learning_rate = learning_rate;
+    this->learning_rate = learning_rate_innit;
+    this->learning_rate_innit = learning_rate_innit;
+    this->learning_rate_decay = learning_rate_decay;
+    this->learning_rate_min = learning_rate_min;
+    this->learning_rate_update_freq = learning_rate_update_freq;
     this->dichirlet_alpha = dichirlet_alpha;
     this->dichirlet_epsilon = dichirlet_epsilon;
     this->dichirlet_epsilon_decay = dichirlet_epsilon_decay;
@@ -129,6 +137,8 @@ AlphaZeroMT::AlphaZeroMT(
     this->num_threads = num_threads;
     this->train_iter = 0;
     this->eval_iter = 0;
+
+    lr_last_update = 0;
 
     logConfig();
 }
@@ -172,6 +182,20 @@ void AlphaZeroMT::update_num_searches()
         m_mcts.at(i)->set_num_searches(num_searches);
 
     log("num_searches: " + std::to_string(num_searches));   
+}
+
+void AlphaZeroMT::update_learning_rate()
+{
+    if (lr_last_update + learning_rate_update_freq > train_iter) 
+    {
+        lr_last_update += learning_rate_update_freq;
+
+        learning_rate = std::max((learning_rate * learning_rate_decay), learning_rate_min);
+        for (auto& param_group : m_Optimizer->param_groups()) {
+            static_cast<torch::optim::AdamOptions&>(param_group.options()).lr(learning_rate);
+        }
+        log("Learning rate: " + std::to_string(learning_rate));
+    }
 }
 
 void AlphaZeroMT::SelfPlay(int thread_id)
@@ -480,7 +504,8 @@ void AlphaZeroMT::train()
 
         auto output = m_ResNetChess->forward(encoded_states);
 
-        auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+        // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+        torch::Tensor policy_loss = torch::sum(-encoded_actions * torch::log_softmax(output.policy, -1));
         auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
         // std::cout << "Value loss calculated" << std::endl;
         auto loss = policy_loss + value_loss;
@@ -666,6 +691,7 @@ void AlphaZeroMT::update_hyper()
     update_temperature();
     update_C();
     update_num_searches();
+    update_learning_rate();
 }
 
 void AlphaZeroMT::log(std::string message)
@@ -701,7 +727,10 @@ void AlphaZeroMT::logConfig()
     logMessage("    \"buffer_size,\": \"" + std::to_string(buffer_size) + "\",", model_path + "/config.json");
     logMessage("    \"temperature\": \"" + std::to_string(temperature) + "\",", model_path + "/config.json");
     logMessage("    \"temperature_min\": \"" + std::to_string(temperature_min) + "\",", model_path + "/config.json");
-    logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate_innit\": \"" + std::to_string(learning_rate_innit) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate_decay\": \"" + std::to_string(learning_rate_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate_min\": \"" + std::to_string(learning_rate_min) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate_update_freq\": \"" + std::to_string(learning_rate_update_freq) + "\",", model_path + "/config.json");
     logMessage("    \"dichirlet_alpha\": \"" + std::to_string(dichirlet_alpha) + "\",", model_path + "/config.json");
     logMessage("    \"dichirlet_epsilon\": \"" + std::to_string(dichirlet_epsilon) + "\",", model_path + "/config.json");
     logMessage("    \"dichirlet_epsilon_decay\": \"" + std::to_string(dichirlet_epsilon_decay) + "\",", model_path + "/config.json");
