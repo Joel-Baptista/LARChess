@@ -186,7 +186,7 @@ void AlphaZeroMT::update_num_searches()
 
 void AlphaZeroMT::update_learning_rate()
 {
-    if (lr_last_update + learning_rate_update_freq > train_iter) 
+    if (lr_last_update + learning_rate_update_freq < train_iter) 
     {
         lr_last_update += learning_rate_update_freq;
 
@@ -430,14 +430,17 @@ void AlphaZeroMT::learn()
         std::vector<std::future<int>> futuresEval;
         evalResults results;
         st = get_time_ms();
+        std::cout << "Evaluating the bot" << std::endl;
         for (int i = 0; i < (num_evals / num_threads); i++)
         {
             for (int j = 0; j < num_threads; ++j) {
+                std::cout << "Eval Iteration: " << i + 1 << ", Thread: " << j + 1 << std::endl;
                 futuresEval.push_back(std::async(std::launch::async, &AlphaZeroMT::AlphaEval, this, j, depth));
             }
             for (auto& future : futuresEval) {
                 try
                 {
+                    std::cout << "Future get" << std::endl;
                     auto result = future.get(); // Retrieve result once
                     if (result == 1)
                         results.win_count++;
@@ -473,7 +476,7 @@ void AlphaZeroMT::learn()
         
         update_hyper();
 
-        log("Hours since start: " + std::to_string((get_time_ms() - st_total) / 60000.0f) + " hours");
+        log("Hours since start: " + std::to_string((get_time_ms() - st_total) / 3600000.0f) + " hours");
         log("<--------------------------------------------------------->");
         log("<----------------LEARNING ITERATION----------------------->");
         log("<--------------------------------------------------------->");
@@ -541,6 +544,7 @@ void AlphaZeroMT::train()
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 {
+    std::cout << "AlphaEval " << thread_id << std::endl;
     std::vector<SPG*> spGames;
     evalResults results;
 
@@ -565,6 +569,7 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         alpha_white = 0;
     }
 
+    std::cout << "Start Game " << thread_id << std::endl;
     while (true)
     {
         if (spGames.at(0)->game->m_Board->get_side() == alpha_white)
@@ -596,13 +601,13 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
                     * spGames.at(0)->pRoot->pChildren.at(j)->visit_count;
             }
 
-            delete spGames.at(0)->pRoot;
 
             action_probs /= action_probs.sum();
 
             std::string  move = spGames.at(0)->game->decode_action(spGames.at(0)->current_state, action_probs); 
 
             games.at(thread_id)->m_Board->make_player_move(move.c_str());
+            delete spGames.at(0)->pRoot;
         }
         else
         {
@@ -631,6 +636,7 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
             {
                 res = 0;
             }
+            std::cout << "Game Over " << thread_id << std::endl;
             delete spGames.at(0);
             spGames.erase(spGames.begin());
             return res;
