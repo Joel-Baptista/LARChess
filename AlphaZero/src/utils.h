@@ -19,6 +19,7 @@ void initLogFile(const std::string& filename);
 std::string initLogFiles(const std::string& path);
 
 void copy_weights(const torch::nn::Module& source, torch::nn::Module& target);
+double calculate_gradient_norm(const std::vector<torch::Tensor>& parameters);
 
 // Define a wrapper class for the array
 class BitboardKey {

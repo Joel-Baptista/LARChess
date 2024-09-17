@@ -35,6 +35,7 @@ AlphaZeroMT::AlphaZeroMT(
                         int depth,
                         float weight_decay,
                         float dropout,
+                        float gradient_clip,
                         int num_resblocks,
                         int num_channels,
                         std::string device,
@@ -133,6 +134,7 @@ AlphaZeroMT::AlphaZeroMT(
     this->depth = depth;
     this->weight_decay = weight_decay;
     this->dropout = dropout;
+    this->gradient_clip = gradient_clip;
     this->num_resblocks = num_resblocks;
     this->num_threads = num_threads;
     this->train_iter = 0;
@@ -430,17 +432,14 @@ void AlphaZeroMT::learn()
         std::vector<std::future<int>> futuresEval;
         evalResults results;
         st = get_time_ms();
-        std::cout << "Evaluating the bot" << std::endl;
         for (int i = 0; i < (num_evals / num_threads); i++)
         {
             for (int j = 0; j < num_threads; ++j) {
-                std::cout << "Eval Iteration: " << i + 1 << ", Thread: " << j + 1 << std::endl;
                 futuresEval.push_back(std::async(std::launch::async, &AlphaZeroMT::AlphaEval, this, j, depth));
             }
             for (auto& future : futuresEval) {
                 try
                 {
-                    std::cout << "Future get" << std::endl;
                     auto result = future.get(); // Retrieve result once
                     if (result == 1)
                         results.win_count++;
@@ -516,6 +515,12 @@ void AlphaZeroMT::train()
         m_Optimizer->zero_grad();
         // std::cout << "Zeroed the gradients" << std::endl;
         loss.backward();
+
+        double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
+        std::cout << "Gradient Norm: " << grad_norm << std::endl;
+        torch::nn::utils::clip_grad_value_(m_ResNetChess->parameters(), gradient_clip);
+        grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
+        std::cout << "Gradient Norm: " << grad_norm << std::endl;
         // std::cout << "Backward pass completed" << std::endl;
         m_Optimizer->step();
 
@@ -544,7 +549,6 @@ void AlphaZeroMT::train()
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 {
-    std::cout << "AlphaEval " << thread_id << std::endl;
     std::vector<SPG*> spGames;
     evalResults results;
 
@@ -569,7 +573,6 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         alpha_white = 0;
     }
 
-    std::cout << "Start Game " << thread_id << std::endl;
     while (true)
     {
         if (spGames.at(0)->game->m_Board->get_side() == alpha_white)
@@ -636,7 +639,6 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
             {
                 res = 0;
             }
-            std::cout << "Game Over " << thread_id << std::endl;
             delete spGames.at(0);
             spGames.erase(spGames.begin());
             return res;
@@ -748,6 +750,7 @@ void AlphaZeroMT::logConfig()
     logMessage("    \"depth\": \"" + std::to_string(depth) + "\",", model_path + "/config.json");
     logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
     logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
+    logMessage("    \"gradient_clip\": \"" + std::to_string(gradient_clip) + "\",", model_path + "/config.json");
     logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
     logMessage("    \"num_threads\": \"" + std::to_string(num_threads) + "\"", model_path + "/config.json");
     logMessage("}", model_path + "/config.json");

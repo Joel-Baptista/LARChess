@@ -53,6 +53,7 @@ class AlphaZeroMT
                     int depth,
                     float weight_decay,
                     float dropout,
+                    float gradient_clip,
                     int num_resblocks,
                     int num_channels,
                     std::string device,
@@ -139,6 +140,7 @@ class AlphaZeroMT
         int depth;
         float weight_decay;
         float dropout;
+        float gradient_clip;
         int num_resblocks;
         int num_channels;
         int num_threads;

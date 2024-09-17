@@ -144,3 +144,13 @@ void clamp_small_weights(torch::nn::Module& model, float threshold = 1e-6) {
     }
 }
 
+double calculate_gradient_norm(const std::vector<torch::Tensor>& parameters) {
+    double total_norm = 0.0;
+    for (const auto& param : parameters) {
+        if (param.grad().defined()) {
+            auto grad_norm = param.grad().norm().item<double>();
+            total_norm += grad_norm * grad_norm;
+        }
+    }
+    return std::sqrt(total_norm);
+}
