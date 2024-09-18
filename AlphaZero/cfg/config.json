@@ -29,7 +29,7 @@
     "depth": 2, 
     "weight_decay": 0.0001,
     "dropout": 0.0,
-    "gradient_clip": 1.0,
+    "gradient_clip": 5.0,
     "num_resblocks": 20,
     "num_channels": 256,
     "model_name": "",
@@ -38,5 +38,6 @@
     "threads": 12,
     "sp": false,
     "sp_batch_size": 256,
-    "dataset_path": "../datasets/games_processed.csv"
+    "dataset_path": "../datasets/games_processed.csv",
+    "debug": false
 }

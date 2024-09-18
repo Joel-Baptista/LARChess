@@ -4,6 +4,7 @@
 #include "mcts.h"
 #include "game.h"
 #include "ReplayBuffer.h"
+#include "logger.h"
 
 #include <iostream>
 #include <thread>
@@ -58,7 +59,8 @@ class AlphaZeroMT
                     int num_channels,
                     std::string device,
                     std::string pretrained_model_path,
-                    int num_threads
+                    int num_threads,
+                    bool debug
                     );
 
         ~AlphaZeroMT();
@@ -94,8 +96,10 @@ class AlphaZeroMT
         
         void update_hyper();
 
+        void network_sanity_check(ResNetChess& source, ResNetChess& target);
+
         std::shared_ptr<ResNetChess> m_ResNetChess;
-        std::unique_ptr<torch::optim::Adam> m_Optimizer;
+        std::unique_ptr<torch::optim::SGD> m_Optimizer;
         std::shared_ptr<torch::Device> m_Device;
 
         std::vector<c10::cuda::CUDAStream> cuda_streams;
@@ -106,6 +110,7 @@ class AlphaZeroMT
         std::vector<std::shared_ptr<Game>> games;
         std::unique_ptr<ReplayBuffer> m_Buffer; 
         std::mutex mtxBuffer;
+        std::unique_ptr<Logger> m_logger; 
 
         int num_searches;
         int num_searches_init; 
@@ -144,6 +149,7 @@ class AlphaZeroMT
         int num_resblocks;
         int num_channels;
         int num_threads;
+        bool debug;
 
         std::string log_file;
         std::string model_path;

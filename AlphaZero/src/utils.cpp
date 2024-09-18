@@ -112,6 +112,8 @@ std::string initLogFiles(const std::string& path) {
 }
 
 void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {
+    
+    torch::NoGradGuard no_grad;
     auto source_params = source.parameters();
     auto target_params = target.parameters();
     
@@ -119,10 +121,17 @@ void copy_weights(const torch::nn::Module& source, torch::nn::Module& target) {
     if (source_params.size() != target_params.size()) {
         throw std::runtime_error("Source and target networks have different numbers of parameters.");
     }
-    
+
     // Copy parameters
     for (size_t i = 0; i < source_params.size(); ++i) {
-        target_params[i].data().copy_(source_params[i]);
+        target_params[i].copy_(source_params[i].clone().detach());
+    }
+
+    auto target_buffers = target.buffers();
+    auto source_buffers = source.buffers();
+
+    for (size_t i = 0; i < source_buffers.size(); ++i) {
+        target_buffers[i].copy_(source_buffers[i].detach());
     }
 }
 

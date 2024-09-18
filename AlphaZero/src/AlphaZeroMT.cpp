@@ -40,16 +40,17 @@ AlphaZeroMT::AlphaZeroMT(
                         int num_channels,
                         std::string device,
                         std::string pretrained_model_path,
-                        int num_threads
+                        int num_threads,
+                        bool debug
                         )
 {
 
+    m_logger = std::make_unique<Logger>(debug);
 
-
-    this->model_path = initLogFiles("../models/alpha");
+    this->model_path = m_logger->initLogFiles("../models/alpha");
     log_file = model_path + "/log.txt";
 
-    logMessage("iter,loss", model_path + "/train.csv");
+    m_logger->logMessage("iter,loss", model_path + "/train.csv");
 
     m_Buffer = std::make_unique<ReplayBuffer>(buffer_size);
 
@@ -63,7 +64,7 @@ AlphaZeroMT::AlphaZeroMT(
         }
 
         m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
-        log("Using CUDA " + std::to_string(device_id));
+        m_logger->log("Using CUDA " + std::to_string(device_id));
 
         auto stream1 =  c10::cuda::getStreamFromPool();
 
@@ -75,24 +76,28 @@ AlphaZeroMT::AlphaZeroMT(
     }
     else
     {
-        log("Using CPU");
+        m_logger->log("Using CPU");
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
     
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device);
-
+    m_ResNetChess->to(*m_Device, torch::kFloat32);
     std::cout << pretrained_model_path << std::endl;
     if (pretrained_model_path != "")
     {
         load_model(pretrained_model_path);
     }
     
-    m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate_innit).weight_decay(weight_decay));
-
+    // m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate_innit).weight_decay(weight_decay));
+    m_Optimizer = std::make_unique<torch::optim::SGD>(m_ResNetChess->parameters(), torch::optim::SGDOptions(learning_rate_innit));
+    // m_Scheduler = std::make_shared<torch::optim::lr_scheduler::StepLR>(*m_Optimizer, 1000, learning_rate_decay);
+    
     for (int i = 0; i < num_threads; i++)
     {
         m_ResNetSwarm.push_back(std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout, *m_Device));
+        m_ResNetChess->to(*m_Device, torch::kFloat32);
         copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
+        network_sanity_check(*m_ResNetChess, *m_ResNetSwarm.at(i));
         m_mcts.push_back(std::make_unique<MCTS>(m_ResNetSwarm.at(i), i, num_searches_init, search_depth, dichirlet_alpha, dichirlet_epsilon, C));
     }
 
@@ -139,6 +144,7 @@ AlphaZeroMT::AlphaZeroMT(
     this->num_threads = num_threads;
     this->train_iter = 0;
     this->eval_iter = 0;
+    this->debug = debug;
 
     lr_last_update = 0;
 
@@ -156,14 +162,14 @@ void AlphaZeroMT::update_dichirlet()
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_dichirlet_epsilon(dichirlet_epsilon);
 
-    log("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha));   
+    m_logger->log("Dichirlet epsilon: " + std::to_string(dichirlet_epsilon) + " Dichirlet alpha: " + std::to_string(dichirlet_alpha));   
 }
 
 void AlphaZeroMT::update_temperature()
 {
     temperature = std::max(temperature * temperature_decay, temperature_min);
 
-    log("Temperature: " + std::to_string(temperature));   
+    m_logger->log("Temperature: " + std::to_string(temperature));   
 }
 
 void AlphaZeroMT::update_C()
@@ -173,7 +179,7 @@ void AlphaZeroMT::update_C()
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_C(C);
 
-    log("C: " + std::to_string(C));   
+    m_logger->log("C: " + std::to_string(C));   
 }
 
 void AlphaZeroMT::update_num_searches()
@@ -183,7 +189,7 @@ void AlphaZeroMT::update_num_searches()
     for (int i = 0; i < num_threads; i++)
         m_mcts.at(i)->set_num_searches(num_searches);
 
-    log("num_searches: " + std::to_string(num_searches));   
+    m_logger->log("num_searches: " + std::to_string(num_searches));   
 }
 
 void AlphaZeroMT::update_learning_rate()
@@ -196,7 +202,7 @@ void AlphaZeroMT::update_learning_rate()
         for (auto& param_group : m_Optimizer->param_groups()) {
             static_cast<torch::optim::AdamOptions&>(param_group.options()).lr(learning_rate);
         }
-        log("Learning rate: " + std::to_string(learning_rate));
+        m_logger->log("Learning rate: " + std::to_string(learning_rate));
     }
 }
 
@@ -348,7 +354,7 @@ void AlphaZeroMT::SelfPlay(int thread_id)
                 }
 
                 // std::cout << "Memory added to the buffer" << std::endl;
-                // log("Thread: " + std::to_string(thread_id + 1) + 
+                // m_logger->log("Thread: " + std::to_string(thread_id + 1) + 
                 //     " Game " + std::to_string(i + 1) + 
                 //     " terminated with " + std::to_string(spGames.at(i)->memory.size()) + " moves" +
                 //     " Time: " + std::to_string((get_time_ms() - *spg_times.at(i)) / 1000) + " seconds" );
@@ -364,7 +370,7 @@ void AlphaZeroMT::SelfPlay(int thread_id)
                 spGames.at(i)->game->set_state(fs.board_state);
             }
         }
-        // log("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds");
+        // m_logger->log("Thread: " + std::to_string(thread_id + 1) + " Moves: " + std::to_string(count) + " Time: " + std::to_string(((float)(get_time_ms() - st)) / 1000.0f) + " seconds");
         // std::cout << "Num of games: " << spGames.size() << std::endl;
         // std::cout << "Step Time: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
         // std::cout << "Total Time: " << (float)(get_time_ms() - st_total) / 1000.0f << " seconds" << std::endl;
@@ -387,7 +393,7 @@ void AlphaZeroMT::learn()
 
         int st = get_time_ms();
         for (int j = 0; j < num_threads; ++j) {
-            // log("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1));
+            // m_logger->log("Self Play Iteration: " + std::to_string(i + 1) + ", Thread: " + std::to_string(j + 1));
             futures.push_back(std::async(std::launch::async, &AlphaZeroMT::SelfPlay, this, j));
         }
         for (auto& future : futures) {
@@ -397,23 +403,23 @@ void AlphaZeroMT::learn()
             }
             catch (const std::exception& e)
             {
-                log("Exception caught during future.get(): " + std::string(e.what()));
+                m_logger->log("Exception caught during future.get(): " + std::string(e.what()));
             }
         }
         futures.clear(); // Clear the futures vector before the next iteration
-        log("Self Play Iteration Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+        m_logger->log("Self Play Iteration Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
         
 
         if (m_Buffer->size() < batch_size) // Wait until we have enough data and is possible to sample less than 30 positions 
         {
-            log("Buffer size: " + std::to_string(m_Buffer->size()) + " is less than batch size: " + std::to_string(batch_size));
+            m_logger->log("Buffer size: " + std::to_string(m_Buffer->size()) + " is less than batch size: " + std::to_string(batch_size));
             update_hyper();
             continue;
         }
 
         if ( (m_Buffer->get_current_game_id() < (batch_size / max_state_per_game)))
         {
-            log("Current Game Id: " + std::to_string(m_Buffer->get_current_game_id()) + " is less than batch size: " + std::to_string(batch_size / max_state_per_game));
+            m_logger->log("Current Game Id: " + std::to_string(m_Buffer->get_current_game_id()) + " is less than batch size: " + std::to_string(batch_size / max_state_per_game));
             update_hyper();
             continue;
         }
@@ -422,11 +428,11 @@ void AlphaZeroMT::learn()
 
         train();
 
-        log("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+        m_logger->log("Training Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
 
         save_model(model_path);
         
-        log("Model saved!!!");
+        m_logger->log("Model saved!!!");
 
         // Eval the bot
         std::vector<std::future<int>> futuresEval;
@@ -450,18 +456,18 @@ void AlphaZeroMT::learn()
                 }
                 catch (const std::exception& e)
                 {
-                    log("Exception caught during future.get(): " + std::string(e.what()));
+                    m_logger->log("Exception caught during future.get(): " + std::string(e.what()));
                 }
             }
             futuresEval.clear(); // Clear the futures vector before the next iteration
         }
         
-        log("Wins %: " + std::to_string(results.win_count / (float)num_evals) + "%, " +  
+        m_logger->log("Wins %: " + std::to_string(results.win_count / (float)num_evals) + "%, " +  
             "Loss %: " + std::to_string(results.loss_count / (float)num_evals) + "%, " +
             "Draw %: " + std::to_string(results.draw_count / (float)num_evals) +  
             "%, Eval Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
 
-        logEval(std::to_string(eval_iter) + "," + 
+        m_logger->logEval(std::to_string(eval_iter) + "," + 
         std::to_string(results.win_count / (float)num_evals) + "," + 
         std::to_string(results.loss_count / (float)num_evals) + "," + 
         std::to_string(results.draw_count / (float)num_evals));
@@ -470,15 +476,15 @@ void AlphaZeroMT::learn()
         if (results.win_count / num_evals > 0.5)
         {
             depth = (depth + 1 > 5) ? 5 : depth + 1;
-            log("Depth increased to: " + std::to_string(depth));
+            m_logger->log("Depth increased to: " + std::to_string(depth));
         }
         
         update_hyper();
 
-        log("Hours since start: " + std::to_string((get_time_ms() - st_total) / 3600000.0f) + " hours");
-        log("<--------------------------------------------------------->");
-        log("<----------------LEARNING ITERATION----------------------->");
-        log("<--------------------------------------------------------->");
+        m_logger->log("Hours since start: " + std::to_string((get_time_ms() - st_total) / 3600000.0f) + " hours");
+        m_logger->log("<--------------------------------------------------------->");
+        m_logger->log("<----------------LEARNING ITERATION----------------------->");
+        m_logger->log("<--------------------------------------------------------->");
     }
 }
 
@@ -490,6 +496,7 @@ void AlphaZeroMT::train()
     float running_loss = 0.0;
     float batch_count = 0.0;
     auto st = get_time_ms();
+    bool update_swarm = false;
 
     for (int i = 0; i < num_epochs; i++)
     {
@@ -506,8 +513,14 @@ void AlphaZeroMT::train()
 
         auto output = m_ResNetChess->forward(encoded_states);
 
+        if (torch::any(torch::isnan(encoded_actions)).item<bool>() || torch::any(torch::isnan(output.policy)).item<bool>()) {
+            std::cerr << "NaN detected in encoded_actions or output!" << std::endl;
+            throw std::runtime_error("NaN detected in encoded_actions or output.");
+        }
+
         // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-        torch::Tensor policy_loss = torch::sum(-encoded_actions * torch::log_softmax(output.policy, -1));
+        torch::Tensor policy_loss = torch::sum(encoded_actions * (torch::log(encoded_actions + 1e-8) - torch::log_softmax(output.policy, -1)));
+        // torch::Tensor policy_loss = torch::sum(-encoded_actions * torch::log_softmax(output.policy, -1));
         auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
         // std::cout << "Value loss calculated" << std::endl;
         auto loss = policy_loss + value_loss;
@@ -517,34 +530,90 @@ void AlphaZeroMT::train()
         loss.backward();
 
         double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-        std::cout << "Gradient Norm: " << grad_norm << std::endl;
-        torch::nn::utils::clip_grad_value_(m_ResNetChess->parameters(), gradient_clip);
+        m_logger->log("Gradient Norm: " + std::to_string(grad_norm));
+        torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
         grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-        std::cout << "Gradient Norm: " << grad_norm << std::endl;
+        m_logger->log("Clipped Gradient Norm: " + std::to_string(grad_norm));
         // std::cout << "Backward pass completed" << std::endl;
         m_Optimizer->step();
 
         running_loss += loss.cpu().item<float>();
         batch_count++;
         
-        logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
+        m_logger->logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
         train_iter++;
 
         if  (train_iter % swarm_update_freq == 0)
         {
-            // Hard copy the weights to the swarm (for now)
-            for (int i = 0; i < num_threads; i++)
-            {
-                copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
-            }
-
-            log("Data Aquisition Nets Updated");
+            update_swarm = true;
         }
 
     }
+    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
 
-    log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    if (update_swarm)
+    {
+        for (int i = 0; i < num_threads; i++)
+        {
+
+            m_ResNetSwarm.at(i)->eval();
+            copy_weights(*m_ResNetChess, *m_ResNetSwarm.at(i));
+            network_sanity_check(*m_ResNetChess, *m_ResNetSwarm.at(i));
+        }
+    
+        m_logger->log("Data Aquisition Nets Updated");
+    }
+}
+
+void AlphaZeroMT::network_sanity_check(ResNetChess& source, ResNetChess& target)
+{
+
+    for (auto& p : target.parameters())
+    {
+        if (torch::any(torch::isnan(p)).item<bool>() || torch::any(torch::isinf(p)).item<bool>()) {
+            m_logger->log("NaN or Inf found in the network");
+            throw std::runtime_error("NaN or Inf found in the network");
+        }
+    }
+
+    std::vector<int64_t> shape = {1, 19, 8, 8};
+    torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32).to(*m_Device); // Initialize the tensor with zeros
+    source.eval();
+    target.eval();
+
+    auto output1= source.forward(encoded_state);
+    auto output2 = target.forward(encoded_state);
+
+    if (torch::any(torch::isnan(output1.policy)).item<bool>() || torch::any(torch::isinf(output1.policy)).item<bool>()) {
+            m_logger->log("Source policy has NaN or Inf values");
+            // throw std::runtime_error("Source policy has NaN or Inf values");
+    }
+
+    if (torch::any(torch::isnan(output1.value)).item<bool>() || torch::any(torch::isinf(output1.value)).item<bool>()) {
+            m_logger->log("Source value has NaN or Inf values");
+            // throw std::runtime_error("Source value has NaN or Inf values");
+    }
+
+    if (torch::any(torch::isnan(output2.policy)).item<bool>() || torch::any(torch::isinf(output2.policy)).item<bool>()) {
+            m_logger->log("Target policy has NaN or Inf values");
+            // throw std::runtime_error("Target policy has NaN or Inf values");
+    }
+
+    if (torch::any(torch::isnan(output2.value)).item<bool>() || torch::any(torch::isinf(output2.value)).item<bool>()) {
+            m_logger->log("Target value has NaN or Inf values");
+            // throw std::runtime_error("Target value has NaN or Inf values");
+    }
+
+    if (torch::allclose(output1.policy, output2.policy, 1e-5, 1e-6) &&
+        torch::allclose(output1.value, output2.value, 1e-5, 1e-6)) {
+        // m_logger->log("Models are identical");
+    } else {
+        m_logger->log("The two networks are not outputting the same results");
         
+        // Log differences
+        m_logger->log("Max difference in policy: " + std::to_string((output1.policy - output2.policy).abs().max().item<float>()));
+        m_logger->log("Max difference in value: " + std::to_string((output1.value - output2.value).abs().max().item<float>()));
+    }
 }
 
 int AlphaZeroMT::AlphaEval(int thread_id, int depth)
@@ -650,15 +719,18 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
 
 void AlphaZeroMT::save_model(std::string path)
 {
-    if (path == "")
+    if (!debug)
     {
-        torch::save(m_ResNetChess, "model.pt");
-        log( "Model saved in: model.pt" );
-    }
-    else
-    {
-        torch::save(m_ResNetChess, path + "/model.pt");
-        log( "Model saved in: " + path + "/model.pt" );
+        if (path == "")
+        {
+            torch::save(m_ResNetChess, "model.pt");
+            m_logger->log( "Model saved in: model.pt" );
+        }
+        else
+        {
+            torch::save(m_ResNetChess, path + "/model.pt");
+            m_logger->log( "Model saved in: " + path + "/model.pt" );
+        }
     }
 }
 
@@ -704,54 +776,63 @@ void AlphaZeroMT::update_hyper()
 
 void AlphaZeroMT::log(std::string message)
 {
-    logMessage( "[" + getCurrentTimestamp() + "] " + message, model_path + "/log.txt");
     std::cout << "[" << getCurrentTimestamp() << "] " << message << std::endl;
+    
+    if (debug) return;
+    
+    m_logger->logMessage( "[" + getCurrentTimestamp() + "] " + message, model_path + "/log.txt");
 }
 
 void AlphaZeroMT::logTrain(std::string message)
 {
-    logMessage(message, model_path + "/train.csv");
+    if (debug) return;
+    m_logger->logMessage(message, model_path + "/train.csv");
 }
 
 void AlphaZeroMT::logEval(std::string message)
 {
-    logMessage(message, model_path + "/eval.csv");
+    if (debug) return;
+    m_logger->logMessage(message, model_path + "/eval.csv");
 }
 
 void AlphaZeroMT::logConfig()
 {
-    logMessage("{", model_path + "/config.json");
-    logMessage("    \"num_searches_init\": \"" + std::to_string(num_searches_init) + "\",", model_path + "/config.json");
-    logMessage("    \"num_searches_max\": \"" + std::to_string(num_searches_max) + "\",", model_path + "/config.json");
-    logMessage("    \"num_searches_ratio\": \"" + std::to_string(num_searches_ratio) + "\",", model_path + "/config.json");
-    logMessage("    \"search_depth\": \"" + std::to_string(search_depth) + "\",", model_path + "/config.json");
-    logMessage("    \"num_iterations\": \"" + std::to_string(num_iterations) + "\",", model_path + "/config.json");
-    logMessage("    \"num_selfPlay_iterations\": \"" + std::to_string(num_selfPlay_iterations) + "\",", model_path + "/config.json");
-    logMessage("    \"num_parallel_games\": \"" + std::to_string(num_parallel_games) + "\",", model_path + "/config.json");
-    logMessage("    \"num_epochs\": \"" + std::to_string(num_epochs) + "\",", model_path + "/config.json");
-    logMessage("    \"max_state_per_game\": \"" + std::to_string(max_state_per_game) + "\",", model_path + "/config.json");
-    logMessage("    \"swarm_update_freq\": \"" + std::to_string(swarm_update_freq) + "\",", model_path + "/config.json");
-    logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
-    logMessage("    \"buffer_size,\": \"" + std::to_string(buffer_size) + "\",", model_path + "/config.json");
-    logMessage("    \"temperature\": \"" + std::to_string(temperature) + "\",", model_path + "/config.json");
-    logMessage("    \"temperature_min\": \"" + std::to_string(temperature_min) + "\",", model_path + "/config.json");
-    logMessage("    \"learning_rate_innit\": \"" + std::to_string(learning_rate_innit) + "\",", model_path + "/config.json");
-    logMessage("    \"learning_rate_decay\": \"" + std::to_string(learning_rate_decay) + "\",", model_path + "/config.json");
-    logMessage("    \"learning_rate_min\": \"" + std::to_string(learning_rate_min) + "\",", model_path + "/config.json");
-    logMessage("    \"learning_rate_update_freq\": \"" + std::to_string(learning_rate_update_freq) + "\",", model_path + "/config.json");
-    logMessage("    \"dichirlet_alpha\": \"" + std::to_string(dichirlet_alpha) + "\",", model_path + "/config.json");
-    logMessage("    \"dichirlet_epsilon\": \"" + std::to_string(dichirlet_epsilon) + "\",", model_path + "/config.json");
-    logMessage("    \"dichirlet_epsilon_decay\": \"" + std::to_string(dichirlet_epsilon_decay) + "\",", model_path + "/config.json");
-    logMessage("    \"dichirlet_epsilon_min\": \"" + std::to_string(dichirlet_epsilon_min) + "\",", model_path + "/config.json");
-    logMessage("    \"C\": \"" + std::to_string(C) + "\",", model_path + "/config.json");
-    logMessage("    \"C_decay\": \"" + std::to_string(C_decay) + "\",", model_path + "/config.json");
-    logMessage("    \"C_min\": \"" + std::to_string(C_min) + "\",", model_path + "/config.json");
-    logMessage("    \"num_evals\": \"" + std::to_string(num_evals) + "\",", model_path + "/config.json");
-    logMessage("    \"depth\": \"" + std::to_string(depth) + "\",", model_path + "/config.json");
-    logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
-    logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
-    logMessage("    \"gradient_clip\": \"" + std::to_string(gradient_clip) + "\",", model_path + "/config.json");
-    logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
-    logMessage("    \"num_threads\": \"" + std::to_string(num_threads) + "\"", model_path + "/config.json");
-    logMessage("}", model_path + "/config.json");
+    std::unordered_map<std::string, std::string> config;
+
+    config["num_searches_init"] = std::to_string(num_searches_init);
+    config["num_searches_max"] = std::to_string(num_searches_max);
+    config["num_searches_ratio"] = std::to_string(num_searches_ratio);
+    config["search_depth"] = std::to_string(search_depth);
+    config["num_iterations"] = std::to_string(num_iterations);
+    config["num_selfPlay_iterations"] = std::to_string(num_selfPlay_iterations);
+    config["num_parallel_games"] = std::to_string(num_parallel_games);
+    config["num_epochs"] = std::to_string(num_epochs);
+    config["max_state_per_game"] = std::to_string(max_state_per_game);
+    config["swarm_update_freq"] = std::to_string(swarm_update_freq);
+    config["batch_size"] = std::to_string(batch_size);
+    config["buffer_size"] = std::to_string(buffer_size);
+    config["temperature"] = std::to_string(temperature);
+    config["temperature_decay"] = std::to_string(temperature_decay);
+    config["temperature_min"] = std::to_string(temperature_min);
+    config["learning_rate_innit"] = std::to_string(learning_rate_innit);
+    config["learning_rate_decay"] = std::to_string(learning_rate_decay);
+    config["learning_rate_min"] = std::to_string(learning_rate_min);
+    config["learning_rate_update_freq"] = std::to_string(learning_rate_update_freq);
+    config["dichirlet_alpha"] = std::to_string(dichirlet_alpha);
+    config["dichirlet_epsilon"] = std::to_string(dichirlet_epsilon);
+    config["dichirlet_epsilon_decay"] = std::to_string(dichirlet_epsilon_decay);
+    config["dichirlet_epsilon_min"] = std::to_string(dichirlet_epsilon_min);
+    config["C"] = std::to_string(C);
+    config["C_decay"] = std::to_string(C_decay);
+    config["C_min"] = std::to_string(C_min);
+    config["num_evals"] = std::to_string(num_evals);
+    config["depth"] = std::to_string(depth);
+    config["weight_decay"] = std::to_string(weight_decay);
+    config["dropout"] = std::to_string(dropout);
+    config["gradient_clip"] = std::to_string(gradient_clip);
+    config["num_resblocks"] = std::to_string(num_resblocks);
+    config["num_threads"] = std::to_string(num_threads);
+
+
+    m_logger->logConfig(config);
 }

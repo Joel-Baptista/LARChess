@@ -129,6 +129,7 @@ int main()
     std::string device = config.value("device", "cpu");
     std::string pretrained_model_path = config.value("pretrained_model_path", "cpu");
     int threads = config.value("threads", 1);
+    bool debug = config.value("debug", false);
 
     Game game;
     int start = get_time_ms();    
@@ -169,7 +170,8 @@ int main()
                 num_channels,
                 device,
                 pretrained_model_path,
-                threads
+                threads,
+                debug
                 );       
     // AlphaZero az(&game,     
     //              num_searches,         

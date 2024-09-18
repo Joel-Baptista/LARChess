@@ -641,6 +641,13 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
     {
         count++;
         decoded_action dAction;
+        dAction.action = "";
+        dAction.probability = 0.0f;
+
+        if (action_indexs.sizes()[1] < 3) {
+            std::cerr << "Invalid action tensor indices with size: " << action_indexs.sizes() << std::endl;
+            continue;
+        }
 
         int plane = action_indexs[i][2].item<int>();
         int col = action_indexs[i][1].item<int>();
@@ -654,6 +661,11 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
 
         std::string move = square_to_coordinates[source_square];
         std::string dest_square;
+
+        if (!(source_square >= 0 && source_square < 64)) {
+            std::cerr << "Invalid source square" << std::endl;
+            continue;
+        }
 
         switch (index_dir)
         {
