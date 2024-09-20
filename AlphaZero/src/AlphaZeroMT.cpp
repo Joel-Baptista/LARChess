@@ -50,8 +50,6 @@ AlphaZeroMT::AlphaZeroMT(
     this->model_path = m_logger->initLogFiles("../models/alpha");
     log_file = model_path + "/log.txt";
 
-    m_logger->logMessage("iter,loss", model_path + "/train.csv");
-
     m_Buffer = std::make_unique<ReplayBuffer>(buffer_size);
 
     if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
@@ -530,10 +528,11 @@ void AlphaZeroMT::train()
         loss.backward();
 
         double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-        m_logger->log("Gradient Norm: " + std::to_string(grad_norm));
+        m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
+        // m_logger->log("Gradient Norm: " + std::to_string(grad_norm));
         torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
-        grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-        m_logger->log("Clipped Gradient Norm: " + std::to_string(grad_norm));
+        // grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
+        // m_logger->log("Clipped Gradient Norm: " + std::to_string(grad_norm));
         // std::cout << "Backward pass completed" << std::endl;
         m_Optimizer->step();
 

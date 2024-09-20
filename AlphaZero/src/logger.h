@@ -20,6 +20,7 @@ public:
 
     void logTrain(std::string message);
     void logEval(std::string message);
+    void logGrad(std::string message);
     void logConfig(std::unordered_map<std::string, std::string> config);
 
     void log(std::string message);
