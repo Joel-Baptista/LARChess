@@ -6,7 +6,7 @@
     "num_iterations": 1000000,
     "num_selfPlay_iterations": 1,
     "num_parallel_games": 5,
-    "num_epochs": 250,
+    "num_epochs": 100,
     "max_state_per_game": 30,
     "swarm_update_freq": 1000,
     "batch_size": 2048,
@@ -39,5 +39,5 @@
     "sp": false,
     "sp_batch_size": 256,
     "dataset_path": "../datasets/games_processed.csv",
-    "debug": false
+    "debug": true
 }

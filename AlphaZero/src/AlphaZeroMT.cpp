@@ -209,17 +209,6 @@ void AlphaZeroMT::SelfPlay(int thread_id)
     std::vector<int*> spg_times;
 
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 1.0);
-    double random_number = dis(gen);
-
-    bool early_stop = true;
-    if (random_number < 0.2)
-    {
-        early_stop = false;
-    }
-
     m_ResNetSwarm.at(thread_id)->eval();
 
     for (int i = 0; i < num_parallel_games; i++)
@@ -263,75 +252,52 @@ void AlphaZeroMT::SelfPlay(int thread_id)
             torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
             
             std::vector<int> visited_childs;
+            std::vector<float> visits_counts;
             float state_value = 0.0f;
             // std::cout << "Visit Counts: [";
             for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
             {
-                // std::cout << spGames.at(i)->pRoot->pChildren.at(j)->visit_count << " ";
-                if (spGames.at(i)->pRoot->pChildren.at(j)->visit_count > 0)
-                {
-                    visited_childs.push_back(j);
-                }
 
-                state_value = spGames.at(i)->pRoot->pChildren.at(j)->value_sum * 
-                    (((float)spGames.at(i)->pRoot->pChildren.at(j)->visit_count) / num_searches);
+                state_value += spGames.at(i)->pRoot->pChildren.at(j)->value_sum * 
+                    (((float)spGames.at(i)->pRoot->pChildren.at(j)->visit_count) / (float)num_searches);
+
+                visits_counts.push_back(spGames.at(i)->pRoot->pChildren.at(j)->visit_count);
 
                 action_probs += 
                     spGames.at(i)->game->get_encoded_action(spGames.at(i)->pRoot->pChildren.at(j)->action, spGames.at(i)->current_state.side) 
                     * spGames.at(i)->pRoot->pChildren.at(j)->visit_count;
             }
-            // std::cout << "]" << std::endl;
+
+            auto visit_probs = torch::softmax(torch::tensor(visits_counts), 0);
+            
+            for (int j = 0; j < spGames.at(i)->pRoot->pChildren.size(); j++)
+            {
+                action_probs += 
+                    spGames.at(i)->game->get_encoded_action(spGames.at(i)->pRoot->pChildren.at(j)->action, spGames.at(i)->current_state.side) 
+                    * visit_probs[j];
+            }
 
             std::cout << "State value: " << state_value << std::endl;
 
-            // action_probs /= action_probs.sum();
-            action_probs = torch::softmax(action_probs.view({action_probs.size(0), -1}), 1).view({-1, 8, 8, 73});
-
             spGames.at(i)->memory.push_back({spGames.at(i)->current_state, action_probs, spGames.at(i)->current_state.side});
-
-            // std::cout << "Decode action: " << (float)(get_time_ms() - st) / 1000.0f << " seconds" << std::endl;
-            // st = get_time_ms();
-            
 
             if (spGames.at(i)->current_state.fullmove <= 15)
             {
                 torch::Tensor temperature_action_probs = action_probs.pow(1.0 / temperature);
                 temperature_action_probs /= temperature_action_probs.sum();
 
-                auto temp_indexs = torch::nonzero(temperature_action_probs);
+                torch::Tensor sampled_index = torch::multinomial(temperature_action_probs.view({-1}), 1, true);
 
-                std::vector<double> probabilities(spGames.at(i)->pRoot->pChildren.size());
+                action_probs = torch::zeros({8 * 8 * 73}, torch::kFloat32);
 
-                for (int idx = 0; idx < temp_indexs.sizes()[0]; idx++)
-                {
-                    int row = temp_indexs[idx][0].item<int>();
-                    int col = temp_indexs[idx][1].item<int>();
-                    int plane = temp_indexs[idx][2].item<int>();
+                action_probs[sampled_index.item<int>()] = 1.0f;
 
-                    probabilities[visited_childs[idx]] = temperature_action_probs[row][col][plane].item<double>();
-                }
-
-                std::random_device rd;
-                std::mt19937 gen(rd());
-                std::discrete_distribution<> dist(probabilities.begin(), probabilities.end());
-                int action_idx = dist(gen);
-
-                std::vector<int>::iterator it = std::find(visited_childs.begin(), visited_childs.end(), action_idx);
-                int index = std::distance(visited_childs.begin(), it);
-
-                int row = temp_indexs[index][0].item<int>();
-                int col = temp_indexs[index][1].item<int>();
-                int plane = temp_indexs[index][2].item<int>();
-
-                action_probs = torch::zeros(shape, torch::kFloat32);
-                action_probs[row][col][plane] = 1.0f;
             }
 
-            final_state fs;
+            final_state fs; 
+            action_probs = action_probs.view({8, 8, 73});
 
-            
             std::string  action = spGames.at(i)->game->decode_action(spGames.at(i)->current_state, action_probs);
-            // std::cout << "Action: " << action << std::endl;
             fs = spGames.at(i)->game->get_next_state_and_value(spGames.at(i)->current_state, action, spGames.at(i)->repeated_states);
 
             spGames.at(i)->repeated_states[fs.board_state.bitboards] += 1;
@@ -341,7 +307,7 @@ void AlphaZeroMT::SelfPlay(int thread_id)
                 spGames.at(i)->repeated_states.clear(); // Impossible to repeat states if piece captured or pawn moved
             }
         
-            if (state_value >= 0.05f || !early_stop)
+            if (state_value >= 0.05f || !spGames.at(i)->early_stop)
             {
                 fs.terminated = true;
                 fs.value = 1.0f; // Resignation, but we are in the adversaries turn

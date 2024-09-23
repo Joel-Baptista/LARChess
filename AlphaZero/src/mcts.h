@@ -53,6 +53,8 @@ class SPG
         Node* pCurrentNode;
         std::shared_ptr<Game> game;
         std::unordered_map<BitboardKey, int, BitboardHash> repeated_states;
+
+        bool early_stop; 
     private:
 
 
@@ -73,6 +75,7 @@ class MCTS
     void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
     void set_C(float c) { C = c; }
     void set_num_searches(int s) { num_searches = s; }
+
     private:
         int num_searches;
         float dichirlet_alpha;

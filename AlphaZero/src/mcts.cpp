@@ -350,6 +350,19 @@ SPG::SPG(std::shared_ptr<Game> game)
     copy_state_from_board(initial_state, game->m_Board);
     copy_state(current_state, initial_state);
 
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    double random_number = dis(gen);
+
+    if (random_number < 0.2)
+    {
+        early_stop = false;
+    }else
+    {
+        early_stop = true;
+    }
+
 }
 
 SPG::~SPG()

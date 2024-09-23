@@ -11,6 +11,7 @@ class SupervisedLearning {
                 int batch_size,
                 float train_split,
                 float weight_decay,
+                float policy_coef,
                 float dropout,
                 int num_resblocks,
                 int num_channels,
@@ -48,6 +49,7 @@ class SupervisedLearning {
         std::string dataset_path; 
         float learning_rate;
         float weight_decay;
+        float policy_coef;
         float dropout;
         int num_resblocks;
         int num_channels;

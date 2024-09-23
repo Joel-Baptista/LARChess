@@ -12,6 +12,7 @@ SupervisedLearning::SupervisedLearning(
     int batch_size,
     float train_split,
     float weight_decay,
+    float policy_coef,
     float dropout,
     int num_resblocks,
     int num_channels,
@@ -57,6 +58,7 @@ SupervisedLearning::SupervisedLearning(
     this->batch_size = batch_size;
     this->model_name = model_name;
     this->weight_decay = weight_decay;
+    this->policy_coef = policy_coef;
     this->dropout = dropout;    
 
     this->num_resblocks = num_resblocks;
@@ -128,7 +130,7 @@ void SupervisedLearning::learn()
             // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
-            auto loss = policy_loss + value_loss;
+            auto loss = policy_coef * policy_loss + value_loss;
 
             m_Optimizer->zero_grad();
             loss.backward();
@@ -244,6 +246,7 @@ void SupervisedLearning::logConfig()
     logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
     logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
     logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
+    logMessage("    \"policy_coef\": \"" + std::to_string(policy_coef) + "\",", model_path + "/config.json");
     logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
     logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
     logMessage("    \"num_channels\": \"" + std::to_string(num_channels) + "\",", model_path + "/config.json");
@@ -280,6 +283,7 @@ int main()
     double learning_rate = config.value("learning_rate", 0.0);
     double train_split = config.value("train_split", 0.0);
     double weight_decay = config.value("weight_decay", 0.0);
+    double policy_coef = config.value("policy_coef", 0.0);
     double dropout = config.value("dropout", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
@@ -294,6 +298,7 @@ int main()
         batch_size,
         train_split,
         weight_decay,
+        policy_coef,
         dropout,
         num_resblocks,
         num_channels,
