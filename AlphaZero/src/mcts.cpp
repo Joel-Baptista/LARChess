@@ -293,7 +293,7 @@ float Node::get_ubc(Node* child)
     }
     else
     {
-        q_value = ((child->value_sum / child->visit_count) + 1.0f) / 2.0f;
+        q_value = (child->value_sum / child->visit_count);
     }
 
 

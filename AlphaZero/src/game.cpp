@@ -398,7 +398,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
     sFinal.board_state = new_state;
 
-    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2 || insufficient_material(new_state))
+    if (m_Board->get_halfmove() >= 100 || state_counter[new_state.bitboards] >= 2 || insufficient_material(new_state) || m_Board->get_fullmove() > 256)
     {
         sFinal.value = 0.0f;
         sFinal.terminated = true;
@@ -487,7 +487,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
 
         if (is_check)
         {
-            sFinal.value = 1.0f;
+            sFinal.value = -1.0f; // If you are in this state then you are mated
             sFinal.terminated = true;
             return sFinal;
         }
