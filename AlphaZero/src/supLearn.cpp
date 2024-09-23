@@ -118,7 +118,8 @@ void SupervisedLearning::learn()
 
             auto output = m_ResNetChess->forward(encoded_states);
 
-            auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            torch::Tensor policy_loss = torch::sum(encoded_actions * (torch::log(encoded_actions + 1e-8) - torch::log_softmax(output.policy, -1)));
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
             auto loss = policy_loss + value_loss;
@@ -172,7 +173,8 @@ void SupervisedLearning::learn()
 
             auto output = m_ResNetChess->forward(encoded_states);
 
-            auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            torch::Tensor policy_loss = torch::sum(encoded_actions * (torch::log(encoded_actions + 1e-8) - torch::log_softmax(output.policy, -1)));
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
             auto loss = policy_loss + value_loss;

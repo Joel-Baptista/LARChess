@@ -200,7 +200,6 @@ void AlphaZeroMT::update_learning_rate()
         for (auto& param_group : m_Optimizer->param_groups()) {
             static_cast<torch::optim::AdamOptions&>(param_group.options()).lr(learning_rate);
         }
-        m_logger->log("Learning rate: " + std::to_string(learning_rate));
     }
 }
 
@@ -540,6 +539,7 @@ void AlphaZeroMT::train()
         batch_count++;
         
         m_logger->logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
         train_iter++;
 
         if  (train_iter % swarm_update_freq == 0)
@@ -547,9 +547,14 @@ void AlphaZeroMT::train()
             update_swarm = true;
         }
 
+        if (train_iter % (int)learning_rate_update_freq == 0)
+        {
+            update_learning_rate();
+        }
+
     }
     m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
-
+    
     if (update_swarm)
     {
         for (int i = 0; i < num_threads; i++)
@@ -770,7 +775,6 @@ void AlphaZeroMT::update_hyper()
     update_temperature();
     update_C();
     update_num_searches();
-    update_learning_rate();
 }
 
 void AlphaZeroMT::log(std::string message)

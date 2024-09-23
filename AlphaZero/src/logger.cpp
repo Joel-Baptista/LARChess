@@ -93,6 +93,8 @@ std::string Logger::initLogFiles(const std::string& path)
         logMessage("iter,win,loss,draw", new_folder_name + "/eval.csv");
         initLogFile(new_folder_name + "/grads.csv");
         logMessage("iter,grad", new_folder_name + "/grads.csv");
+        initLogFile(new_folder_name + "/lr.csv");
+        logMessage("iter,lr", new_folder_name + "/lr.csv");
         initLogFile(new_folder_name + "/log.txt");
         initLogFile(new_folder_name + "/config.json");
     }
@@ -115,7 +117,7 @@ void Logger::logEval(std::string message)
 void Logger::logGrad(std::string message)
 {
     if (debug) return;
-    logMessage(message, model_path + "/eval.csv");
+    logMessage(message, model_path + "/grads.csv");
 }
 
 void Logger::log(std::string message)
