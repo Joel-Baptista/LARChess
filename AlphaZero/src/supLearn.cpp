@@ -191,7 +191,7 @@ void SupervisedLearning::learn()
             // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
-            auto loss = policy_loss + value_loss;
+            auto loss = policy_coef * policy_loss + value_loss;
 
             loss = loss.detach();
 
