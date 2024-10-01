@@ -277,8 +277,6 @@ void AlphaZeroMT::SelfPlay(int thread_id)
                     * visit_probs[j];
             }
 
-            std::cout << "State value: " << state_value << std::endl;
-
             spGames.at(i)->memory.push_back({spGames.at(i)->current_state, action_probs, spGames.at(i)->current_state.side});
 
             if (spGames.at(i)->current_state.fullmove <= 15)
