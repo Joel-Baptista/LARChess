@@ -633,8 +633,11 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         alpha_white = 0;
     }
 
-    while (true)
+    int count = 0;
+
+    while (count <= 10000)
     {
+        count++;
         if (spGames.at(0)->game->m_Board->get_side() == alpha_white)
         {
             copy_alpha_board(spGames.at(0)->game->m_Board);
@@ -687,11 +690,11 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
         if (fState.terminated)
         {
             int res;
-            if ((current_state.side == alpha_white) && (fState.value == 1.0))
+            if ((current_state.side == alpha_white) && (fState.value == -1.0))
             {
                 res = -1;
             }
-            else if ((current_state.side != alpha_white) && (fState.value == 1.0))
+            else if ((current_state.side != alpha_white) && (fState.value == -1.0))
             {
                 res = 1;
             }
@@ -704,6 +707,8 @@ int AlphaZeroMT::AlphaEval(int thread_id, int depth)
             return res;
         }
     }
+
+    log("Error: Evaluation did not finish in 10000 moves");
 
     return 0;
 }
