@@ -1,6 +1,6 @@
-# YACE
+# LARChess
 
-Yet Another Chess Engine (now in C++)
+LARChess (Laboratory of Automation and Robotics Chess) is a chess engine built and trained in the [Laboratory of Automation and Robotics](http://lars.mec.ua.pt/)
 
 This project represents my first venture into C++ development and is a continuation of the original Python-based project from [AlphaZero_from_Scratch](https://github.com/Joel-Baptista/AlphaZero_from_Scratch). As previously noted, the search space in chess is vast, making Python too slow for efficient navigation. To address this, we've decided to implement the chess engine and the AlphaZero algorithm in C++, which is the primary focus of this repository.
 
