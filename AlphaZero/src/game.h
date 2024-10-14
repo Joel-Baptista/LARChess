@@ -14,7 +14,7 @@
 #include "include/ResNet.h"
 #include "utils.h"
 
-#include <c10/cuda/CUDAStream.h>
+// #include <c10/cuda/CUDAStream.h>
 
 
 #define copy_state_from_board(dest, src)    memcpy(dest.bitboards, src->get_bitboards(), sizeof(dest.bitboards)); \

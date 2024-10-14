@@ -163,3 +163,11 @@ double calculate_gradient_norm(const std::vector<torch::Tensor>& parameters) {
     }
     return std::sqrt(total_norm);
 }
+
+float get_prob_uni()
+{
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
+    return dis(gen);
+}

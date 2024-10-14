@@ -47,6 +47,8 @@ class SPG
         state initial_state;
         state current_state;
 
+        bool early_stop;
+
         std::vector<memory_item> memory;
 
         Node* pRoot;
@@ -68,14 +70,15 @@ class MCTS
         ~MCTS();
 
 
+        int get_num_searches() { return num_searches; }
 
-    void search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>& cuda_streams);
-    void search(std::vector<SPG*>* spGames) { std::vector<c10::cuda::CUDAStream> cuda_streams; search(spGames, cuda_streams); }
+        void search(std::vector<SPG*>* spGames);
 
-    void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
-    void set_C(float c) { C = c; }
-    void set_num_searches(int s) { num_searches = s; }
+        // void search(std::vector<SPG*>* spGames) { std::vector<c10::cuda::CUDAStream> cuda_streams; search(spGames, cuda_streams); }
 
+        void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
+        void set_C(float c) { C = c; }
+        void set_num_searches(int s) { num_searches = s; }
     private:
         int num_searches;
         float dichirlet_alpha;

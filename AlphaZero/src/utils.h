@@ -49,3 +49,6 @@ struct BitboardHash {
 };
 
 void clamp_small_weights(torch::nn::Module& model, float threshold);
+
+float get_prob_uni();
+

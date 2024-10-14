@@ -3,8 +3,7 @@
 #include "include/network.h"
 #include "include/ResNet.h"
 #include "mcts.h"
-#include "AlphaZeroMT.h"
-#include "AlphaZero.h"
+#include "AlphaZeroV2.h"
 #include "game.h"
 
 #include "include/json.hpp"
@@ -119,6 +118,7 @@ int main()
     double C_min = config.value("C_min", 1.41);
     double C_decay = config.value("C_decay", 0.995);
     int num_evals = config.value("num_evals", 1);
+    int eval_freq = config.value("eval_freq", 1000);
     int depth = config.value("depth", 4);
     double weight_decay = config.value("weight_decay", 0.0);
     double dropout = config.value("dropout", 0.0);
@@ -134,7 +134,7 @@ int main()
     Game game;
     int start = get_time_ms();    
 
-    AlphaZeroMT az(  
+    AlphaZeroV2 az(  
                 num_searches_init,  
                 num_searches_max, 
                 num_searches_ratio,
@@ -162,6 +162,7 @@ int main()
                 C_decay,      
                 C_min,      
                 num_evals,
+                eval_freq,
                 depth,
                 weight_decay, 
                 dropout, 

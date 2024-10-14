@@ -1,5 +1,6 @@
+#pragma once
 #include "game.h"
-
+#include <mutex>
 
 struct buffer_items
 {
@@ -19,6 +20,7 @@ class ReplayBuffer
         int get_current_game_id() { return current_game_id; }
         buffer_items sample(int batch_size, int max_state_per_game);
         int size();
+        std::mutex mtxAddBuffer;
     
     private:
 

@@ -22,6 +22,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, 
     this->m_model = model;
     this->thread_id = thread_id;
     this->search_depth = search_depth; 
+
 }
 
 MCTS::~MCTS()
@@ -29,7 +30,7 @@ MCTS::~MCTS()
 }
 
 
-void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>& cuda_streams)
+void MCTS::search(std::vector<SPG*>* spGames)
 {
     auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
@@ -47,10 +48,6 @@ void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>
 
         if (m_model->m_Device->is_cuda())
         {
-            at::cuda::CUDAStream stream = cuda_streams[thread_id];
-        
-            // Set the CUDA stream for the current context
-            at::cuda::setCurrentCUDAStream(stream);
 
             torch::NoGradGuard no_grad;
 
@@ -171,10 +168,6 @@ void MCTS::search(std::vector<SPG*>* spGames, std::vector<c10::cuda::CUDAStream>
             }
             if (m_model->m_Device->is_cuda())
             {
-                at::cuda::CUDAStream stream = cuda_streams[thread_id];    
-                // Set the CUDA stream for the current context
-                at::cuda::setCurrentCUDAStream(stream);
-
                 torch::NoGradGuard no_grad;
 
                 encoded_states = encoded_states.to(*m_model->m_Device);
@@ -350,15 +343,11 @@ SPG::SPG(std::shared_ptr<Game> game)
     copy_state_from_board(initial_state, game->m_Board);
     copy_state(current_state, initial_state);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<> dis(0.0, 1.0);
-    double random_number = dis(gen);
-
-    if (random_number < 0.2)
+    if (get_prob_uni() < 0.2)
     {
         early_stop = false;
-    }else
+    }
+    else
     {
         early_stop = true;
     }
