@@ -56,7 +56,6 @@ class SPG
         std::shared_ptr<Game> game;
         std::unordered_map<BitboardKey, int, BitboardHash> repeated_states;
 
-        bool early_stop; 
     private:
 
 

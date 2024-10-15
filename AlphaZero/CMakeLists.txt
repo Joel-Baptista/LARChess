@@ -13,7 +13,7 @@ message(STATUS "/home/${CURRENT_USER}/projects/libtorch")
 set(CMAKE_PREFIX_PATH /home/${CURRENT_USER}/projects/libtorch-cuda118)
 # set(CMAKE_PREFIX_PATH /home/${CURRENT_USER}/projects/libtorch-cuda124)
 
-set(PROJECT_ROOT /home/${CURRENT_USER}/projects/YACE)
+set(PROJECT_ROOT /home/${CURRENT_USER}/projects/LARChess)
 
 find_package(Torch REQUIRED)
 

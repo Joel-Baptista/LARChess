@@ -316,7 +316,6 @@ void AlphaZeroV2::learn()
 
 void AlphaZeroV2::train()
 {
-
     m_ResNetChess->train();
 
     float running_loss = 0.0;

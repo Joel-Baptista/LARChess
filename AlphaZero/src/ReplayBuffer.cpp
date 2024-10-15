@@ -33,6 +33,8 @@ void ReplayBuffer::add(torch::Tensor encoded_state, torch::Tensor action_probs, 
     this->pGameIds[index] = current_game_id;
 
     this->pos++;   
+
+    if (this->pos > this->buffer_size) full = true;
 }
 
 void ReplayBuffer::reset()
