@@ -25,32 +25,33 @@ add_executable(${PROJECT_NAME}
         ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
 
         ${PROJECT_ROOT}/AlphaZero/src/main.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/utils.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/mcts.cpp
-#        ${PROJECT_ROOT}/AlphaZero/src/AlphaZero.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/AlphaZeroV2.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/Environment.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/logger.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/ReplayBuffer.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/game.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/agent/mcts.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/train/AlphaZeroV2.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game/Environment.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game/ReplayBuffer.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game/game.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/utils/logger.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/utils/utils.cpp
         ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
         ${PROJECT_ROOT}/AlphaZero/src/include/network.h
         
 )
-target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}" pthread)
+target_link_libraries(${PROJECT_NAME} PUBLIC "${TORCH_LIBRARIES}" pthread)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_ROOT}/AlphaZero/src/headers)
+                
 
-add_executable(${PROJECT_NAME}_sl 
+# add_executable(${PROJECT_NAME}_sl 
 
-        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/utils.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/dataset.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/supLearn.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/game.cpp
-        ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
-        ${PROJECT_ROOT}/AlphaZero/src/include/network.h
+#         ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
+#         ${PROJECT_ROOT}/AlphaZero/src/utils.cpp
+#         ${PROJECT_ROOT}/AlphaZero/src/dataset.cpp
+#         ${PROJECT_ROOT}/AlphaZero/src/supLearn.cpp
+#         ${PROJECT_ROOT}/AlphaZero/src/game.cpp
+#         ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
+#         ${PROJECT_ROOT}/AlphaZero/src/include/network.h
 
-)
+# )
 
-target_link_libraries(${PROJECT_NAME}_sl "${TORCH_LIBRARIES}" pthread)
+# target_link_libraries(${PROJECT_NAME}_sl "${TORCH_LIBRARIES}" pthread)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)

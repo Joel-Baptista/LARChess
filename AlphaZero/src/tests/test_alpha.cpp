@@ -1,0 +1,123 @@
+#include <iostream>
+#include <torch/torch.h>
+#include "../include/network.h"
+#include "../include/ResNet.h"
+#include "mcts.h"
+#include "AlphaZeroV2.h"
+#include "game.h"
+#include "utils.h"
+
+#include "../include/json.hpp"
+
+namespace fs = std::filesystem;
+using json = nlohmann::json;
+
+int main()
+{
+
+    std::ifstream config_file("../config_test_alpha.json");
+    if (!config_file.is_open()) {
+        std::cerr << "Could not open the config file!" << std::endl;
+        return 1;
+    }
+
+    // Parse the JSON data
+    json config;
+    try {
+        config_file >> config;
+    } catch (const json::parse_error& e) {
+        std::cerr << "JSON parse error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    std::string device = config.value("device", "cpu");
+    std::string pretrained_model_path =  config.value("pretrained_model_path", "");
+    std::string directory_path = config.value("directory_path", "../../../analysis");
+    int num_resblocks = config.value("num_resblocks", 0);
+    int num_channels = config.value("num_channels", 0);
+    int num_searches_init = config.value("num_searches_init", 0);
+    float dichirlet_alpha = config.value("dichirlet_alpha", 0.0);
+    float dichirlet_epsilon = config.value("dichirlet_epsilon", 0.0);
+    float C = config.value("C", 0.0);
+    float alpha = config.value("alpha", 0.0);
+
+    std::shared_ptr<torch::Device> m_Device;
+
+    if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
+    {
+        auto dots = device.find(":");
+        int device_id = 0;
+        if (dots != device.npos)
+        {
+            device_id = std::stoi(device.substr(dots + 1, device.npos - dots));
+        }
+
+        m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
+    }
+    else
+    {
+        m_Device = std::make_unique<torch::Device>(torch::kCPU);
+    }
+    
+    auto m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess->to(*m_Device, torch::kFloat32);
+    std::cout << pretrained_model_path << std::endl;
+    if (pretrained_model_path != "")
+    {
+        load_Resnet(pretrained_model_path, m_ResNetChess, m_Device);
+    }
+
+    auto mcts = std::make_unique<MCTS>(m_ResNetChess, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
+    auto game = std::make_shared<Game>();
+
+    std::vector<SPG*> m_spGames;
+
+    game->m_Board->parse_fen(start_position);
+    SPG* spg = new SPG(game);
+    m_spGames.push_back(spg);
+
+    std::vector<std::string> chessFiles;
+
+    try {
+        // Iterate over the directory entries
+        for (const auto& entry : fs::directory_iterator(directory_path)) {
+            // Check if the entry is a regular file and if it starts with "index"
+            if (entry.is_regular_file() && entry.path().filename().string().rfind("index", 0) == 0) {
+                // Print the name of the file
+                chessFiles.push_back(entry.path().filename().string());
+            }
+        }
+    } catch (const fs::filesystem_error& e) {
+        std::cerr << "Error accessing the directory: " << e.what() << std::endl;
+    }
+
+
+    for (int i = 0;  i < chessFiles.size(); i++)
+    {
+        auto chessPosition = readChessCSV(directory_path + "/" + chessFiles.at(i)).at(0);
+
+        game->m_Board->parse_fen(chessPosition.epd.c_str());
+        m_spGames[0]->reset();
+        m_spGames[0]->current_state = game->get_state();
+
+        game->m_Board->print_board();
+
+        auto st = get_time_ms();
+
+        auto results = mcts->predict(&m_spGames);
+
+        std::cout << "Time taken: " << (get_time_ms() - st) / 1000.0f << "seconds" << std::endl;
+
+        std::string  action = m_spGames.at(0)->game->decode_action(m_spGames.at(0)->current_state, std::get<0>(results.at(0)));
+        auto eval = std::get<1>(results.at(0));
+
+        auto eval_shaped = (eval / abs(eval)) * std::pow(abs(eval), alpha) * 150.0f;
+
+        std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << std::endl;
+        std::cout << "Eval: " << chessPosition.eval << " Predicted eval: " << eval_shaped << std::endl;
+
+        getchar();
+    }
+
+    return 0;
+}

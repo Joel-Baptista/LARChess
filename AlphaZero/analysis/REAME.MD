@@ -1,0 +1,1 @@
+This analysis was taken from this [repo](https://github.com/fsmosca/STS-Rating/tree/master)
