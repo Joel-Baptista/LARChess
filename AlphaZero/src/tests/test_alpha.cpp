@@ -33,6 +33,7 @@ int main()
     std::string device = config.value("device", "cpu");
     std::string pretrained_model_path =  config.value("pretrained_model_path", "");
     std::string directory_path = config.value("directory_path", "../../../analysis");
+    std::string position_type = config.value("position_type", "puzzle");
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
     int num_searches_init = config.value("num_searches_init", 0);
@@ -94,27 +95,85 @@ int main()
 
     for (int i = 0;  i < chessFiles.size(); i++)
     {
-        auto chessPosition = readChessCSV(directory_path + "/" + chessFiles.at(i)).at(0);
 
-        game->m_Board->parse_fen(chessPosition.epd.c_str());
-        m_spGames[0]->reset();
-        m_spGames[0]->current_state = game->get_state();
+        if (position_type == "puzzle")
+        {
+            auto chessPositions = readPuzzleCSV(directory_path + "/" + chessFiles.at(i));
+            
+            for (auto& chessPosition : chessPositions)
+            {
+                std::cout << "File: " << chessFiles.at(i) << std::endl;
+                game->m_Board->parse_fen(chessPosition.epd.c_str());
+                m_spGames[0]->reset();
+                m_spGames[0]->current_state = game->get_state();
 
-        game->m_Board->print_board();
+                size_t pos = chessPosition.move.find(' ');
 
-        auto st = get_time_ms();
+                // Get the first word
+                std::string pre_move = chessPosition.move.substr(0, pos);
 
-        auto results = mcts->predict(&m_spGames);
+                auto state_next = game->get_next_state(m_spGames[0]->current_state, pre_move);                
+                m_spGames[0]->current_state = state_next;
+                game->set_state(state_next);
 
-        std::cout << "Time taken: " << (get_time_ms() - st) / 1000.0f << "seconds" << std::endl;
+                game->m_Board->print_board();
 
-        std::string  action = m_spGames.at(0)->game->decode_action(m_spGames.at(0)->current_state, std::get<0>(results.at(0)));
-        auto eval = std::get<1>(results.at(0));
+                auto st = get_time_ms();
 
-        auto eval_shaped = (eval / abs(eval)) * std::pow(abs(eval), alpha) * 150.0f;
+                auto results = mcts->predict(&m_spGames);
 
-        std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << std::endl;
-        std::cout << "Eval: " << chessPosition.eval << " Predicted eval: " << eval_shaped << std::endl;
+                std::cout << "Time taken: " << (get_time_ms() - st) / 1000.0f << "seconds, unique boards visited: " << mcts->get_boards_visited().size() << std::endl;
+
+                std::string  action = m_spGames.at(0)->game->decode_action(m_spGames.at(0)->current_state, std::get<0>(results.at(0)));
+                auto eval = std::get<1>(results.at(0));
+
+                auto eval_shaped = (eval / abs(eval)) * std::pow(abs(eval), alpha) * 150.0f;
+
+                std::cout << "Rating: " << chessPosition.Rating << std::endl;
+                std::cout << "Theme: " << chessPosition.Themes << std::endl;
+                std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << std::endl;
+                std::cout << std::endl;
+                getchar();
+            }
+        }
+        else
+        {
+            auto chessPositions = readChessCSV(directory_path + "/" + chessFiles.at(i));
+            auto chessPosition = chessPositions.at(0);
+            std::cout << "File: " << chessFiles.at(i) << std::endl;
+            game->m_Board->parse_fen(chessPosition.epd.c_str());
+            m_spGames[0]->reset();
+            m_spGames[0]->current_state = game->get_state();
+
+            game->m_Board->print_board();
+
+            auto st = get_time_ms();
+
+            auto results = mcts->predict(&m_spGames);
+
+            std::cout << "Time taken: " << (get_time_ms() - st) / 1000.0f << "seconds" << std::endl;
+
+            std::string  action = m_spGames.at(0)->game->decode_action(m_spGames.at(0)->current_state, std::get<0>(results.at(0)));
+            auto eval = std::get<1>(results.at(0));
+
+            auto eval_shaped = (eval / abs(eval)) * std::pow(abs(eval), alpha) * 150.0f;
+
+            std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << std::endl;
+            std::cout << "Eval: " << chessPosition.eval << " Predicted eval: " << eval_shaped << std::endl;
+            std::cout << std::endl;
+            for (int j = 0;  j < chessPositions.size(); j++)
+            {
+                std::cout << "Move #" << j + 1 << ": " << chessPositions.at(j).move << ", eval: " << chessPositions.at(j).eval;
+
+                if (chessPositions.at(j).move == action)
+                {
+                    std::cout << " (Predicted)";
+                }
+
+                std::cout << std::endl;
+            }
+        }
+
 
         getchar();
     }

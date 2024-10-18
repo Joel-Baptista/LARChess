@@ -81,6 +81,8 @@ class MCTS
         void set_dichirlet_epsilon(float epsilon) { dichirlet_epsilon = epsilon; }
         void set_C(float c) { C = c; }
         void set_num_searches(int s) { num_searches = s; }
+        std::unordered_map<BitboardKey, int, BitboardHash> get_boards_visited() { return boards_visited; }
+
     private:
         int num_searches;
         float dichirlet_alpha;
@@ -88,6 +90,7 @@ class MCTS
         int search_depth;
 
         std::shared_ptr<ResNetChess> m_model;
+        std::unordered_map<BitboardKey, int, BitboardHash> boards_visited;
 
         float C;
         int thread_id;
