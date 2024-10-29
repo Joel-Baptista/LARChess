@@ -11,6 +11,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet
     this->C = C;
     this->m_model = model;
     this->thread_id = 0;
+    this->boards_visited.clear();
 }
 MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
@@ -20,7 +21,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, 
     this->C = C;
     this->m_model = model;
     this->thread_id = thread_id;
-
+    this->boards_visited.clear();
 }
 
 MCTS::~MCTS()
@@ -74,6 +75,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
 
 void MCTS::search(std::vector<SPG*>* spGames)
 {
+    boards_visited.clear();
     auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
     torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
@@ -95,15 +97,6 @@ void MCTS::search(std::vector<SPG*>* spGames)
         
         output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
-        torch::Tensor noise = torch::zeros({batch_size, 8, 8, 73});
-
-        dirichlet_noise(noise, dichirlet_alpha, batch_size);
-
-        noise = noise.to(*m_model->m_Device);
-    
-        // // Apply Dirichlet noise to the policy
-        output_roots.policy = (1 - dichirlet_epsilon) * output_roots.policy + dichirlet_epsilon * noise;   
-
     }
     // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
@@ -122,12 +115,13 @@ void MCTS::search(std::vector<SPG*>* spGames)
         spg_policy *= valid_moves;
         spg_policy /= spg_policy.sum();
 
+        std::vector<double> alpha(move_list.count, dichirlet_alpha);
+        add_dirichlet_noise(spg_policy, alpha, dichirlet_epsilon);
+        spg_policy /= spg_policy.sum();
+
         spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "", C, 0.0, 1);
 
-        
         spGames->at(i)->pRoot->expand(spg_policy, valid_moves);
-        
-
     }
     // std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     for (int i = 0; i < num_searches; i++)
@@ -142,10 +136,11 @@ void MCTS::search(std::vector<SPG*>* spGames)
             {
                 pNode = pNode->select();
             }
+            
+            boards_visited[pNode->node_state.bitboards] += 1;
 
             final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);
             
-
             if (fState.terminated)
             {
                 pNode->backpropagate(-fState.value);

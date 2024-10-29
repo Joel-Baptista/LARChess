@@ -3,3 +3,4 @@ AlphaZero/build/*
 /.vscode/*
 */models/*
 */datasets/*
+*/analysis/*

@@ -11,29 +11,63 @@ std::string getCurrentTimestamp() {
 }
 
 // Function to generate Dirichlet noise
-void dirichlet_noise(torch::Tensor& noise,float& alpha, int& batch_size) {
+// void dirichlet_noise(torch::Tensor& noise, std::vector<float> alpha_vector, int& batch_size) {
+//     std::random_device rd;
+//     std::mt19937 rng(rd());
+//     std::gamma_distribution<> gamma_dist(alpha, 1.0);
+//     
+//     for (int i = 0; i < batch_size; ++i) {
+//         std::vector<double> sample(8 * 8 * 73);
+//         double sum = 0.0;
+//         for (int j = 0; j < 8 * 8 * 73; ++j) {
+//             sample[j] = gamma_dist(rng);
+//             sum += sample[j];
+//         }
+//         for (int j = 0; j < 73; ++j) {
+//             for (int k = 0; k < 8; ++k) 
+//             {
+//                 for (int l = 0; l < 8; ++l) 
+//                 {
+//                     int idx_sample = j * 8 * 8 + k * 8 + l;
+//                     noise[i][l][k][j] = sample[idx_sample] / sum;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+void add_dirichlet_noise(torch::Tensor& action, const std::vector<double>& alpha, const float& epsilon) {
+    size_t K = alpha.size();
+    std::vector<double> samples(K);
     std::random_device rd;
-    std::mt19937 rng(rd());
-    std::gamma_distribution<> gamma_dist(alpha, 1.0);
-    
-    for (int i = 0; i < batch_size; ++i) {
-        std::vector<double> sample(8 * 8 * 73);
-        double sum = 0.0;
-        for (int j = 0; j < 8 * 8 * 73; ++j) {
-            sample[j] = gamma_dist(rng);
-            sum += sample[j];
-        }
-        for (int j = 0; j < 73; ++j) {
-            for (int k = 0; k < 8; ++k) 
-            {
-                for (int l = 0; l < 8; ++l) 
-                {
-                    int idx_sample = j * 8 * 8 + k * 8 + l;
-                    noise[i][l][k][j] = sample[idx_sample] / sum;
-                }
-            }
+    std::mt19937 gen(rd());
+    std::gamma_distribution<double> gammaDist;
+
+    double sumSamples = 0.0;
+
+    // Generate K samples from Gamma distribution with shape alpha_i
+    for (size_t i = 0; i < K; ++i) {
+        gammaDist = std::gamma_distribution<double>(alpha[i], 1.0); // scale parameter = 1
+        samples[i] = gammaDist(gen);
+        sumSamples += samples[i];
+    }
+
+    // Normalize the samples to lie on the simplex (i.e., they sum to 1)
+    for (size_t i = 0; i < K; ++i) {
+        samples[i] /= sumSamples;
+    }
+
+    action = action.view({-1});
+
+    // Add the Dirichlet noise to the action probabilities
+    int alpha_count = 0;
+    for (size_t j = 0; j < action.size(0); ++j) {
+        if (action[j].item<float>() > 0) {
+            action[j] = (1 - epsilon) * action[j].item<float>() + epsilon * samples[alpha_count];
+            alpha_count++;
         }
     }
+    action = action.view({8, 8, 73});
 }
 
 // Function to log a message to a file
@@ -230,4 +264,48 @@ std::vector<ChessPosition> readChessCSV(const std::string& filename) {
     }
 
     return positions;
+}
+
+std::vector<PuzzleData> readPuzzleCSV(const std::string& filename) {
+    std::vector<PuzzleData> puzzles;
+    std::ifstream file(filename);
+    std::string line, token;
+
+    // Read header and ignore
+    std::getline(file, line);
+
+    // Read each line of the CSV
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        PuzzleData puzzle;
+
+        // Read PuzzleId
+        std::getline(ss, puzzle.PuzzleId, ',');
+        // Read FEN
+        std::getline(ss, puzzle.epd, ',');
+        // Read Moves
+        std::getline(ss, puzzle.move, ',');
+        // Read Rating (convert to int)
+        std::getline(ss, token, ',');
+        puzzle.Rating = std::stoi(token);
+        // Read RatingDeviation (convert to int)
+        std::getline(ss, token, ',');
+        puzzle.RatingDeviation = std::stoi(token);
+        // Read Popularity (convert to int)
+        std::getline(ss, token, ',');
+        puzzle.Popularity = std::stoi(token);
+        // Read NbPlays (convert to int)
+        std::getline(ss, token, ',');
+        puzzle.NbPlays = std::stoi(token);
+        // Read Themes
+        std::getline(ss, puzzle.Themes, ',');
+        // Read GameUrl
+        std::getline(ss, puzzle.GameUrl, ',');
+        // Read OpeningTags
+        std::getline(ss, puzzle.OpeningTags, ',');
+
+        puzzles.push_back(puzzle);
+    }
+
+    return puzzles;
 }

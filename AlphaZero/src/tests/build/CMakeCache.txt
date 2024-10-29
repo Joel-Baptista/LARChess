@@ -261,7 +261,7 @@ CUDA_CUDART_LIBRARY:FILEPATH=/usr/local/cuda/lib64/libcudart.so
 CUDA_CUDA_LIB:FILEPATH=/usr/local/cuda/lib64/stubs/libcuda.so
 
 //"cuda" library (older versions only).
-CUDA_CUDA_LIBRARY:FILEPATH=CUDA_CUDA_LIBRARY-NOTFOUND
+CUDA_CUDA_LIBRARY:FILEPATH=/usr/lib/x86_64-linux-gnu/libcuda.so
 
 //Directory to put all the output files.  If blank it will default
 // to the CMAKE_CURRENT_BINARY_DIR
@@ -712,6 +712,8 @@ CUDA_CUDART_LIBRARY-ADVANCED:INTERNAL=1
 CUDA_CUDA_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_GENERATED_OUTPUT_DIR
 CUDA_GENERATED_OUTPUT_DIR-ADVANCED:INTERNAL=1
+//Returned GPU architectures from detect_gpus tool
+CUDA_GPU_DETECT_OUTPUT:INTERNAL=8.9;8.6
 //ADVANCED property for variable: CUDA_HOST_COMPILATION_CPP
 CUDA_HOST_COMPILATION_CPP-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CUDA_NVCC_FLAGS
@@ -876,5 +878,5 @@ FIND_PACKAGE_MESSAGE_DETAILS_Torch:INTERNAL=[/home/sangan/projects/libtorch-cuda
 //Result of TRY_COMPILE
 compile_result:INTERNAL=TRUE
 //Result of TRY_RUN
-run_result:INTERNAL=255
+run_result:INTERNAL=0
 

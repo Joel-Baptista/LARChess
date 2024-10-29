@@ -16,7 +16,8 @@
 
 std::string getCurrentTimestamp();
 void logMessage(const std::string& message, const std::string& filename);
-void dirichlet_noise(torch::Tensor& noise, float& alpha, int& batch_size);
+void dirichlet_noise(torch::Tensor& noise, float& alpha, int& batch_size, int action_size);
+void add_dirichlet_noise(torch::Tensor& action, const std::vector<double>& alpha, const float& epsilon);
 void initLogFile(const std::string& filename);
 std::string initLogFiles(const std::string& path);
 
@@ -66,3 +67,18 @@ struct ChessPosition {
 };
 
 std::vector<ChessPosition> readChessCSV(const std::string& filename);
+
+struct PuzzleData {
+    std::string PuzzleId;
+    std::string epd;
+    std::string move;
+    int Rating;
+    int RatingDeviation;
+    int Popularity;
+    int NbPlays;
+    std::string Themes;
+    std::string GameUrl;
+    std::string OpeningTags;
+};
+
+std::vector<PuzzleData> readPuzzleCSV(const std::string& filename);
