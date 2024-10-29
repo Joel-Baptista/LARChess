@@ -1,3 +1,0 @@
-/home/sangan/projects/LARChess/AlphaZero/src/tests/build/CMakeFiles/test_alpha.dir
-/home/sangan/projects/LARChess/AlphaZero/src/tests/build/CMakeFiles/edit_cache.dir
-/home/sangan/projects/LARChess/AlphaZero/src/tests/build/CMakeFiles/rebuild_cache.dir
