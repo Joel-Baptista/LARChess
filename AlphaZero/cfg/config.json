@@ -1,5 +1,5 @@
 {
-    "num_searches_init": 800,
+    "num_searches_init": 1,
     "num_searches_max": 800,
     "num_searches_ratio": 1.00,
     "search_depth": 1000,
@@ -36,9 +36,9 @@
     "model_name": "",
     "pretrained_model_path": "",
     "device": "cuda:0",
-    "threads": 12,
+    "threads": 1,
     "sp": false,
     "sp_batch_size": 256,
     "dataset_path": "../datasets/games_processed.csv",
-    "debug": false
+    "debug": true
 }

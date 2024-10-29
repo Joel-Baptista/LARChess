@@ -131,7 +131,7 @@ int main()
 
                 std::cout << "Rating: " << chessPosition.Rating << std::endl;
                 std::cout << "Theme: " << chessPosition.Themes << std::endl;
-                std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << std::endl;
+                std::cout << "Best move: " << chessPosition.move << " Predicted move: " << action << " Predicted value: " << eval << std::endl;
                 std::cout << std::endl;
                 getchar();
             }

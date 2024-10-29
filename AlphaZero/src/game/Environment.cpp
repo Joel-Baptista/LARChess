@@ -69,21 +69,24 @@ void Environment::step()
         if (state_value >= 0.05f || !m_spGames.at(i)->early_stop)
         {
             fs.terminated = true;
-            fs.value = 1.0f; // Resignation, but we are in the adversaries turn
+            fs.value = -1.0f; // Resignation
         }
 
         delete m_spGames.at(i)->pRoot;
 
         if (fs.terminated)
         {
+            m_spGames.at(i)->game->m_Board->print_board();
             {
                 std::lock_guard<std::mutex> lock(m_Buffer->mtxAddBuffer);
                 m_Buffer->adding_new_game();
                 for (int j = 0; j < m_spGames.at(i)->memory.size(); j++)
                 {
                     float value = (m_spGames.at(i)->memory.at(j).board_state.side == m_spGames.at(i)->current_state.side)
-                                ? -fs.value
-                                : fs.value;
+                                ? fs.value
+                                : -fs.value;
+                    std::cout << "Memory side: " << m_spGames.at(i)->memory.at(j).board_state.side << " Current Side: " << m_spGames.at(i)->current_state.side <<
+                    " Value: " << value << std::endl;
 
                     torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
                     m_spGames.at(i)->game->get_encoded_state(state, m_spGames.at(i)->memory.at(j).board_state);

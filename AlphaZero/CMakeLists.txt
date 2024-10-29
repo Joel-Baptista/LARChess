@@ -36,6 +36,7 @@ add_executable(${PROJECT_NAME}
         ${PROJECT_ROOT}/AlphaZero/src/include/network.h
         
 )
+
 target_link_libraries(${PROJECT_NAME} PUBLIC "${TORCH_LIBRARIES}" pthread)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_ROOT}/AlphaZero/src/headers)
                 

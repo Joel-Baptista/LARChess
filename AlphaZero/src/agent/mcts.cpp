@@ -56,7 +56,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
 
             visit_probs.push_back((float)spGames->at(i)->pRoot->pChildren.at(j)->visit_count / this->get_num_searches());
 
-            state_value += spGames->at(i)->pRoot->pChildren.at(j)->value_sum * visit_probs[j];
+            state_value += (spGames->at(i)->pRoot->pChildren.at(j)->value_sum / (float)spGames->at(i)->pRoot->pChildren.at(j)->visit_count) * visit_probs[j];
         }
 
         for (int j = 0; j < spGames->at(i)->pRoot->pChildren.size(); j++)
@@ -66,7 +66,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
                 * visit_probs[j];
         }
 
-        results.push_back(std::make_tuple(action_probs, state_value));
+        results.push_back(std::make_tuple(action_probs, -state_value));
     }
 
     return results;
