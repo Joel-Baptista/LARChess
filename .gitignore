@@ -1,5 +1,6 @@
 */build/*
 AlphaZero/build/*
+AlphaZero/src/test/build/*
 /.vscode/*
 */models/*
 */datasets/*

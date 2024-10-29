@@ -174,7 +174,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
             {
                 int game_index = expandable_games[i];
                 torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-                get_encoded_state(state, spGames->at(game_index)->current_state);
+                get_encoded_state(state, spGames->at(game_index)->pCurrentNode->node_state);
                 encoded_states[i] = state.squeeze(0); 
             }
             {
@@ -199,12 +199,12 @@ void MCTS::search(std::vector<SPG*>* spGames)
             torch::Tensor spg_policy = output_exapandables.policy[k].cpu();
             torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
 
-            spGames->at(game_index)->game->set_state(spGames->at(game_index)->current_state);
+            spGames->at(game_index)->game->set_state(spGames->at(game_index)->pCurrentNode->node_state);
 
             moves move_list;
             spGames->at(game_index)->game->m_Board->get_alpha_moves(&move_list);
 
-            get_valid_moves_encoded(valid_moves, spGames->at(game_index)->current_state, move_list);
+            get_valid_moves_encoded(valid_moves, spGames->at(game_index)->pCurrentNode->node_state, move_list);
 
             spg_policy *= valid_moves;
             spg_policy /= spg_policy.sum();
