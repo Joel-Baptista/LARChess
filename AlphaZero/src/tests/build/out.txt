@@ -1,1 +1,0 @@
-[ 16%] Building CXX object CMakeFiles/test_alpha.dir/home/sangan/projects/LARChess/AlphaZero/src/agent/mcts.cpp.o
