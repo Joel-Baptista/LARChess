@@ -28,7 +28,6 @@ Environment::~Environment()
 
 void Environment::step()
 {
-
     auto results = m_Mcts->predict(&m_spGames);
 
     for (int i = 0; i < m_spGames.size(); i++)

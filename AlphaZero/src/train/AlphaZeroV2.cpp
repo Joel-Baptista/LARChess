@@ -249,14 +249,15 @@ void AlphaZeroV2::learn()
             }
         }
 
+        m_logger->log("Env Step FPS: " + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))));
+        
         if (m_Buffer->size() < batch_size)
         {
             continue;
         }
-
+        st = get_time_ms();
         train();
-
-        m_logger->log("Iteration FPS: " + std::to_string((1000.0f / (float)(get_time_ms() - st))));
+        m_logger->log("Gradient Step FPS: " + std::to_string((1000.0f / (float)(get_time_ms() - st))));
 
         if (i % eval_freq == 0)
         {
