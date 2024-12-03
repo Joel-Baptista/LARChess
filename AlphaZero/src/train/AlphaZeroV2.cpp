@@ -51,7 +51,7 @@ AlphaZeroV2::AlphaZeroV2(
     this->model_path = m_logger->initLogFiles("../models/alpha");
     log_file = model_path + "/log.txt";
 
-    m_Buffer = std::make_shared<ReplayBuffer>(buffer_size);
+    m_Buffer = std::make_shared<ReplayBuffer>(buffer_size, 100);
 
     if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
     {
@@ -311,6 +311,8 @@ void AlphaZeroV2::learn()
         
             m_logger->log("Model saved!!!");
         }
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_len()), model_path + "/ep_len.csv");
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_res()), model_path + "/ep_res.csv");
     }
 }
 
@@ -340,11 +342,12 @@ void AlphaZeroV2::train()
     }
     
     auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
-
     policy = policy.clamp(1e-10, 1.0f);
     encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
-    
-    torch::Tensor policy_loss = - torch::sum(encoded_actions * torch::log(policy));
+
+    // torch::Tensor policy_loss = torch::nn::functional::cross_entropy(policy, encoded_actions);
+    // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
+    torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
 
     auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
 

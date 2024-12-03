@@ -509,12 +509,15 @@ void AlphaZeroMT::train()
 
         policy = policy.clamp(1e-10, 1.0f);
         encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
+
+        std::cout << "Min encoded actions" << encoded_actions.min().item<float>() << std::endl;
         
-        // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-        torch::Tensor policy_loss = - torch::sum(encoded_actions * torch::log(policy));
+        torch::Tensor policy_loss = torch::nn::functional::cross_entropy(policy, encoded_actions);
+        // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
         // torch::Tensor policy_loss = torch::sum(-encoded_actions * torch::log_softmax(output.policy, -1));
         auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
         // std::cout << "Value loss calculated" << std::endl;
+
         auto loss = policy_loss + value_loss;
 
         m_Optimizer->zero_grad();

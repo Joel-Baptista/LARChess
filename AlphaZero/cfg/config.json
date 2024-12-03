@@ -1,6 +1,6 @@
 {
-    "num_searches_init": 800,
-    "num_searches_max": 800,
+    "num_searches_init": 300,
+    "num_searches_max": 300,
     "num_searches_ratio": 1.00,
     "search_depth": 1000,
     "num_iterations": 10000000,
@@ -9,7 +9,7 @@
     "num_epochs": 100,
     "max_state_per_game": 30,
     "swarm_update_freq": 1000,
-    "batch_size": 4096,
+    "batch_size": 3072,
     "buffer_size": 1000000,
     "temperature": 4,
     "temperature_decay": 0.95,
@@ -40,5 +40,5 @@
     "sp": false,
     "sp_batch_size": 256,
     "dataset_path": "../datasets/games_processed.csv",
-    "debug": true
+    "debug": false
 }

@@ -7,7 +7,7 @@ import os
 sns.set_theme(style="whitegrid")
 
 # Folder containing your CSV files
-folder_path = '../models/alpha/model8'
+folder_path = '../models/alpha/model11'
 
 # Iterate through each CSV file in the folder
 for filename in os.listdir(folder_path):
@@ -17,9 +17,11 @@ for filename in os.listdir(folder_path):
         df = pd.read_csv(file_path)
         
         # Automatically use the first column as the x-axis
+
+        print(df[df.columns[1]])
+
         x_column = df.columns[0]
 
-        
         # Melt the DataFrame to long-form for seaborn
         df_melted = pd.melt(df, id_vars=[x_column], var_name='Variable', value_name='Value')
         

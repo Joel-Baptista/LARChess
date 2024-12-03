@@ -12,6 +12,7 @@ Environment::Environment(
     m_Mcts = mcts;
     m_Buffer = buffer;
 
+
     for (int i = 0; i < num_parallel_games; i++)
     {
         m_Games.push_back(std::make_shared<Game>());
@@ -78,8 +79,10 @@ void Environment::step()
             {
                 std::lock_guard<std::mutex> lock(m_Buffer->mtxAddBuffer);
                 m_Buffer->adding_new_game();
+                int len = 0;
                 for (int j = 0; j < m_spGames.at(i)->memory.size(); j++)
                 {
+                    len++;
                     float value = (m_spGames.at(i)->memory.at(j).board_state.side == m_spGames.at(i)->current_state.side)
                                 ? fs.value
                                 : -fs.value;
@@ -90,6 +93,8 @@ void Environment::step()
 
                     m_Buffer->add(state,  m_spGames.at(i)->memory.at(j).action_probs, torch::tensor(value));
                 }
+
+                m_Buffer->add_stats(torch::tensor(fs.value).abs(), torch::tensor(len));
             }
 
             m_Games.at(i)->m_Board->parse_fen(start_position);

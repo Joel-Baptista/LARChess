@@ -1,6 +1,6 @@
 #include "ReplayBuffer.h"
 
-ReplayBuffer::ReplayBuffer(int buffer_size)
+ReplayBuffer::ReplayBuffer(int buffer_size, int stat_window = 100)
 {
     this->buffer_size = buffer_size;
     this->pos = 0;
@@ -11,11 +11,27 @@ ReplayBuffer::ReplayBuffer(int buffer_size)
     this->current_game_id = 0;
 
     pGameIds = new int[buffer_size];
+
+    this->stats_lens = torch::zeros({stat_window});
+    this->stats_res = torch::zeros({stat_window});
+    this->stats_pos = 0;
+    this->stats_full = false;
+    this->stat_window = stat_window;
 }
 
 ReplayBuffer::~ReplayBuffer()
 {
     delete[] pGameIds;
+}
+
+void ReplayBuffer::add_stats(torch::Tensor res, torch::Tensor len)
+{
+    int index = this->stats_pos % this->stat_window;
+
+    
+    this->stats_pos++;   
+
+    if (this->stats_pos > this->stat_window) this->stats_full = true;
 }
 
 int ReplayBuffer::size()

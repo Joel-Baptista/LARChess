@@ -95,6 +95,10 @@ std::string Logger::initLogFiles(const std::string& path)
         logMessage("iter,grad", new_folder_name + "/grads.csv");
         initLogFile(new_folder_name + "/lr.csv");
         logMessage("iter,lr", new_folder_name + "/lr.csv");
+        initLogFile(new_folder_name + "/ep_len.csv");
+        logMessage("iter,len", new_folder_name + "/ep_len.csv");
+        initLogFile(new_folder_name + "/ep_res.csv");
+        logMessage("iter,len", new_folder_name + "/ep_res.csv");
         initLogFile(new_folder_name + "/log.txt");
         initLogFile(new_folder_name + "/config.json");
     }
