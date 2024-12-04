@@ -107,6 +107,8 @@ std::string Logger::initLogFiles(const std::string& path)
         logMessage("iter,fps", new_folder_name + "/fps.csv");
         initLogFile(new_folder_name + "/n_games.csv");
         logMessage("iter,n_games", new_folder_name + "/n_games.csv");
+        initLogFile(new_folder_name + "/env_steps.csv");
+        logMessage("iter,n_games", new_folder_name + "/env_steps.csv");
         initLogFile(new_folder_name + "/log.txt");
         initLogFile(new_folder_name + "/config.json");
     }

@@ -313,6 +313,8 @@ void AlphaZeroV2::learn()
         m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_len()), model_path + "/ep_len.csv");
         m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_res()), model_path + "/ep_res.csv");
         m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_n_games()), model_path + "/n_games.csv");
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_num_steps()), model_path + "/env_steps.csv");
+        
     }
 }
 
@@ -341,13 +343,13 @@ void AlphaZeroV2::train()
         throw std::runtime_error("NaN detected in encoded_actions or output.");
     }
     
-    auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
-    policy = policy.clamp(1e-10, 1.0f);
-    encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
+    // auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+    // policy = policy.clamp(1e-10, 1.0f);
+    // encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
 
-    // torch::Tensor policy_loss = torch::nn::functional::cross_entropy(policy, encoded_actions);
+    torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
     // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
-    torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
+    // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
 
     auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
 
@@ -547,12 +549,12 @@ void AlphaZeroV2::save_model(std::string path)
         if (path == "")
         {
             torch::save(m_ResNetChess, "model.pt");
-            m_logger->log( "Model saved in: model.pt" );
+            // m_logger->log( "Model saved in: model.pt" );
         }
         else
         {
             torch::save(m_ResNetChess, path + "/model.pt");
-            m_logger->log( "Model saved in: " + path + "/model.pt" );
+            // m_logger->log( "Model saved in: " + path + "/model.pt" );
         }
     }
 }

@@ -24,6 +24,7 @@ class ReplayBuffer
         int get_current_game_id() { return current_game_id; }
         buffer_items sample(int batch_size, int max_state_per_game);
         int size();
+        int get_num_steps() { return pos;}
         std::mutex mtxAddBuffer;
     
     private:
