@@ -28,6 +28,8 @@ void ReplayBuffer::add_stats(torch::Tensor res, torch::Tensor len)
 {
     int index = this->stats_pos % this->stat_window;
 
+    this->stats_lens[index] = len;
+    this->stats_res[index] = res;
     
     this->stats_pos++;   
 

@@ -87,8 +87,12 @@ std::string Logger::initLogFiles(const std::string& path)
     // // Create the log file
     if (!debug)
     {
-        initLogFile(new_folder_name + "/train.csv");
-        logMessage("iter,loss", new_folder_name + "/train.csv");
+        initLogFile(new_folder_name + "/loss.csv");
+        logMessage("iter,loss", new_folder_name + "/loss.csv");
+        initLogFile(new_folder_name + "/val_loss.csv");
+        logMessage("iter,loss", new_folder_name + "/val_loss.csv");
+        initLogFile(new_folder_name + "/pi_loss.csv");
+        logMessage("iter,loss", new_folder_name + "/pi_loss.csv");
         initLogFile(new_folder_name + "/eval.csv");
         logMessage("iter,win,loss,draw", new_folder_name + "/eval.csv");
         initLogFile(new_folder_name + "/grads.csv");
@@ -99,6 +103,10 @@ std::string Logger::initLogFiles(const std::string& path)
         logMessage("iter,len", new_folder_name + "/ep_len.csv");
         initLogFile(new_folder_name + "/ep_res.csv");
         logMessage("iter,len", new_folder_name + "/ep_res.csv");
+        initLogFile(new_folder_name + "/fps.csv");
+        logMessage("iter,fps", new_folder_name + "/fps.csv");
+        initLogFile(new_folder_name + "/n_games.csv");
+        logMessage("iter,n_games", new_folder_name + "/n_games.csv");
         initLogFile(new_folder_name + "/log.txt");
         initLogFile(new_folder_name + "/config.json");
     }
@@ -110,7 +118,7 @@ std::string Logger::initLogFiles(const std::string& path)
 void Logger::logTrain(std::string message)
 {
     if (debug) return;
-    logMessage(message, model_path + "/train.csv");
+    logMessage(message, model_path + "/loss.csv");
 }
 void Logger::logEval(std::string message)
 {

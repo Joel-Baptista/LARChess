@@ -364,6 +364,7 @@ void SPG::reset()
     pRoot = nullptr;
     pCurrentNode = nullptr;
     repeated_states.clear();
+    memory.clear();
 
     if (get_prob_uni() < 0.2)
     {

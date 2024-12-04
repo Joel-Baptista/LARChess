@@ -248,17 +248,18 @@ void AlphaZeroV2::learn()
                 m_logger->log("Exception caught during future.get(): " + std::string(e.what()));
             }
         }
-
-        m_logger->log("Env Step FPS: " + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))));
         
         if (m_Buffer->size() < batch_size)
         {
+            m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
             continue;
         }
-        st = get_time_ms();
-        train();
-        m_logger->log("Gradient Step FPS: " + std::to_string((1000.0f / (float)(get_time_ms() - st))));
 
+        train();
+        
+        save_model(model_path);
+
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
         if (i % eval_freq == 0)
         {
             std::vector<std::future<int>> futuresEval;
@@ -307,12 +308,11 @@ void AlphaZeroV2::learn()
                 m_logger->log("Depth increased to: " + std::to_string(depth));
             }
 
-            save_model(model_path);
-        
-            m_logger->log("Model saved!!!");
         }
+        
         m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_len()), model_path + "/ep_len.csv");
         m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_mean_res()), model_path + "/ep_res.csv");
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Buffer->get_n_games()), model_path + "/n_games.csv");
     }
 }
 
@@ -368,6 +368,8 @@ void AlphaZeroV2::train()
     batch_count++;
     
     m_logger->logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
+    m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(policy_loss.cpu().item<float>()), model_path + "/pi_loss.csv");
+    m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(value_loss.cpu().item<float>()), model_path + "/val_loss.csv");
     m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
     train_iter++;
 
@@ -389,7 +391,7 @@ void AlphaZeroV2::train()
         update_learning_rate();
     }
 
-    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    // m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
     
 }
 

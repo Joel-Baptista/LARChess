@@ -18,6 +18,7 @@ class ReplayBuffer
         void add_stats(torch::Tensor res, torch::Tensor len);
         float get_mean_len() { return torch::mean(stats_lens).cpu().item<float>();}
         float get_mean_res() { return torch::mean(stats_res).cpu().item<float>();}
+        int get_n_games() { return current_game_id; }
         void reset();
         void adding_new_game() { current_game_id++; }
         int get_current_game_id() { return current_game_id; }
