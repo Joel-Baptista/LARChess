@@ -1,7 +1,7 @@
-#include "supLearn.h"
+#include "../headers/supLearn.h"
 
 
-#include "include/json.hpp"
+#include "../include/json.hpp"
 
 using json = nlohmann::json;
 
@@ -181,13 +181,13 @@ void SupervisedLearning::learn()
 
             auto output = m_ResNetChess->forward(encoded_states);
 
-            auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+            //auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
-            policy = policy.clamp(1e-10, 1.0f);
-            encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
+            // policy = policy.clamp(1e-10, 1.0f);
+            // encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
             
             // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-            torch::Tensor policy_loss = - torch::sum(encoded_actions * torch::log(policy));
+            torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(output.policy));
             // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 

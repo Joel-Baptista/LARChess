@@ -1,4 +1,4 @@
-#include "alphabot.h"
+#include "../headers/alphabot.h"
 
 AlphaBot::AlphaBot(std::shared_ptr<Game> game, 
                    int num_searches, 

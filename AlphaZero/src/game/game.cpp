@@ -1,4 +1,4 @@
-#include "game.h"
+#include "../headers/game.h"
 
 const char *square_to_coordinates[] = {
     "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",

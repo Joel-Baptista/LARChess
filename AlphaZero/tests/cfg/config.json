@@ -6,8 +6,8 @@
     "dichirlet_epsilon": 0.1,
     "C": 1.41,
     "temperature": 1.0,
-    "num_resblocks": 7,
-    "num_channels": 512,
-    "model_path": "/home/sangan/projects/YACE/AlphaZero/models/alpha/model1/",
-    "device": "cuda:1"
+    "num_resblocks": 20,
+    "num_channels": 256,
+    "model_path": "/home/sangan/projects/LARChess/AlphaZero/models/alpha/model14/",
+    "device": "cuda:0"
 }

@@ -251,7 +251,7 @@ void AlphaZeroV2::learn()
         
         if (m_Buffer->size() < batch_size)
         {
-            m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
+            m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
             continue;
         }
 
@@ -259,7 +259,7 @@ void AlphaZeroV2::learn()
         
         save_model(model_path);
 
-        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f * num_threads * num_parallel_games) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(((1000.0f) / (float)(get_time_ms() - st))), model_path + "/fps.csv");
         if (i % eval_freq == 0)
         {
             std::vector<std::future<int>> futuresEval;

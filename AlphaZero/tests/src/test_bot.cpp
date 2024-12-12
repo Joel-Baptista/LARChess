@@ -1,5 +1,5 @@
-#include "../../src/alphabot.h"
-#include "../../src/game.h"
+#include "../../src/headers/alphabot.h"
+#include "../../src/headers/game.h"
 
 #include "../../../BBChessEngine/src/bit_board.h"
 #include "../../src/include/json.hpp"

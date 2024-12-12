@@ -1,4 +1,4 @@
-#include "dataset.h"
+#include "../headers/dataset.h"
 
 
 Dataset::Dataset(const std::string& filename, float train_split, bool hasHeaders) : hasHeaders(hasHeaders), train_split(train_split)
@@ -66,20 +66,7 @@ void Dataset::loadCSV(const std::string& filename) {
         dp.state = current_state_tensor;
         dp.action = game.get_encoded_action(row[1], current_state.side);
 
-        float value;
-
-        if (row[3] == "draw")
-        {
-            value = 0.0f;
-        }   
-        else if (row[2] == row[3])
-        {
-            value = 1.0f;
-        }
-        else
-        {
-            value = -1.0f;
-        }
+        float value = std::stof(row[2]);
 
         dp.value = torch::tensor(value); 
         data_train->push_back(dp);

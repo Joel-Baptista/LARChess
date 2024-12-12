@@ -3,6 +3,7 @@
 #include <cmath>
 
 
+
 MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
 {
     this->num_searches = num_searches;
@@ -30,6 +31,7 @@ MCTS::~MCTS()
 
 std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* spGames)
 {
+
     this->search(spGames);
 
     std::vector<std::tuple<torch::Tensor, float>> results;
@@ -75,6 +77,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
 
 void MCTS::search(std::vector<SPG*>* spGames)
 {
+    m_model->eval();
     boards_visited.clear();
     auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
@@ -98,7 +101,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
     }
-    // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
     for (int i = 0; i < spGames->size(); i++)
     {
@@ -123,10 +126,11 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
         spGames->at(i)->pRoot->expand(spg_policy, valid_moves);
     }
-    // std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    st = get_time_ms();
     for (int i = 0; i < num_searches; i++)
     {
-        st = get_time_ms();
+        // st = get_time_ms();
         for (int j = 0; j < spGames->size(); j++)
         {
             spGames->at(j)->pCurrentNode = nullptr;
@@ -160,9 +164,8 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 expandable_games.push_back(k);
             }
         }
-// 
         // std::cout << "Time to select node: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        st = get_time_ms();
+        // st = get_time_ms();
         
         chess_output output_exapandables;
         if (expandable_games.size() > 0)
@@ -189,7 +192,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         }
         
         // std::cout << "Time to policy expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        st = get_time_ms();
+        // st = get_time_ms();
 
         for (int k = 0; k < expandable_games.size(); k++)
         {
@@ -214,13 +217,16 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 spGames->at(game_index)->pCurrentNode->expand(spg_policy, valid_moves);
             }
 
-            st = get_time_ms();
+            // st = get_time_ms();
             spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
         }
 
         // std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         
     }
+
+    std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+        
 
 }
 

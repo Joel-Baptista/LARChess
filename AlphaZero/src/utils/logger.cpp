@@ -102,13 +102,13 @@ std::string Logger::initLogFiles(const std::string& path)
         initLogFile(new_folder_name + "/ep_len.csv");
         logMessage("iter,len", new_folder_name + "/ep_len.csv");
         initLogFile(new_folder_name + "/ep_res.csv");
-        logMessage("iter,len", new_folder_name + "/ep_res.csv");
+        logMessage("iter,ep_res", new_folder_name + "/ep_res.csv");
         initLogFile(new_folder_name + "/fps.csv");
         logMessage("iter,fps", new_folder_name + "/fps.csv");
         initLogFile(new_folder_name + "/n_games.csv");
         logMessage("iter,n_games", new_folder_name + "/n_games.csv");
         initLogFile(new_folder_name + "/env_steps.csv");
-        logMessage("iter,n_games", new_folder_name + "/env_steps.csv");
+        logMessage("iter,n_steps", new_folder_name + "/env_steps.csv");
         initLogFile(new_folder_name + "/log.txt");
         initLogFile(new_folder_name + "/config.json");
     }
