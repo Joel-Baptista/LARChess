@@ -56,7 +56,7 @@ void Dataset::loadCSV(const std::string& filename) {
 
         data_point dp;
 
-        game.m_Board->parse_fen(row[0].c_str());
+        game.m_Board->parse_fen(row[1].c_str());
 
         auto current_state = game.get_state();
 
@@ -64,9 +64,9 @@ void Dataset::loadCSV(const std::string& filename) {
 
         game.get_encoded_state(current_state_tensor, current_state);
         dp.state = current_state_tensor;
-        dp.action = game.get_encoded_action(row[1], current_state.side);
+        dp.action = game.get_encoded_action(row[2], current_state.side);
 
-        float value = std::stof(row[2]);
+        float value = std::stof(row[3]);
 
         dp.value = torch::tensor(value); 
         data_train->push_back(dp);
@@ -85,30 +85,17 @@ void Dataset::loadCSV(const std::string& filename) {
 
         data_point dp;
 
-        game.m_Board->parse_fen(row[0].c_str());
+        game.m_Board->parse_fen(row[1].c_str());
 
         auto current_state = game.get_state();
 
         torch::Tensor current_state_tensor = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-        
+
         game.get_encoded_state(current_state_tensor, current_state);
         dp.state = current_state_tensor;
-        dp.action = game.get_encoded_action(row[1], current_state.side);
+        dp.action = game.get_encoded_action(row[2], current_state.side);
 
-        float value;
-
-        if (row[3] == "draw")
-        {
-            value = 0.0f;
-        }   
-        else if (row[2] == row[3])
-        {
-            value = 1.0f;
-        }
-        else
-        {
-            value = -1.0f;
-        }
+        float value = std::stof(row[3]);
 
         dp.value = torch::tensor(value); 
         data_eval->push_back(dp);

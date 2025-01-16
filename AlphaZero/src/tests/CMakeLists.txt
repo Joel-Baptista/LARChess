@@ -53,5 +53,22 @@ add_executable(test_mctsMT
 target_link_libraries(test_mctsMT PUBLIC "${TORCH_LIBRARIES}" pthread)
 target_include_directories(test_mctsMT PRIVATE ${PROJECT_ROOT}/AlphaZero/src/headers)
 set_property(TARGET test_mctsMT PROPERTY CXX_STANDARD 17)
+
+add_executable(big_o_test 
+        
+        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/tests/big_o_test.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/agent/mcts.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/agent/mctsMT.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/game/game.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/utils/utils.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
+        ${PROJECT_ROOT}/AlphaZero/src/include/network.h
+        
+)
+target_link_libraries(big_o_test PUBLIC "${TORCH_LIBRARIES}" pthread)
+target_include_directories(big_o_test PRIVATE ${PROJECT_ROOT}/AlphaZero/src/headers)
+set_property(TARGET big_o_test PROPERTY CXX_STANDARD 17)
                 
 

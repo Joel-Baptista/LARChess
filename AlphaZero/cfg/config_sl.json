@@ -1,7 +1,7 @@
 {
     "num_epochs": 400,
     "train_split": 0.7,
-    "batch_size": 4096,
+    "batch_size": 3072,
     "learning_rate": 0.0003,
     "dropout": 0.1,
     "weight_decay": 0.0001,

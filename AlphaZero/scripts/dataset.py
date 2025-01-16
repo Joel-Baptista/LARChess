@@ -27,9 +27,16 @@ def main():
         }
 
     for i in tqdm.tqdm(range(0, len(df))):
+        
         player = df["FEN"][i].split(" ")[1] 
         centipawns = df['Evaluation'][i]
         action = df['Move'][i]
+
+        if (not isinstance(action, str)) or (not isinstance(df["FEN"][i], str)) or (not isinstance(centipawns, str)):
+            continue
+        
+        if len(df["FEN"][i]) == 0 or len(action) == 0 or len(centipawns) == 0:
+            continue
 
         if centipawns[0] == '#':
             sign = 1 if centipawns[1] == '+' else -1

@@ -6,7 +6,7 @@
     "position_type": "puzzle",
     "num_resblocks": 20,
     "num_channels": 256,
-    "num_searches_init": 800,
+    "num_searches_init": 10,
     "dichirlet_alpha": 0.3,
     "dichirlet_epsilon": 0.0,
     "C": 1.41,
