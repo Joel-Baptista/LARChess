@@ -24,7 +24,9 @@ SupervisedLearning::SupervisedLearning(
     this->model_path = initLogFiles("../models/slearn");
     log_file = model_path + "/log.txt";
 
-    logMessage("iter,train,eval", model_path + "/train.csv");
+    logMessage("iter,train_loss,eval_loss", model_path + "/train.csv");
+    logMessage("iter,train_policy_loss,eval_policy_loss", model_path + "/policy.csv");
+    logMessage("iter,train_value_loss,eval_value_loss", model_path + "/value.csv");
 
     m_dataset = std::make_shared<Dataset>(dataset_path, train_split, hasHeaders);
     // m_dataset->shuffle();
@@ -87,6 +89,8 @@ void SupervisedLearning::learn()
 
         m_ResNetChess->train(true);
         float running_loss = 0.0;
+        float running_policy_loss = 0.0;
+        float running_value_loss = 0.0;
         float batch_count = 0.0;
         auto st = get_time_ms();
 
@@ -120,26 +124,26 @@ void SupervisedLearning::learn()
 
             auto output = m_ResNetChess->forward(encoded_states);
 
-            auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+            torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
+            // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
 
-            policy = policy.clamp(1e-10, 1.0f);
-            encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
-
-            torch::Tensor policy_loss = - torch::sum(encoded_actions * torch::log(policy));
-
-            // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
-            auto loss = policy_coef * policy_loss + value_loss;
+            auto loss = policy_loss + value_loss;
 
             m_Optimizer->zero_grad();
             loss.backward();
             m_Optimizer->step();
 
             running_loss += loss.cpu().item<float>();
+            running_policy_loss += policy_loss.cpu().item<float>();
+            running_value_loss += value_loss.cpu().item<float>();
             batch_count += 1.0;
         }
         float train_loss = running_loss / batch_count;
+        float train_policy_loss = running_policy_loss / batch_count;
+        float train_value_loss = running_value_loss / batch_count;
         logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
         // logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         m_dataset->shuffle();
@@ -147,6 +151,8 @@ void SupervisedLearning::learn()
 
         m_ResNetChess->train(false);
         running_loss = 0.0;
+        running_policy_loss = 0.0;
+        running_value_loss = 0.0;
         batch_count = 0.0;
         st = get_time_ms();
 
@@ -181,26 +187,27 @@ void SupervisedLearning::learn()
 
             auto output = m_ResNetChess->forward(encoded_states);
 
-            //auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+            torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+            // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
+            // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
 
-            // policy = policy.clamp(1e-10, 1.0f);
-            // encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
-            
-            // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-            torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(output.policy));
-            // auto policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
 
-            auto loss = policy_coef * policy_loss + value_loss;
-
+            auto loss = policy_loss + value_loss;
             loss = loss.detach();
 
             running_loss += loss.cpu().item<float>();
+            running_policy_loss += policy_loss.cpu().item<float>();
+            running_value_loss += value_loss.cpu().item<float>();
             batch_count += 1.0;
         }
         float eval_loss = running_loss / batch_count;
+        float eval_policy_loss = running_policy_loss / batch_count;
+        float eval_value_loss = running_value_loss / batch_count;
         logMessage(" Eval Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
         logTrain(std::to_string(epoch) + "," + std::to_string(train_loss) + "," + std::to_string(eval_loss));
+        logMessage(std::to_string(epoch) + "," + std::to_string(train_policy_loss) + "," + std::to_string(eval_policy_loss), model_path + "/policy.csv");
+        logMessage(std::to_string(epoch) + "," + std::to_string(train_value_loss) + "," + std::to_string(eval_value_loss), model_path + "/value.csv");
         if (eval_loss < min_eval_loss)
         {
             min_eval_loss = eval_loss;
