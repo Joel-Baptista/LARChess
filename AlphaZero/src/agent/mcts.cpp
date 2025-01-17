@@ -1,6 +1,7 @@
 #include "../headers/mcts.h"
 #include "../headers/game.h" 
 #include <cmath>
+#include <omp.h>
 
 
 
@@ -29,7 +30,7 @@ MCTS::~MCTS()
 {
 }
 
-std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* spGames)
+std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* spGames, bool deterministic)
 {
 
     this->search(spGames);
@@ -75,7 +76,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
 }
 
 
-void MCTS::search(std::vector<SPG*>* spGames)
+void MCTS::search(std::vector<SPG*>* spGames, bool deterministic)
 {
     m_model->eval();
     boards_visited.clear();
@@ -99,14 +100,15 @@ void MCTS::search(std::vector<SPG*>* spGames)
         int batch_size = output_roots.policy.size(0);
         
         output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+        output_roots.policy = output_roots.policy.cpu();
+        output_roots.value = output_roots.value.cpu();
 
     }
-    // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-    st = get_time_ms();
+
     for (int i = 0; i < spGames->size(); i++)
     {
         std::vector<int64_t> shape = {8, 8, 73}; 
-        torch::Tensor spg_policy = output_roots.policy[i].cpu();
+        torch::Tensor spg_policy = output_roots.policy[i];
         torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
 
         spGames->at(i)->game->set_state(spGames->at(i)->current_state);
@@ -118,19 +120,23 @@ void MCTS::search(std::vector<SPG*>* spGames)
         spg_policy *= valid_moves;
         spg_policy /= spg_policy.sum();
 
-        std::vector<double> alpha(move_list.count, dichirlet_alpha);
-        add_dirichlet_noise(spg_policy, alpha, dichirlet_epsilon);
-        spg_policy /= spg_policy.sum();
+        if (!deterministic)
+        {
+            std::vector<double> alpha(move_list.count, dichirlet_alpha);
+            add_dirichlet_noise(spg_policy, alpha, dichirlet_epsilon);
+            spg_policy /= spg_policy.sum();
+        }
 
         spGames->at(i)->pRoot = new Node(spGames->at(i)->game, nullptr, "", C, 0.0, 1);
 
         spGames->at(i)->pRoot->expand(spg_policy, valid_moves);
     }
-    // std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-    st = get_time_ms();
+
+    int inputs_time = 0;
+
     for (int i = 0; i < num_searches; i++)
     {
-        // st = get_time_ms();
+        
         for (int j = 0; j < spGames->size(); j++)
         {
             spGames->at(j)->pCurrentNode = nullptr;
@@ -140,8 +146,8 @@ void MCTS::search(std::vector<SPG*>* spGames)
             {
                 pNode = pNode->select();
             }
-            
-            boards_visited[pNode->node_state.bitboards] += 1;
+
+            // boards_visited[pNode->node_state.bitboards] += 1;
 
             final_state fState = spGames->at(j)->game->get_value_and_terminated(pNode->node_state, spGames->at(j)->repeated_states);
             
@@ -152,8 +158,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
             else
             {
                 spGames->at(j)->pCurrentNode = pNode;
-            }    
-
+            }
         }
         std::vector<int> expandable_games;
 
@@ -164,15 +169,14 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 expandable_games.push_back(k);
             }
         }
-        // std::cout << "Time to select node: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        // st = get_time_ms();
-        
+
         chess_output output_exapandables;
         if (expandable_games.size() > 0)
         {
             std::vector<int64_t> exp_shape = {(long)expandable_games.size(), 19, 8, 8};
             torch::Tensor encoded_states = torch::zeros(exp_shape, torch::kFloat32); // Initialize the tensor with zeros
 
+            #pragma omp parallel for
             for (int i = 0; i < expandable_games.size(); i++)
             {
                 int game_index = expandable_games[i];
@@ -187,28 +191,32 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 output_exapandables = m_model->forward(encoded_states);
 
                 output_exapandables.policy = torch::softmax(output_exapandables.policy.view({output_exapandables.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
+                output_exapandables.policy = output_exapandables.policy.cpu();
+                output_exapandables.value = output_exapandables.value.cpu();
             }
 
         }
         
-        // std::cout << "Time to policy expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        // st = get_time_ms();
-
+        #pragma omp parallel for
         for (int k = 0; k < expandable_games.size(); k++)
         {
-            int game_index = expandable_games[k];
-
+            
+            int game_index;
+            torch::Tensor spg_policy;
+            
+            {
+                game_index = expandable_games[k];
+                spg_policy = output_exapandables.policy[k];
+            }
             std::vector<int64_t> shape = {8, 8, 73}; 
-            torch::Tensor spg_policy = output_exapandables.policy[k].cpu();
             torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
+            moves move_list;
 
             spGames->at(game_index)->game->set_state(spGames->at(game_index)->pCurrentNode->node_state);
-
-            moves move_list;
             spGames->at(game_index)->game->m_Board->get_alpha_moves(&move_list);
-
+        
             get_valid_moves_encoded(valid_moves, spGames->at(game_index)->pCurrentNode->node_state, move_list);
-
+            
             spg_policy *= valid_moves;
             spg_policy /= spg_policy.sum();
 
@@ -217,17 +225,10 @@ void MCTS::search(std::vector<SPG*>* spGames)
                 spGames->at(game_index)->pCurrentNode->expand(spg_policy, valid_moves);
             }
 
-            // st = get_time_ms();
-            spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].cpu().item<float>());
-        }
+            spGames->at(game_index)->pCurrentNode->backpropagate(output_exapandables.value[k].item<float>());
 
-        // std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        
-    }
-
-    // std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
-        
-
+        } 
+    }   
 }
 
 Node::Node(std::shared_ptr<Game> game, Node* parent, std::string action, float C, float prior, int visit_count)

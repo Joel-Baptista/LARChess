@@ -20,6 +20,10 @@ find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -flto")
 
+# Find OpenMP
+find_package(OpenMP REQUIRED)
+
+
 add_executable(${PROJECT_NAME} 
         
         ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
@@ -54,3 +58,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_ROOT}/AlphaZero/src
  target_link_libraries(${PROJECT_NAME}_sl "${TORCH_LIBRARIES}" pthread)
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+endif()

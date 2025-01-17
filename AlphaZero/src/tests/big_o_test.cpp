@@ -110,7 +110,7 @@ int main()
         std::cout << "Previous log file deleted: " << filename << std::endl;
     }
 
-    logMessage("n_games,time", filename);
+    logMessage("n_games,time,ratio", filename);
 
     for (int i = 0;  i < n_games / delta_games; i++)
     {
@@ -118,7 +118,8 @@ int main()
 
         for (int k = 0; k < delta_games; k++)
         {
-                SPG* spg = new SPG(game);
+                auto spg_game = std::make_shared<Game>();
+                SPG* spg = new SPG(spg_game);
                 m_spGames.push_back(spg);
         }
 
@@ -143,10 +144,12 @@ int main()
 
         auto results = mcts->predict(&m_spGames);
         
-        auto time_taken = std::to_string((float)(get_time_ms() - st) / 1000.0f);
+        auto time_taken = (float)(get_time_ms() - st) / 1000.0f;
+        auto ratio = time_taken / ((i + 1)* delta_games);
         
-        std::cout << "Time taken for " << i * delta_games + 1 << " games : " << time_taken  << std::endl;
-        logMessage(std::to_string(i + 1) + "," + time_taken, filename);
+        std::cout << "Time taken for " << (i + 1)* delta_games << " games : " << time_taken << " ratio: " << ratio << std::endl;
+        logMessage(std::to_string((i + 1)* delta_games) + "," + std::to_string(time_taken) + "," + std::to_string(ratio), filename);
+        std::cout << "--------------------------------------------------------" << std::endl;
       
     }
     

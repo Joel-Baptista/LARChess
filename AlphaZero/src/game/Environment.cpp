@@ -15,9 +15,9 @@ Environment::Environment(
 
     for (int i = 0; i < num_parallel_games; i++)
     {
-        m_Games.push_back(std::make_shared<Game>());
-        m_Games.at(i)->m_Board->parse_fen(start_position);
-        SPG* spg = new SPG(m_Games.at(i));
+        auto game = std::make_shared<Game>();
+        game->m_Board->parse_fen(start_position);
+        SPG* spg = new SPG(game);
         m_spGames.push_back(spg);
     }
 }
@@ -97,7 +97,7 @@ void Environment::step()
                 m_Buffer->add_stats(torch::tensor(fs.value).abs(), torch::tensor(len));
             }
 
-            m_Games.at(i)->m_Board->parse_fen(start_position);
+            m_spGames.at(i)->game->m_Board->parse_fen(start_position);
             m_spGames.at(i)->reset();
 
         }

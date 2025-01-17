@@ -1,0 +1,18 @@
+
+{
+    "device": "cuda:0",
+    "pretrained_model_path": "../../../models/alpha/model9/",
+    "directory_path": "../../../analysis/Lichess/",
+    "position_type": "puzzle",
+    "num_resblocks": 20,
+    "num_channels": 256,
+    "num_searches_init": 600,
+    "dichirlet_alpha": 0.3,
+    "dichirlet_epsilon": 0.0,
+    "C": 1.41,
+    "alpha": 1.5,
+    "num_threads": 6,
+    "n_games": 600,
+    "delta_games": 10
+}
+

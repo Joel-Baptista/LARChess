@@ -29,7 +29,7 @@ SupervisedLearning::SupervisedLearning(
     logMessage("iter,train_value_loss,eval_value_loss", model_path + "/value.csv");
 
     m_dataset = std::make_shared<Dataset>(dataset_path, train_split, hasHeaders);
-    // m_dataset->shuffle();
+    m_dataset->shuffle();
     logMessage("Train size: " + std::to_string(m_dataset->train_size()), log_file);
     logMessage("Eval size: " + std::to_string(m_dataset->eval_size()), log_file);
     

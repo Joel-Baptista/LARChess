@@ -73,8 +73,10 @@ class MCTS
 
         int get_num_searches() { return num_searches; }
 
-        void search(std::vector<SPG*>* spGames);
-        std::vector<std::tuple<torch::Tensor, float>> predict(std::vector<SPG*>* spGames);
+        void search(std::vector<SPG*>* spGames, bool deterministic);
+        void search(std::vector<SPG*>* spGames) {search(spGames, false);};
+        std::vector<std::tuple<torch::Tensor, float>> predict(std::vector<SPG*>* spGames, bool deterministic);
+        std::vector<std::tuple<torch::Tensor, float>> predict(std::vector<SPG*>* spGames) { return predict(spGames, false);};
 
         // void search(std::vector<SPG*>* spGames) { std::vector<c10::cuda::CUDAStream> cuda_streams; search(spGames, cuda_streams); }
 
