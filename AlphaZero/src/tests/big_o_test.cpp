@@ -16,7 +16,7 @@ using json = nlohmann::json;
 int main()
 {
 
-    std::ifstream config_file("../config_test_mctsMT.json");
+    std::ifstream config_file("../config_test_big_o.json");
     if (!config_file.is_open()) {
         std::cerr << "Could not open the config file!" << std::endl;
         return 1;
@@ -43,6 +43,8 @@ int main()
     float C = config.value("C", 0.0);
     float alpha = config.value("alpha", 0.0);
     int num_threads = config.value("num_threads", 0);
+    int n_games = config.value("n_games", 0);
+    int delta_games = config.value("delta_games", 0);
 
     std::shared_ptr<torch::Device> m_Device;
 
@@ -71,10 +73,7 @@ int main()
     }
 
     auto mcts = std::make_unique<MCTS>(m_ResNetChess, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
-    auto mctsMT = std::make_unique<MCTSMT>(num_searches_init, dichirlet_alpha, dichirlet_epsilon, C, num_threads, num_resblocks, num_channels, device, pretrained_model_path);
     auto game = std::make_shared<Game>();
-    auto gameMT = std::make_shared<Game>();
-
 
     std::vector<std::string> chessFiles;
 
@@ -99,16 +98,34 @@ int main()
     std::vector<SPG*> m_spGames;
     std::vector<SPG*> m_spGamesMT;
 
-    for (int i = 0;  i < 10; i++)
+    std::string filename = "../" + std::to_string(n_games) + ".csv";
+
+    std::ifstream file(filename);
+
+    // If it exists, delete the file
+    file.close();
+    if (std::remove(filename.c_str()) != 0) {
+        std::cerr << "Error deleting log file: " << filename << std::endl;
+    } else {
+        std::cout << "Previous log file deleted: " << filename << std::endl;
+    }
+
+    logMessage("n_games,time", filename);
+
+    for (int i = 0;  i < n_games / delta_games; i++)
     {
         game->m_Board->parse_fen(start_position);
-        SPG* spg = new SPG(game);
-        m_spGames.push_back(spg);
+
+        for (int k = 0; k < delta_games; k++)
+        {
+                SPG* spg = new SPG(game);
+                m_spGames.push_back(spg);
+        }
 
 
         game->m_Board->parse_fen(chessPosition.epd.c_str());
 
-        for (int j = 0; j < i; j++)
+        for (int j = 0; j < m_spGames.size(); j++)
         {
             m_spGames[j]->reset();
             m_spGames[j]->current_state = game->get_state();
@@ -125,7 +142,12 @@ int main()
         auto st = get_time_ms();
 
         auto results = mcts->predict(&m_spGames);
-      std::cout << "Time taken for" << i + 1 << " games : " << (get_time_ms() - st) / 1000.0f << std::endl;
+        
+        auto time_taken = std::to_string((float)(get_time_ms() - st) / 1000.0f);
+        
+        std::cout << "Time taken for " << i * delta_games + 1 << " games : " << time_taken  << std::endl;
+        logMessage(std::to_string(i + 1) + "," + time_taken, filename);
+      
     }
     
 

@@ -1,6 +1,6 @@
 
 {
-    "device": "cuda:0",
+    "device": "cuda:1",
     "pretrained_model_path": "../../../models/alpha/model9/",
     "directory_path": "../../../analysis/Lichess/",
     "position_type": "puzzle",

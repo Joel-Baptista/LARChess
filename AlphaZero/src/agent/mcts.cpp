@@ -101,7 +101,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         output_roots.policy = torch::softmax(output_roots.policy.view({output_roots.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
 
     }
-    std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    // std::cout << "Time to get policy: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
     for (int i = 0; i < spGames->size(); i++)
     {
@@ -126,7 +126,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
 
         spGames->at(i)->pRoot->expand(spg_policy, valid_moves);
     }
-    std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    // std::cout << "Time to expand root: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
     st = get_time_ms();
     for (int i = 0; i < num_searches; i++)
     {
@@ -225,7 +225,7 @@ void MCTS::search(std::vector<SPG*>* spGames)
         
     }
 
-    std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
+    // std::cout << "Time to expand expandables: " << ((get_time_ms() - st) / 1000.0f) << " seconds" << std::endl;
         
 
 }
