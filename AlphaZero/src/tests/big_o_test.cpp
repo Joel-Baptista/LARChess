@@ -7,6 +7,7 @@
 #include "AlphaZeroV2.h"
 #include "game.h"
 #include "utils.h"
+#include <omp.h>
 
 #include "../include/json.hpp"
 
@@ -64,16 +65,46 @@ int main()
         m_Device = std::make_unique<torch::Device>(torch::kCPU);
     }
     
-    auto m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
-    m_ResNetChess->to(*m_Device, torch::kFloat32);
+    auto m_ResNetChess1 = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess1->to(*m_Device, torch::kFloat32);
     std::cout << pretrained_model_path << std::endl;
     if (pretrained_model_path != "")
     {
-        load_Resnet(pretrained_model_path, m_ResNetChess, m_Device);
+        load_Resnet(pretrained_model_path, m_ResNetChess1, m_Device);
+    }
+    auto m_ResNetChess2 = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess2->to(*m_Device, torch::kFloat32);
+    std::cout << pretrained_model_path << std::endl;
+    if (pretrained_model_path != "")
+    {
+        load_Resnet(pretrained_model_path, m_ResNetChess2, m_Device);
+    }
+    auto m_ResNetChess3 = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess3->to(*m_Device, torch::kFloat32);
+    std::cout << pretrained_model_path << std::endl;
+    if (pretrained_model_path != "")
+    {
+        load_Resnet(pretrained_model_path, m_ResNetChess3, m_Device);
+    }
+    auto m_ResNetChess4 = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess3->to(*m_Device, torch::kFloat32);
+    std::cout << pretrained_model_path << std::endl;
+    if (pretrained_model_path != "")
+    {
+        load_Resnet(pretrained_model_path, m_ResNetChess4, m_Device);
     }
 
-    auto mcts = std::make_unique<MCTS>(m_ResNetChess, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
+    auto mcts1 = std::make_shared<MCTS>(m_ResNetChess1, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
+    auto mcts2 = std::make_shared<MCTS>(m_ResNetChess2, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
+    auto mcts3 = std::make_shared<MCTS>(m_ResNetChess3, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
+    auto mcts4 = std::make_shared<MCTS>(m_ResNetChess4, num_searches_init, dichirlet_alpha, dichirlet_epsilon, C);
     auto game = std::make_shared<Game>();
+
+    std::vector<std::shared_ptr<MCTS>> mcts_vector;
+    mcts_vector.push_back(mcts1);
+    mcts_vector.push_back(mcts2);
+    mcts_vector.push_back(mcts3);
+    mcts_vector.push_back(mcts4);
 
     std::vector<std::string> chessFiles;
 
@@ -95,8 +126,16 @@ int main()
     auto chessPositions = readPuzzleCSV(directory_path + "/" + chessFiles.at(0));
     auto chessPosition = chessPositions.at(0);
 
-    std::vector<SPG*> m_spGames;
-    std::vector<SPG*> m_spGamesMT;
+    std::vector<SPG*> m_spGames1;
+    std::vector<SPG*> m_spGames2;
+    std::vector<SPG*> m_spGames3;
+    std::vector<SPG*> m_spGames4;
+
+    std::vector<std::vector<SPG*>> spGames;
+    spGames.push_back(m_spGames1);
+    spGames.push_back(m_spGames2);
+    spGames.push_back(m_spGames3);
+    spGames.push_back(m_spGames4);
 
     std::string filename = "../" + std::to_string(n_games) + ".csv";
 
@@ -116,34 +155,46 @@ int main()
     {
         game->m_Board->parse_fen(start_position);
 
-        for (int k = 0; k < delta_games; k++)
+        for (int k = 0; k < (delta_games / 4); k++)
         {
+            for (int j = 0; j < 4; j++)
+            {
                 auto spg_game = std::make_shared<Game>();
                 SPG* spg = new SPG(spg_game);
-                m_spGames.push_back(spg);
+                spGames.at(j).push_back(spg);
+            }
         }
-
 
         game->m_Board->parse_fen(chessPosition.epd.c_str());
 
-        for (int j = 0; j < m_spGames.size(); j++)
+        for (int j = 0; j < spGames.at(0).size(); j++)
         {
-            m_spGames[j]->reset();
-            m_spGames[j]->current_state = game->get_state();
-            size_t pos = chessPosition.move.find(' ');
+            for (int w = 0; w < 4; w++)
+            {
+                spGames.at(w).at(j)->reset();
+                spGames.at(w).at(j)->current_state = game->get_state();
+                size_t pos = chessPosition.move.find(' ');
 
-            // Get the first word
-            std::string pre_move = chessPosition.move.substr(0, pos);
+                // Get the first word
+                std::string pre_move = chessPosition.move.substr(0, pos);
 
-            auto state_next = game->get_next_state(m_spGames[j]->current_state, pre_move);                
-            m_spGames[j]->current_state = state_next;
-            game->set_state(state_next);
+                auto state_next = game->get_next_state(spGames.at(w).at(j)->current_state, pre_move);                
+                spGames.at(w).at(j)->current_state = state_next;
+                game->set_state(state_next);
+            }
         }
+
+        std::cout << "Number of games running in paralel: " << spGames.at(0).size() << std::endl;
 
         auto st = get_time_ms();
 
-        auto results = mcts->predict(&m_spGames);
-        
+        #pragma omp parallel for
+        for (int j = 0; j < 4; j++)
+        {
+            // std::cout << "Started MCTS " << j + 1 << std::endl;
+            auto results = mcts_vector.at(j)->predict( &spGames.at(j));
+        }
+
         auto time_taken = (float)(get_time_ms() - st) / 1000.0f;
         auto ratio = time_taken / ((i + 1)* delta_games);
         

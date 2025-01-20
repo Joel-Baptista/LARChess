@@ -1,6 +1,6 @@
 
 {
-    "device": "cuda:0",
+    "device": "cuda:1",
     "pretrained_model_path": "../../../models/alpha/model9/",
     "directory_path": "../../../analysis/Lichess/",
     "position_type": "puzzle",
@@ -12,7 +12,7 @@
     "C": 1.41,
     "alpha": 1.5,
     "num_threads": 6,
-    "n_games": 600,
-    "delta_games": 10
+    "n_games": 1000,
+    "delta_games": 12
 }
 

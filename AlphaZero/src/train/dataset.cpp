@@ -56,7 +56,12 @@ void Dataset::loadCSV(const std::string& filename) {
 
         data_point dp;
 
-        game.m_Board->parse_fen(row[1].c_str());
+        // std::cout << row[0] << std::endl;
+        // std::cout << row[1] << std::endl;
+        // std::cout << row[2] << std::endl;
+        // std::cout << row[3] << std::endl;
+
+        game.m_Board->parse_fen(row[0].c_str());
 
         auto current_state = game.get_state();
 
@@ -64,9 +69,9 @@ void Dataset::loadCSV(const std::string& filename) {
 
         game.get_encoded_state(current_state_tensor, current_state);
         dp.state = current_state_tensor;
-        dp.action = game.get_encoded_action(row[2], current_state.side);
+        dp.action = game.get_encoded_action(row[1], current_state.side);
 
-        float value = std::stof(row[3]);
+        float value = std::stof(row[2]);
 
         dp.value = torch::tensor(value); 
         data_train->push_back(dp);
@@ -85,7 +90,7 @@ void Dataset::loadCSV(const std::string& filename) {
 
         data_point dp;
 
-        game.m_Board->parse_fen(row[1].c_str());
+        game.m_Board->parse_fen(row[0].c_str());
 
         auto current_state = game.get_state();
 
@@ -93,9 +98,9 @@ void Dataset::loadCSV(const std::string& filename) {
 
         game.get_encoded_state(current_state_tensor, current_state);
         dp.state = current_state_tensor;
-        dp.action = game.get_encoded_action(row[2], current_state.side);
+        dp.action = game.get_encoded_action(row[1], current_state.side);
 
-        float value = std::stof(row[3]);
+        float value = std::stof(row[2]);
 
         dp.value = torch::tensor(value); 
         data_eval->push_back(dp);

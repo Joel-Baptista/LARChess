@@ -297,7 +297,7 @@ int main()
     std::string model_name = config.value("model_name", "default_model");
     std::string device = config.value("device", "cpu");
     
-    std::string dataset_path = "../datasets/processed_tactic_evals.csv";
+    std::string dataset_path = "../datasets/dataset.csv";
     SupervisedLearning sl(
         dataset_path,
         num_epochs,
