@@ -69,7 +69,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
                 * visit_probs[j];
         }
 
-        results.push_back(std::make_tuple(action_probs, -state_value));
+        results.push_back(std::make_tuple(action_probs, state_value));
     }
 
     return results;

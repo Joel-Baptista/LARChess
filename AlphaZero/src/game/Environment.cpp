@@ -65,9 +65,11 @@ void Environment::step()
         {
             m_spGames.at(i)->repeated_states.clear(); // Impossible to repeat states if piece captured or pawn moved
         }
+
     
-        if (state_value >= 0.05f || !m_spGames.at(i)->early_stop)
+        if (state_value <= -0.05f && m_spGames.at(i)->early_stop)
         {
+            std::cout << "State value: " << state_value << " Early Stoping: " << m_spGames.at(i)->early_stop << std::endl; 
             fs.terminated = true;
             fs.value = -1.0f; // Resignation
         }

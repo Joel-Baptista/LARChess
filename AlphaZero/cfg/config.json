@@ -9,7 +9,7 @@
     "num_epochs": 100,
     "max_state_per_game": 30,
     "swarm_update_freq": 1000,
-    "batch_size": 512,
+    "batch_size": 1024,
     "buffer_size": 1000000,
     "temperature": 4,
     "temperature_decay": 0.95,
