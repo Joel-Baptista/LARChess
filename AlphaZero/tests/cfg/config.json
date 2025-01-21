@@ -1,13 +1,13 @@
 {
     "initial_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "human_player": "w",
-    "num_searches": 600,
-    "dichirlet_alpha": 0.5,
+    "num_searches": 800,
+    "dichirlet_alpha": 0.3,
     "dichirlet_epsilon": 0.1,
     "C": 1.41,
     "temperature": 1.0,
     "num_resblocks": 20,
     "num_channels": 256,
-    "model_path": "/home/sangan/projects/LARChess/AlphaZero/models/alpha/model14/",
+    "model_path": "/home/sangan/projects/LARChess/AlphaZero/models/alpha/model17/",
     "device": "cuda:0"
 }

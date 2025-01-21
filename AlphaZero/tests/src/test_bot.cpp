@@ -1,4 +1,4 @@
-#include "../../src/headers/alphabot.h"
+#include "../../src/headers/mcts.h"
 #include "../../src/headers/game.h"
 
 #include "../../../BBChessEngine/src/bit_board.h"
@@ -34,53 +34,117 @@ int main()
     std::string model_path = config.value("model_path", "");
     std::string device = config.value("device", "cpu");
 
-    AlphaBot bot(std::make_shared<Game>(), 
-                 num_searches, 
-                 C, 
-                 temperature,
-                 dichirlet_alpha, 
-                 dichirlet_epsilon, 
-                 num_resblocks, 
-                 num_channels, 
-                 device);
+    std::shared_ptr<torch::Device> m_Device;
 
+    if (torch::cuda::is_available() && (device.find("cuda") != device.npos))
+    {
+        auto dots = device.find(":");
+        int device_id = 0;
+        if (dots != device.npos)
+        {
+            device_id = std::stoi(device.substr(dots + 1, device.npos - dots));
+        }
+
+        m_Device = std::make_unique<torch::Device>(torch::kCUDA, device_id);
+    }
+    else
+    {
+        m_Device = std::make_unique<torch::Device>(torch::kCPU);
+    }
+    
+    auto m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, 0.0, *m_Device);
+    m_ResNetChess->to(*m_Device, torch::kFloat32);
+    std::cout << model_path << std::endl;
     if (model_path != "")
-        bot.load_model(model_path);
-        
-    bot.m_Game->m_Board->parse_fen(initial_position.c_str());
+    {
+        load_Resnet(model_path, m_ResNetChess, m_Device);
+    }
+    
+    auto mcts = std::make_shared<MCTS>(m_ResNetChess, num_searches, dichirlet_alpha, dichirlet_epsilon, C);
+
+    std::vector<SPG*> spGames;
+    auto spg_game = std::make_shared<Game>();
+    SPG* spg = new SPG(spg_game);
+    spGames.push_back(spg);
+
+    spGames.at(0)->game->m_Board->parse_fen(initial_position.c_str());
+    std::string move;
 
     while (true)
     {
-        bot.m_Game->m_Board->print_board();
-        if (bot.m_Game->m_Board->get_side() == !(human_player == "w" ? 0 : 1))
+        spGames.at(0)->game->m_Board->print_board();
+        state current_state =  spGames.at(0)->game->get_state();
+        if (spGames.at(0)->game->m_Board->get_side() == !(human_player == "w" ? 0 : 1))
         {   
-            // std::cout << "Bot is thinking..." << std::endl;
-            std::string move = bot.predict();
-            std::cout << "Bot move: " << move << std::endl;
+            int st = get_time_ms();
+            std::cout << "Bot is thinking..." << std::endl;
+            auto results = mcts->predict(&spGames, true);
+            // std::string move = bot.predict();
+            torch::Tensor action_probs = std::get<0>(results.at(0));
+            move = spGames.at(0)->game->decode_action(current_state, action_probs);
+            std::cout << "Bot move: " << move << " Evaluated at: " << std::get<1>(results.at(0)) << std::endl;
+            std::cout << "Bot move made in " << ((get_time_ms() - st) / 1000.0f) << std::endl;
             getchar();
-            bot.make_bot_move(move);
-            // std::cout << "Bot move made" << std::endl;
+            // spGames.at(0)->game->set_state(current_state);
+
+            // spGames.at(0)->game->m_Board->make_bot_move(spGames.at(0)->game->m_Board->parse_move(move.c_str()));
         }
         else
         {
             moves move_list;
-            bot.m_Game->m_Board->get_generate_moves(&move_list);
+            spGames.at(0)->game->m_Board->get_generate_moves(&move_list);
             
             std::cout << "Moves: [";
             for (int i = 0; i < move_list.count; i++)
             {
                 auto move = move_list.moves[i];
-                std::cout << bot.m_Game->m_Board->move_to_uci(move) << ", ";
+                std::cout << spGames.at(0)->game->m_Board->move_to_uci(move) << ", ";
 
             }
             std::cout << "]" << std::endl;
 
-            std::string gui_move;
-            std::cout << "Enter your move: ";
-            std::cin >> gui_move;
+            bool move_in_list = false;
+            while (!move_in_list)
+            {
+                std::cout << "Enter your move: ";
+                std::cin >> move;
 
-            bot.m_Game->m_Board->make_player_move(gui_move.c_str());
+                for (const auto& move_item : move_list.moves)
+                {
+                    int player_move = spGames.at(0)->game->m_Board->parse_move(move.c_str());
+                    if (player_move == move_item && player_move != 0)
+                    {
+                        std::cout << "Player Move: " << player_move << " Move: " << move_item << std::endl;
+                        move_in_list = true;
+                    }
+                }
+            }
+
+            // spGames.at(0)->game->m_Board->make_player_move(gui_move.c_str());
         }
+
+        auto fs = spGames.at(0)->game->get_next_state_and_value(spGames.at(0)->current_state, move, spGames.at(0)->repeated_states);
+
+        spGames.at(0)->repeated_states[fs.board_state.bitboards] += 1;
+
+        if (fs.board_state.halfmove == 0) 
+        {
+            spGames.at(0)->repeated_states.clear(); // Impossible to repeat states if piece captured or pawn moved
+        }
+
+        if (fs.terminated)
+        {
+            std::cout << "Game reached conclusion!" << std::endl;
+            spGames.at(0)->game->m_Board->parse_fen(start_position);
+            spGames.at(0)->reset();
+            break;
+        }
+        else
+        {
+            spGames.at(0)->current_state = fs.board_state;
+            spGames.at(0)->game->set_state(fs.board_state);
+        }
+
     }
     return 0;
 }

@@ -342,7 +342,7 @@ void Node::backpropagate(float value)
 }
 
 
-SPG::SPG(std::shared_ptr<Game> game)
+SPG::SPG(std::shared_ptr<Game> game, float early_stopping)
 {
 
     this->game = game;
@@ -350,7 +350,7 @@ SPG::SPG(std::shared_ptr<Game> game)
     copy_state_from_board(initial_state, game->m_Board);
     copy_state(current_state, initial_state);
 
-    if (get_prob_uni() < 0.2)
+    if (get_prob_uni() < early_stopping)
     {
         early_stop = false;
     }

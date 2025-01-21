@@ -102,6 +102,8 @@ int main()
     int max_state_per_game = config.value("max_state_per_game", 0);
     int swarm_update_freq = config.value("swarm_update_freq", 0);
     int batch_size = config.value("batch_size", 0);
+    float early_stopping = config.value("early_stopping", 0.0);
+    float early_stopping_value = config.value("early_stopping_value", 0.0);
     int buffer_size = config.value("buffer_size", 0);
     double temperature = config.value("temperature", 0.0);
     double temperature_decay = config.value("temperature_decay", 0.0);
@@ -146,6 +148,8 @@ int main()
                 max_state_per_game, 
                 swarm_update_freq,    
                 batch_size, 
+                early_stopping,
+                early_stopping_value,
                 buffer_size,       
                 temperature,      
                 temperature_decay,      

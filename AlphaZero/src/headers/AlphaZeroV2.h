@@ -36,6 +36,8 @@ class AlphaZeroV2
                     int max_state_per_game,
                     int swarm_update_freq,
                     int batch_size, 
+                    float early_stopping,
+                    float early_stopping_value, 
                     int buffer_size,
                     float temperature, 
                     float temperature_decay, 
@@ -129,6 +131,8 @@ class AlphaZeroV2
         int max_state_per_game;
         int swarm_update_freq;
         int batch_size;
+        float early_stopping;
+        float early_stopping_value; 
         int buffer_size;
         float temperature;
         float temperature_decay;

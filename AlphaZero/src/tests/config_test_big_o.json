@@ -1,12 +1,12 @@
 
 {
     "device": "cuda:1",
-    "pretrained_model_path": "../../../models/alpha/model9/",
+    "pretrained_model_path": "../../../models/alpha/model17/",
     "directory_path": "../../../analysis/Lichess/",
     "position_type": "puzzle",
     "num_resblocks": 20,
     "num_channels": 256,
-    "num_searches_init": 600,
+    "num_searches_init": 300,
     "dichirlet_alpha": 0.3,
     "dichirlet_epsilon": 0.0,
     "C": 1.41,

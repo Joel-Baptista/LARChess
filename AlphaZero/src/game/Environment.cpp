@@ -5,19 +5,22 @@ Environment::Environment(
     std::shared_ptr<ResNetChess> model,
     std::shared_ptr<MCTS> mcts,
     int num_parallel_games,
-    std::shared_ptr<ReplayBuffer> buffer
+    std::shared_ptr<ReplayBuffer> buffer,
+    float early_stopping,
+    float early_stopping_value
 )
 {
     m_Model = model;
     m_Mcts = mcts;
     m_Buffer = buffer;
-
+    m_early_stopping = early_stopping;
+    m_early_stopping_value = early_stopping_value;
 
     for (int i = 0; i < num_parallel_games; i++)
     {
         auto game = std::make_shared<Game>();
         game->m_Board->parse_fen(start_position);
-        SPG* spg = new SPG(game);
+        SPG* spg = new SPG(game, m_early_stopping);
         m_spGames.push_back(spg);
     }
 }
@@ -67,7 +70,7 @@ void Environment::step()
         }
 
     
-        if (state_value <= -0.05f && m_spGames.at(i)->early_stop)
+        if (state_value <= m_early_stopping_value && m_spGames.at(i)->early_stop)
         {
             std::cout << "State value: " << state_value << " Early Stoping: " << m_spGames.at(i)->early_stop << std::endl; 
             fs.terminated = true;

@@ -15,7 +15,9 @@ AlphaZeroV2::AlphaZeroV2(
                         int num_epochs, 
                         int max_state_per_game,
                         int swarm_update_freq,
-                        int batch_size, 
+                        int batch_size,
+                        float early_stopping,
+                        float early_stopping_value, 
                         int buffer_size,
                         float temperature, 
                         float temperature_decay, 
@@ -117,6 +119,8 @@ AlphaZeroV2::AlphaZeroV2(
     this->max_state_per_game = max_state_per_game;
     this->swarm_update_freq = swarm_update_freq;
     this->batch_size = batch_size;
+    this->early_stopping = early_stopping;
+    this->early_stopping_value = early_stopping_value;
     this->temperature = temperature;
     this->temperature_decay = temperature_decay;
     this->temperature_min = temperature_min;
@@ -212,7 +216,9 @@ void AlphaZeroV2::init_envs()
             m_ResNetSwarm.at(i), 
             m_mcts.at(i),
             num_parallel_games,
-            m_Buffer
+            m_Buffer,
+            early_stopping,
+            early_stopping_value
             )
         );
     }
@@ -459,7 +465,7 @@ int AlphaZeroV2::AlphaEval(int thread_id, int depth)
     m_ResNetSwarm.at(thread_id)->eval();
 
     games.at(thread_id)->m_Board->parse_fen(start_position);
-    SPG* spg = new SPG(games.at(thread_id));
+    SPG* spg = new SPG(games.at(thread_id), 0.0);
     spGames.push_back(spg);
 
     std::random_device rd;
@@ -637,6 +643,8 @@ void AlphaZeroV2::logConfig()
     config["max_state_per_game"] = std::to_string(max_state_per_game);
     config["swarm_update_freq"] = std::to_string(swarm_update_freq);
     config["batch_size"] = std::to_string(batch_size);
+    config["early_stopping"] = std::to_string(early_stopping);
+    config["early_stopping_value"] = std::to_string(early_stopping_value);
     config["buffer_size"] = std::to_string(buffer_size);
     config["temperature"] = std::to_string(temperature);
     config["temperature_decay"] = std::to_string(temperature_decay);

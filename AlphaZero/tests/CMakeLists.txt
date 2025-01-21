@@ -20,24 +20,23 @@ find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -flto")
 
-#add_executable(${PROJECT_NAME} 
-#        
-#        ${PROJECT_ROOT}/AlphaZero/tests/src/test_bot.cpp
-#        
-#        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
-#
-#        ${PROJECT_ROOT}/AlphaZero/src/utils/utils.cpp
-#        ${PROJECT_ROOT}/AlphaZero/src/agent/mcts.cpp
-#        ${PROJECT_ROOT}/AlphaZero/src/agent/alphabot.cpp
-#
-#        ${PROJECT_ROOT}/AlphaZero/src/game/game.cpp
-#        ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
-#        ${PROJECT_ROOT}/AlphaZero/src/include/network.h
-#        
-#)
-#target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}" pthread)
-#
-#set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
+add_executable(${PROJECT_NAME} 
+        
+        ${PROJECT_ROOT}/AlphaZero/tests/src/test_bot.cpp
+        
+        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/utils/utils.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/agent/mcts.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/game/game.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/include/ResNet.h
+        ${PROJECT_ROOT}/AlphaZero/src/include/network.h
+        
+)
+target_link_libraries(${PROJECT_NAME} "${TORCH_LIBRARIES}" pthread)
+
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
 add_executable(speed_test
         

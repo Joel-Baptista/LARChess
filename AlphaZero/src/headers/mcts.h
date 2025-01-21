@@ -41,7 +41,7 @@ class Node
 class SPG
 {
     public:
-        SPG(std::shared_ptr<Game> board);
+        SPG(std::shared_ptr<Game> board, float early_stopping);
         ~SPG();
 
         state initial_state;
