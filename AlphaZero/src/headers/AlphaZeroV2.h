@@ -30,6 +30,7 @@ class AlphaZeroV2
                     float num_search_ratio,
                     int search_depth,
                     int num_iterations, 
+                    int warmup_iters,
                     int num_selfPlay_iterations, 
                     int num_parallel_games, 
                     int num_epochs, 
@@ -125,6 +126,7 @@ class AlphaZeroV2
         float num_searches_ratio;
         int search_depth;
         int num_iterations;
+        int warmup_iters;
         int num_selfPlay_iterations;
         int num_parallel_games;
         int num_epochs;

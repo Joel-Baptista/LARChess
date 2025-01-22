@@ -10,6 +10,7 @@ AlphaZeroV2::AlphaZeroV2(
                         float num_searches_ratio,
                         int search_depth,
                         int num_iterations, 
+                        int warmup_iters,
                         int num_selfPlay_iterations, 
                         int num_parallel_games, 
                         int num_epochs, 
@@ -112,6 +113,7 @@ AlphaZeroV2::AlphaZeroV2(
     this->num_searches_ratio = num_searches_ratio;
     this->search_depth = search_depth;
     this->num_iterations = num_iterations;
+    this->warmup_iters = warmup_iters;
     this->num_selfPlay_iterations = num_selfPlay_iterations;
     this->buffer_size = buffer_size;
     this->num_parallel_games = num_parallel_games;
@@ -238,7 +240,7 @@ void AlphaZeroV2::learn()
 
     init_envs();
 
-    for (int i = 0; i < num_iterations; i++)
+    for (int i = 0; i < num_iterations / num_games_playing; i++)
     {   
         int st = get_time_ms();
         std::vector<std::future<void>> futures;
@@ -257,14 +259,18 @@ void AlphaZeroV2::learn()
             }
         }
         
-        if (m_Buffer->size() < batch_size)
+        if (m_Buffer->size() < batch_size || m_Buffer->size() < warmup_iters)
         {
             float time_taken = ((float)(get_time_ms() - st) / (1000.0f));
             m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(time_taken / num_games_playing), model_path + "/fps.csv");
             continue;
         }
 
-        train();
+        for (int k=0; k < num_games_playing; k++) // Take as many gradient steps as environment steps (1:1 ratio)
+        {
+            train();
+        }
+
         
         save_model(model_path);
 
@@ -637,6 +643,7 @@ void AlphaZeroV2::logConfig()
     config["num_searches_ratio"] = std::to_string(num_searches_ratio);
     config["search_depth"] = std::to_string(search_depth);
     config["num_iterations"] = std::to_string(num_iterations);
+    config["warmup_iters"] = std::to_string(warmup_iters);
     config["num_selfPlay_iterations"] = std::to_string(num_selfPlay_iterations);
     config["num_parallel_games"] = std::to_string(num_parallel_games);
     config["num_epochs"] = std::to_string(num_epochs);

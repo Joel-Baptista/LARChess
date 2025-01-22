@@ -96,6 +96,7 @@ int main()
     float num_searches_ratio = config.value("num_searches_ratio", 0.0);
     int search_depth = config.value("search_depth", 0);
     int num_iterations = config.value("num_iterations", 0);
+    int warmup_iters = config.value("warmup_iters", 0);
     int num_selfPlay_iterations = config.value("num_selfPlay_iterations", 0);
     int num_parallel_games = config.value("num_parallel_games", 0);
     int num_epochs = config.value("num_epochs", 0);
@@ -142,6 +143,7 @@ int main()
                 num_searches_ratio,
                 search_depth,      
                 num_iterations,       
+                warmup_iters,       
                 num_selfPlay_iterations,
                 num_parallel_games,
                 num_epochs,   
