@@ -146,11 +146,7 @@ void ChessGUI::OnUpdate(float deltaTime)
     GLCall(glClear(GL_COLOR_BUFFER_BIT));
 
     // Draw Pieces
-<<<<<<< HEAD:game/ChessGUI.cpp
-    Vertex vertices[128]; // 32 quads are 128 vertices
-=======
     Vertex vertices[m_NumPieceVertex]; // 32 quads are 128 vertices
->>>>>>> bitboard:ChessGUI/src/ChessGUI.cpp
     get_piece_vertices(vertices);
     
     m_VertexBuffer_Pieces->Bind();
@@ -395,12 +391,9 @@ static std::array<std::array<int, 8>, 8> vflip_board(std::array<std::array<int, 
     }
     return new_board;
 }
-<<<<<<< HEAD:game/ChessGUI.cpp
-=======
 
 
 std::string coords_to_square(int row, int col){
     std::string s; s += (char)('a' + col); s += (char)('8' - (row));
     return s;
 }
->>>>>>> bitboard:ChessGUI/src/ChessGUI.cpp
