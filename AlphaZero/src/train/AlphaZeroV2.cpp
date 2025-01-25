@@ -265,17 +265,22 @@ void AlphaZeroV2::learn()
             m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(time_taken / num_games_playing), model_path + "/fps.csv");
             continue;
         }
+        
+        bool evalTime = false;
 
         for (int k=0; k < num_games_playing; k++) // Take as many gradient steps as environment steps (1:1 ratio)
         {
             train();
+            if (train_iter % eval_freq == 0) {evalTime = true;}
         }
 
         
         save_model(model_path);
 
         float time_taken = ((float)(get_time_ms() - st) / (1000.0f));
-        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(time_taken / num_games_playing), model_path + "/fps.csv");if (i % eval_freq == 0)
+        m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(time_taken / num_games_playing), model_path + "/fps.csv");
+        
+        if (evalTime)
         {
             std::vector<std::future<int>> futuresEval;
             evalResults results;
@@ -358,6 +363,7 @@ void AlphaZeroV2::train()
         throw std::runtime_error("NaN detected in encoded_actions or output.");
     }
     
+    auto st_grad = get_time_ms();
     // auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
     // policy = policy.clamp(1e-10, 1.0f);
     // encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
@@ -369,17 +375,25 @@ void AlphaZeroV2::train()
     auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
 
     auto loss = policy_loss + value_loss;
-
+    
+    m_logger->logMessage("Time for loss: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
+    st_grad = get_time_ms();
     m_Optimizer->zero_grad();
 
     loss.backward();
+    m_logger->logMessage("Time for backprop: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
+    st_grad = get_time_ms();
 
     double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
     m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
 
     torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
+    m_logger->logMessage("Time for grad clipping: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
+    st_grad = get_time_ms();
 
     m_Optimizer->step();
+    m_logger->logMessage("Time for grad updating params: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
+    m_logger->logMessage("-------------------------------------------------------------", model_path + "/log.txt");
 
     running_loss += loss.cpu().item<float>();
     batch_count++;
@@ -403,12 +417,9 @@ void AlphaZeroV2::train()
         m_logger->log("Data Aquisition Nets Updated");
     }
 
-    if (train_iter % (int)learning_rate_update_freq == 0)
-    {
-        update_learning_rate();
-    }
+    update_learning_rate();
 
-    // m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
     
 }
 

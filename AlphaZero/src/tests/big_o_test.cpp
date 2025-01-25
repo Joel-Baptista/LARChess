@@ -160,7 +160,7 @@ int main()
             for (int j = 0; j < 4; j++)
             {
                 auto spg_game = std::make_shared<Game>();
-                SPG* spg = new SPG(spg_game);
+                SPG* spg = new SPG(spg_game, 0.0);
                 spGames.at(j).push_back(spg);
             }
         }
