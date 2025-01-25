@@ -120,14 +120,15 @@ int main() {
 
     ImGui::StyleColorsDark();
 
-    ChessGUI chessGUI(window, "/home/joel/projects/YACE/ChessGUI/res");
+    ChessGUI chessGUI(window, "/home/joel/projects/LARChess/ChessGUI/res");
 
     Board board;
 
-    board.set_from_fen("3k4/pp6/4p1P1/3pP2p/1P1P3P/3PKN2/8/3b4 w  - 1 37");
+    // board.set_from_fen("3k4/pp6/4p1P1/3pP2p/1P1P3P/3PKN2/8/3b4 w  - 1 37");
+    board.set_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     bool replay_game = false;
     bool human_vs_human = false;
-    bool bot_vs_bot = true;
+    bool bot_vs_bot = false;
     int human_player = 1;
     int depth = 4;
     bool game_finished = false;
@@ -174,25 +175,25 @@ int main() {
         /* Poll for and process events */
         glfwPollEvents();
 
-        if (replay_game)
-        {
-            board.set_from_fen(game[game_count]);
-            chessGUI.set_board(board.board);
-            game_count++;
+        // if (replay_game)
+        // {
+        //     board.set_from_fen(game[game_count]);
+        //     chessGUI.set_board(board.board);
+        //     game_count++;
             
-            auto start = std::chrono::system_clock::now();
+        //     auto start = std::chrono::system_clock::now();
 
-            std::chrono::duration<double> elapsed_seconds = start - start;
+        //     std::chrono::duration<double> elapsed_seconds = start - start;
 
-            while(elapsed_seconds.count() < 0.5) 
-            {
-                auto end = std::chrono::system_clock::now();
-                elapsed_seconds = end-start;
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
+        //     while(elapsed_seconds.count() < 0.5) 
+        //     {
+        //         auto end = std::chrono::system_clock::now();
+        //         elapsed_seconds = end-start;
+        //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        //     }
 
-            continue;
-        }
+        //     continue;
+        // }
 
         // std::cout << "5.PollEvents" << std::endl;
         // std::cout << "Engine" << std::endl;

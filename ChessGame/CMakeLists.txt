@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 17)
 # Find OpenGL (GL) library
 find_package(OpenGL REQUIRED)
 
-set(PROJECT_ROOT_DIR /home/joel/projects/YACE)
+set(PROJECT_ROOT_DIR /home/joel/projects/LARChess)
 
 add_executable(ChessGame
     ${PROJECT_ROOT_DIR}/ChessGame/src/main.cpp

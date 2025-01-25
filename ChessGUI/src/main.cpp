@@ -82,7 +82,7 @@ int main() {
 
     ImGui::StyleColorsDark();
 
-    ChessGUI chessGUI(window, "/home/joel/projects/YACE/ChessGUI/res");
+    ChessGUI chessGUI(window, "/home/joel/projects/LARChess/ChessGUI/res");
     
     // /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
