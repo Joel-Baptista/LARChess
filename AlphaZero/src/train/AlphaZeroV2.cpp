@@ -270,6 +270,8 @@ void AlphaZeroV2::learn()
 
         for (int k=0; k < num_games_playing; k++) // Take as many gradient steps as environment steps (1:1 ratio)
         {
+
+            torch::cuda::synchronize();
             train();
             if (train_iter % eval_freq == 0) {evalTime = true;}
         }
@@ -340,69 +342,97 @@ void AlphaZeroV2::learn()
 
 void AlphaZeroV2::train()
 {
+    auto st_aux = get_time_ms();
+    auto st = get_time_ms();
     m_ResNetChess->train();
+    m_logger->log("Change to train mode: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
 
     float running_loss = 0.0;
     float batch_count = 0.0;
-    auto st = get_time_ms();
 
     auto samples = m_Buffer->sample(batch_size, max_state_per_game);
 
-    torch::Tensor encoded_states = samples.states;
-    torch::Tensor encoded_actions = samples.action_probs;
-    torch::Tensor values = samples.values;
+    m_logger->log("Sample from batch: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
     
-    encoded_states = encoded_states.to(*m_Device);
-    encoded_actions = encoded_actions.to(*m_Device);
-    values = values.to(*m_Device);
+    // torch::Tensor encoded_states = samples.states;
+    // torch::Tensor encoded_actions = samples.action_probs;
+    // torch::Tensor values = samples.values;
+    
+    // encoded_states = encoded_states.to(*m_Device);
+    // encoded_actions = encoded_actions.to(*m_Device);
+    // values = values.to(*m_Device);
 
-    auto output = m_ResNetChess->forward(encoded_states);
+    samples.states = samples.states.to(*m_Device);
+    samples.action_probs = samples.action_probs.to(*m_Device);
+    samples.values = samples.values.to(*m_Device);
 
-    if (torch::any(torch::isnan(encoded_actions)).item<bool>() || torch::any(torch::isnan(output.policy)).item<bool>()) {
+    m_logger->log("To device: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
+    
+    auto output = m_ResNetChess->forward(samples.states);
+
+    m_logger->log("Forward Pass: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
+
+    if (torch::any(torch::isnan(samples.action_probs)).item<bool>() || torch::any(torch::isnan(output.policy)).item<bool>()) {
         std::cerr << "NaN detected in encoded_actions or output!" << std::endl;
         throw std::runtime_error("NaN detected in encoded_actions or output.");
     }
+
+    m_logger->log("Isnan verifictiaon: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
     
-    auto st_grad = get_time_ms();
     // auto policy = torch::softmax(output.policy.view({output.policy.size(0), -1}), 1).view({-1, 8, 8, 73});
     // policy = policy.clamp(1e-10, 1.0f);
     // encoded_actions = encoded_actions.clamp(1e-10, 1.0f);
 
-    torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
+    torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, samples.action_probs);
     // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
     // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
 
-    auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), values);
+    auto value_loss = torch::nn::functional::mse_loss(output.value.squeeze(1), samples.values);
 
     auto loss = policy_loss + value_loss;
     
-    m_logger->logMessage("Time for loss: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
-    st_grad = get_time_ms();
+    m_logger->log("Loss Calculation: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
+    
     m_Optimizer->zero_grad();
 
     loss.backward();
-    m_logger->logMessage("Time for backprop: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
-    st_grad = get_time_ms();
+    
+    m_logger->log("Backpropagation: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
 
-    double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-    m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
+    // double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
+    m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(0));
 
-    torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
-    m_logger->logMessage("Time for grad clipping: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
-    st_grad = get_time_ms();
+    // torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
+    
+    m_logger->log("Grad Clipping: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
 
     m_Optimizer->step();
-    m_logger->logMessage("Time for grad updating params: " + std::to_string(get_time_ms() - st_grad) + " seconds", model_path + "/log.txt");
-    m_logger->logMessage("-------------------------------------------------------------", model_path + "/log.txt");
 
-    running_loss += loss.cpu().item<float>();
+    m_logger->log("Optimizer time: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
+
+    // running_loss += loss.mean().cpu().item<float>();
     batch_count++;
+    samples.states.reset();
+    samples.action_probs.reset();
+    samples.values.reset();
     
-    m_logger->logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
-    m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(policy_loss.cpu().item<float>()), model_path + "/pi_loss.csv");
-    m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(value_loss.cpu().item<float>()), model_path + "/val_loss.csv");
-    m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
+    // m_logger->logTrain(std::to_string(train_iter) + "," + std::to_string(loss.cpu().item<float>()));
+    // m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(policy_loss.cpu().item<float>()), model_path + "/pi_loss.csv");
+    // m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(value_loss.cpu().item<float>()), model_path + "/val_loss.csv");
+    // m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
     train_iter++;
+
+    m_logger->log("Log info: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    st_aux = get_time_ms();
 
     if  (train_iter % swarm_update_freq == 0)
     {
@@ -418,9 +448,12 @@ void AlphaZeroV2::train()
     }
 
     update_learning_rate();
-
-    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
     
+
+    m_logger->log("Auxiliar Updates: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    
+    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    m_logger->log("-------------------------------------------------------------");
 }
 
 void AlphaZeroV2::network_sanity_check(ResNetChess& source, ResNetChess& target)
