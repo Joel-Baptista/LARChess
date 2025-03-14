@@ -31,11 +31,11 @@ SupervisedLearning::SupervisedLearning(
 
     if (precision_type == "float32")
     {
-        precision = precision;
+        precision =  torch::kFloat32;
     }
     else if (precision_type == "float16")
     {
-        precision = torch::kFloat16;
+        precision = torch::kBFloat16;
     }
     else
     {
@@ -68,6 +68,7 @@ SupervisedLearning::SupervisedLearning(
     }
 
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout,*m_Device);
+    m_ResNetChess->to(precision);
     
     m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
 
@@ -122,34 +123,40 @@ void SupervisedLearning::learn()
             torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, precision); // Initialize the tensor with zeros
             torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, precision); // Initialize the tensor with zeros
             torch::Tensor values = torch::zeros({b_size, 1}, precision); // Initialize the tensor with zeros
-
+            
             for (int j = 0; j < b_size; j++)
             {   
                 auto row = m_dataset->getTrain(i + j);
-
+                
                 encoded_states[j] =  row.state.squeeze(0);
                 encoded_actions[j] = row.action.squeeze(0);
                 values[j] = row.value;
             }
-
-
+            
+            
             encoded_states = encoded_states.to(*m_Device);
             encoded_actions = encoded_actions.to(*m_Device);
             values = values.to(*m_Device);
-
+            
             auto output = m_ResNetChess->forward(encoded_states);
-
+            
+            
             torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
             // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
-
+            
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
-
+            
             auto loss = policy_loss + value_loss;
-
+            
             m_Optimizer->zero_grad();
             loss.backward();
             m_Optimizer->step();
+
+            // double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
+            // std::cout << std::to_string(grad_norm) << std::endl;
+
+            // torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), 1.0);
 
             running_loss += loss.cpu().item<float>();
             running_policy_loss += policy_loss.cpu().item<float>();
@@ -159,7 +166,7 @@ void SupervisedLearning::learn()
         float train_loss = running_loss / batch_count;
         float train_policy_loss = running_policy_loss / batch_count;
         float train_value_loss = running_value_loss / batch_count;
-        logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds", log_file);
+        logMessage(" Train Loss: " + std::to_string(running_loss / batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds (" + std::to_string((float)(get_time_ms() - st) / (batch_count * 1000.0f)) + " ms per batch)", log_file);
         // logTrain(std::to_string(epoch) + "," + std::to_string(running_loss / batch_count));
         m_dataset->shuffle();
         

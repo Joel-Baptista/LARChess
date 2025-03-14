@@ -6,9 +6,9 @@
     "dropout": 0.2,
     "weight_decay": 0.001,
     "policy_coef": 0.5,
-    "num_resblocks": 20,
+    "num_resblocks": 15,
     "num_channels": 256,
     "model_name": "",
-    "device": "cuda:0",
+    "device": "cuda:1",
     "precision": "float16"
 }

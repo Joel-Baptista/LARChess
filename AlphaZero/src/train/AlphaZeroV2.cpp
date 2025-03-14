@@ -59,7 +59,7 @@ AlphaZeroV2::AlphaZeroV2(
     }
     else if (precision_type == "float16")
     {
-        precision = torch::kFloat16;
+        precision = torch::kBFloat16;
     }
     else
     {
