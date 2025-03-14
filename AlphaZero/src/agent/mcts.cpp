@@ -5,7 +5,7 @@
 
 
 
-MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C, c10::ScalarType precision)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
@@ -13,9 +13,10 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet
     this->C = C;
     this->m_model = model;
     this->thread_id = 0;
+    this->precision = precision;
     this->boards_visited.clear();
 }
-MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C)
+MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C, c10::ScalarType precision)
 {
     this->num_searches = num_searches;
     this->dichirlet_alpha = dichirlet_alpha;
@@ -23,6 +24,7 @@ MCTS::MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, 
     this->C = C;
     this->m_model = model;
     this->thread_id = thread_id;
+    this->precision = precision;
     this->boards_visited.clear();
 }
 
@@ -41,7 +43,7 @@ std::vector<std::tuple<torch::Tensor, float>> MCTS::predict(std::vector<SPG*>* s
     {
 
         std::vector<int64_t> shape = {8, 8, 73};
-        torch::Tensor action_probs = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
+        torch::Tensor action_probs = torch::zeros(shape, precision); // Initialize the tensor with zeros
         
         std::vector<int> visited_childs;
         std::vector<float> visits_counts;
@@ -82,11 +84,11 @@ void MCTS::search(std::vector<SPG*>* spGames, bool deterministic)
     boards_visited.clear();
     auto st = get_time_ms();
     std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
-    torch::Tensor encoded_state = torch::zeros(shape, torch::kFloat32); // Initialize the tensor with zeros
+    torch::Tensor encoded_state = torch::zeros(shape, precision); // Initialize the tensor with zeros
     for (int i = 0; i < spGames->size(); i++)
     {
         std::vector<int64_t> shape = {(long)spGames->size(), 19, 8, 8};
-        torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+        torch::Tensor state = torch::zeros({1, 19, 8, 8}, precision); // Initialize the tensor with zeros
         get_encoded_state(state, spGames->at(i)->current_state);
         encoded_state[i] = state.squeeze(0); 
     }
@@ -109,7 +111,7 @@ void MCTS::search(std::vector<SPG*>* spGames, bool deterministic)
     {
         std::vector<int64_t> shape = {8, 8, 73}; 
         torch::Tensor spg_policy = output_roots.policy[i];
-        torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
+        torch::Tensor valid_moves = torch::zeros(shape, precision);
 
         spGames->at(i)->game->set_state(spGames->at(i)->current_state);
 
@@ -174,13 +176,13 @@ void MCTS::search(std::vector<SPG*>* spGames, bool deterministic)
         if (expandable_games.size() > 0)
         {
             std::vector<int64_t> exp_shape = {(long)expandable_games.size(), 19, 8, 8};
-            torch::Tensor encoded_states = torch::zeros(exp_shape, torch::kFloat32); // Initialize the tensor with zeros
+            torch::Tensor encoded_states = torch::zeros(exp_shape, precision); // Initialize the tensor with zeros
 
             #pragma omp parallel for
             for (int i = 0; i < expandable_games.size(); i++)
             {
                 int game_index = expandable_games[i];
-                torch::Tensor state = torch::zeros({1, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
+                torch::Tensor state = torch::zeros({1, 19, 8, 8}, precision); // Initialize the tensor with zeros
                 get_encoded_state(state, spGames->at(game_index)->pCurrentNode->node_state);
                 encoded_states[i] = state.squeeze(0); 
             }
@@ -209,7 +211,7 @@ void MCTS::search(std::vector<SPG*>* spGames, bool deterministic)
                 spg_policy = output_exapandables.policy[k];
             }
             std::vector<int64_t> shape = {8, 8, 73}; 
-            torch::Tensor valid_moves = torch::zeros(shape, torch::kFloat32);
+            torch::Tensor valid_moves = torch::zeros(shape, precision);
             moves move_list;
 
             spGames->at(game_index)->game->set_state(spGames->at(game_index)->pCurrentNode->node_state);

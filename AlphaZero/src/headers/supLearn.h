@@ -17,6 +17,7 @@ class SupervisedLearning {
                 int num_channels,
                 std::string device, 
                 std::string model_name,
+                std::string precision_type,
                 bool hasHeaders
             );
         ~SupervisedLearning();
@@ -54,6 +55,7 @@ class SupervisedLearning {
         int num_resblocks;
         int num_channels;
         std::string device;
+        c10::ScalarType precision;
         bool hasHeaders;
         
 };

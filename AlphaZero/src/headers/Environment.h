@@ -22,13 +22,15 @@ class Environment
             int num_parallel_games,
             std::shared_ptr<ReplayBuffer> buffer,
             float early_stopping,
-            float early_stopping_value
+            float early_stopping_value,
+            c10::ScalarType precision
         );
         ~Environment();
 
         void step();
 
     private:
+        int id;
         std::vector<SPG*> m_spGames;
         std::shared_ptr<ResNetChess> m_Model;
         std::shared_ptr<MCTS> m_Mcts;
@@ -38,5 +40,6 @@ class Environment
         std::shared_ptr<Logger> m_Logger;
         std::shared_ptr<ReplayBuffer> m_Buffer;
         std::vector<std::shared_ptr<Game>> m_Games;
+        c10::ScalarType precision;
 
 };

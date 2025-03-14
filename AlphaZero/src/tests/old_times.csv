@@ -1,0 +1,95 @@
+n_games,select,backprop,inputs,inference,expand,total
+20,0.051,0.152,1.1,1.7,7.3,10.5
+40,0.155,0.318,4.75,1.74,16.44,23,7
+60,0.2,0.48,6.66,1.7,25.3,34.9
+80,0.23,0.65,7.8,1.88,32.15,43.15
+100,0.211,0.813,8.6,1.9,36.4,48.76
+120,0.31,0.91,9.25,1.89,44.0,57.36
+140,0.39,1.1,11.23,1.96,55.16,70.75
+160,0.438,1.24,12.76,1.98,62.86,80.48
+180,0.418,1.4,12.5,1.95,64.955,82.575
+200,0.453,1.612,15.017,2.059,77.486,98.035
+
+
+
+total_select_time: 0.064 seconds
+total_backprop_time: 0.247 seconds
+total_inptus_time: 1.222 seconds
+total_inference_time: 2.037 seconds
+total_exapand_time: 7.424 seconds
+
+-------------------------------------------------------
+Time taken for 20 games : 11.163 ratio: 0.55815
+--------------------------------------------------------
+total_select_time: 0.155 seconds
+total_backprop_time: 0.377 seconds
+total_inptus_time: 5.369 seconds
+total_inference_time: 2.984 seconds
+total_exapand_time: 12.451 seconds
+-------------------------------------------------------
+Time taken for 40 games : 21.62 ratio: 0.5405
+--------------------------------------------------------
+total_select_time: 0.233 seconds
+total_backprop_time: 0.557 seconds
+total_inptus_time: 7.477 seconds
+total_inference_time: 4.649 seconds
+total_exapand_time: 15.066 seconds
+-------------------------------------------------------
+Time taken for 60 games : 28.477 ratio: 0.474617
+--------------------------------------------------------
+total_select_time: 0.251 seconds
+total_backprop_time: 0.78 seconds
+total_inptus_time: 6.968 seconds
+total_inference_time: 4.457 seconds
+total_exapand_time: 13.5 seconds
+-------------------------------------------------------
+Time taken for 80 games : 26.573 ratio: 0.332162
+--------------------------------------------------------
+total_select_time: 0.298 seconds
+total_backprop_time: 0.917 seconds
+total_inptus_time: 8.837 seconds
+total_inference_time: 5.193 seconds
+total_exapand_time: 16.505 seconds
+-------------------------------------------------------
+Time taken for 100 games : 32.472 ratio: 0.32472
+--------------------------------------------------------
+total_select_time: 0.355 seconds
+total_backprop_time: 1.166 seconds
+total_inptus_time: 12.669 seconds
+total_inference_time: 5.685 seconds
+total_exapand_time: 24.032 seconds
+-------------------------------------------------------
+Time taken for 120 games : 44.897 ratio: 0.374142
+--------------------------------------------------------
+total_select_time: 0.411 seconds
+total_backprop_time: 1.34 seconds
+total_inptus_time: 13.888 seconds
+total_inference_time: 6.761 seconds
+total_exapand_time: 25.304 seconds
+-------------------------------------------------------
+Time taken for 140 games : 48.795 ratio: 0.348536
+--------------------------------------------------------
+total_select_time: 0.426 seconds
+total_backprop_time: 1.527 seconds
+total_inptus_time: 15.148 seconds
+total_inference_time: 7.154 seconds
+total_exapand_time: 28.437 seconds
+-------------------------------------------------------
+Time taken for 160 games : 54.002 ratio: 0.337512
+--------------------------------------------------------
+total_select_time: 0.525 seconds
+total_backprop_time: 1.713 seconds
+total_inptus_time: 16.593 seconds
+total_inference_time: 7.999 seconds
+total_exapand_time: 30.852 seconds
+-------------------------------------------------------
+Time taken for 180 games : 59.052 ratio: 0.328067
+--------------------------------------------------------
+total_select_time: 0.531 seconds
+total_backprop_time: 1.942 seconds
+total_inptus_time: 18.124 seconds
+total_inference_time: 8.93 seconds
+total_exapand_time: 33.226 seconds
+-------------------------------------------------------
+Time taken for 200 games : 64.335 ratio: 0.321675
+-------------------------------------------------------

@@ -132,6 +132,7 @@ int main()
     std::string device = config.value("device", "cpu");
     std::string pretrained_model_path = config.value("pretrained_model_path", "cpu");
     int threads = config.value("threads", 1);
+    std::string precision_type = config.value("precision", "float32");
     bool debug = config.value("debug", false);
 
     Game game;
@@ -178,6 +179,7 @@ int main()
                 device,
                 pretrained_model_path,
                 threads,
+                precision_type,
                 debug
                 );       
     // AlphaZero az(&game,     

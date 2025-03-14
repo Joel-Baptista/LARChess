@@ -40,6 +40,7 @@
     "pretrained_model_path": "../models/slearn/model12/",
     "device": "cuda:0",
     "threads": 4,
+    "precision": "float32",
     "sp": false,
     "sp_batch_size": 256,
     "dataset_path": "../datasets/games_processed.csv",

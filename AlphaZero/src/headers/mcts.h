@@ -66,8 +66,8 @@ class SPG
 class MCTS
 {
     public:
-        MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
-        MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C);
+        MCTS(std::shared_ptr<ResNetChess> model, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C, c10::ScalarType precision);
+        MCTS(std::shared_ptr<ResNetChess> model, int thread_id, int num_searches, float dichirlet_alpha, float dichirlet_epsilon, float C, c10::ScalarType precision);
         ~MCTS();
 
 
@@ -96,6 +96,7 @@ class MCTS
 
         float C;
         int thread_id;
+        c10::ScalarType precision;
 };
 
 

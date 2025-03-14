@@ -65,13 +65,14 @@ class AlphaZeroV2
                     std::string device,
                     std::string pretrained_model_path,
                     int num_threads,
+                    std::string precision_type,
                     bool debug
                     );
 
         ~AlphaZeroV2();
 
         void learn();
-        void train();
+        void train(torch::Tensor global_state, torch::Tensor global_action, torch::Tensor global_value);
         void save_model(std::string path);
         void load_model(std::string path);
         void save_model() { save_model(""); }
@@ -161,6 +162,7 @@ class AlphaZeroV2
         int num_resblocks;
         int num_channels;
         int num_threads;
+        c10::ScalarType precision;
         bool debug;
 
         std::string log_file;

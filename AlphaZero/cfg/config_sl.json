@@ -9,5 +9,6 @@
     "num_resblocks": 20,
     "num_channels": 256,
     "model_name": "",
-    "device": "cuda:0"
+    "device": "cuda:0",
+    "precision": "float16"
 }

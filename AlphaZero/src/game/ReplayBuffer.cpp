@@ -1,13 +1,14 @@
 #include "ReplayBuffer.h"
 
-ReplayBuffer::ReplayBuffer(int buffer_size, int stat_window = 100)
+ReplayBuffer::ReplayBuffer(int buffer_size, c10::ScalarType precision, int stat_window = 100)
 {
+    this->precision = precision;
     this->buffer_size = buffer_size;
     this->pos = 0;
     this->full = false;
-    this->states = torch::zeros({buffer_size, 19, 8, 8});
-    this->action_probs = torch::zeros({buffer_size, 8, 8, 73});
-    this->values = torch::zeros({buffer_size});
+    this->states = torch::zeros({buffer_size, 19, 8, 8}, precision);
+    this->action_probs = torch::zeros({buffer_size, 8, 8, 73}, precision);
+    this->values = torch::zeros({buffer_size}, precision);
     this->current_game_id = 0;
 
     pGameIds = new int[buffer_size];
@@ -84,9 +85,9 @@ buffer_items ReplayBuffer::sample(int batch_size, int max_state_per_game)
     }
 
     buffer_items samples;
-    samples.states = torch::zeros({batch_size, 19, 8, 8});
-    samples.action_probs = torch::zeros({batch_size, 8, 8, 73});
-    samples.values = torch::zeros({batch_size});
+    samples.states = torch::zeros({batch_size, 19, 8, 8}, precision);
+    samples.action_probs = torch::zeros({batch_size, 8, 8, 73}, precision);
+    samples.values = torch::zeros({batch_size}, precision);
 
     int count = 0;
     for (int idx : random_indices)

@@ -12,7 +12,7 @@ struct buffer_items
 class ReplayBuffer
 {
     public:
-        ReplayBuffer(int buffer_size, int stat_window);
+        ReplayBuffer(int buffer_size, c10::ScalarType precision, int stat_window);
         ~ReplayBuffer();
         void add(torch::Tensor encoded_state, torch::Tensor action_probs, torch::Tensor value);
         void add_stats(torch::Tensor res, torch::Tensor len);
@@ -43,5 +43,6 @@ class ReplayBuffer
         int stats_pos;
         bool stats_full;
         int stat_window;
+        c10::ScalarType precision;
  
 };

@@ -18,6 +18,7 @@ SupervisedLearning::SupervisedLearning(
     int num_channels,
     std::string device,
     std::string model_name,
+    std::string precision_type,
     bool hasHeaders = true
     ) 
 {
@@ -28,7 +29,21 @@ SupervisedLearning::SupervisedLearning(
     logMessage("iter,train_policy_loss,eval_policy_loss", model_path + "/policy.csv");
     logMessage("iter,train_value_loss,eval_value_loss", model_path + "/value.csv");
 
-    m_dataset = std::make_shared<Dataset>(dataset_path, train_split, hasHeaders);
+    if (precision_type == "float32")
+    {
+        precision = precision;
+    }
+    else if (precision_type == "float16")
+    {
+        precision = torch::kFloat16;
+    }
+    else
+    {
+        precision = precision;
+        logMessage("Precision type {" + precision_type + "} not allowed. Using float32 used by default", log_file);
+    }
+
+    m_dataset = std::make_shared<Dataset>(dataset_path, train_split, precision, hasHeaders);
     m_dataset->shuffle();
     logMessage("Train size: " + std::to_string(m_dataset->train_size()), log_file);
     logMessage("Eval size: " + std::to_string(m_dataset->eval_size()), log_file);
@@ -104,9 +119,9 @@ void SupervisedLearning::learn()
 
             unsigned int b_size = abs(idx_f - i);
             
-            torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-            torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, torch::kFloat32); // Initialize the tensor with zeros
-            torch::Tensor values = torch::zeros({b_size, 1}, torch::kFloat32); // Initialize the tensor with zeros
+            torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, precision); // Initialize the tensor with zeros
+            torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, precision); // Initialize the tensor with zeros
+            torch::Tensor values = torch::zeros({b_size, 1}, precision); // Initialize the tensor with zeros
 
             for (int j = 0; j < b_size; j++)
             {   
@@ -167,9 +182,9 @@ void SupervisedLearning::learn()
 
             unsigned int b_size = abs(idx_f - i);
             
-            torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, torch::kFloat32); // Initialize the tensor with zeros
-            torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, torch::kFloat32); // Initialize the tensor with zeros
-            torch::Tensor values = torch::zeros({b_size, 1}, torch::kFloat32); // Initialize the tensor with zeros
+            torch::Tensor encoded_states = torch::zeros({b_size, 19, 8, 8}, precision); // Initialize the tensor with zeros
+            torch::Tensor encoded_actions = torch::zeros({b_size, 8, 8, 73}, precision); // Initialize the tensor with zeros
+            torch::Tensor values = torch::zeros({b_size, 1}, precision); // Initialize the tensor with zeros
 
             for (int j = 0; j < b_size; j++)
             {   
@@ -295,6 +310,7 @@ int main()
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
     std::string model_name = config.value("model_name", "default_model");
+    std::string precision_type = config.value("precision", "float32");
     std::string device = config.value("device", "cpu");
     
     std::string dataset_path = "../datasets/dataset.csv";
@@ -310,7 +326,8 @@ int main()
         num_resblocks,
         num_channels,
         device,
-        model_name
+        model_name,
+        precision_type
     );
 
     sl.learn();

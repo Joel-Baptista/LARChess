@@ -28,10 +28,11 @@ private:
     std::vector<std::string> headers;
     bool hasHeaders;
     float train_split;
+    c10::ScalarType precision;
 
 public:
     // Constructor to load the CSV file
-    Dataset(const std::string& filename, float train_split ,bool hasHeaders = true);
+    Dataset(const std::string& filename, float train_split, c10::ScalarType precision, bool hasHeaders = true);
 
     // Load CSV file into the dataset
     void loadCSV(const std::string& filename);
