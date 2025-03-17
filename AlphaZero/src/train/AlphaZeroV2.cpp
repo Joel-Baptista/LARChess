@@ -447,7 +447,7 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
     st_aux = get_time_ms();
 
     double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-    // m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
+    m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
 
     torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
     torch::cuda::synchronize();
