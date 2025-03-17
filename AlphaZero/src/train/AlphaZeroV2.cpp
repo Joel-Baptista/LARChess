@@ -260,6 +260,10 @@ void AlphaZeroV2::learn()
         int st = get_time_ms();
         std::vector<std::future<void>> futures;
 
+        m_logger->log("--------------------------ITERATION " + std::to_string(i) +"-------------------------------" );
+
+        m_logger->log("Starting Envirnonment Step..." );
+
         for (int j = 0; j < num_threads; ++j)
         {
             futures.push_back(std::async(std::launch::async, &AlphaZeroV2::env_step, this, j));
@@ -285,6 +289,8 @@ void AlphaZeroV2::learn()
         }
 
         bool evalTime = false;
+
+        m_logger->log("Starting Gradient Step..." );
         
         {// Automatically delete global variables
             // Allocation one time the memory might speed up GPU utilization
@@ -324,6 +330,7 @@ void AlphaZeroV2::learn()
 
         if (evalTime)
         {
+            m_logger->log("Starting Evaluation..." );
             std::vector<std::future<int>> futuresEval;
             evalResults results;
             st = get_time_ms();
@@ -484,8 +491,8 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
     torch::cuda::synchronize();
     // m_logger->log("Auxiliar Updates: " + std::to_string(get_time_ms() - st_aux) + " ms");
 
-    m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
-    m_logger->log("-------------------------------------------------------------");
+    // m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
+    // m_logger->log("-------------------------------------------------------------");
 }
 
 void AlphaZeroV2::network_sanity_check(ResNetChess &source, ResNetChess &target)
@@ -573,7 +580,9 @@ int AlphaZeroV2::AlphaEval(int thread_id, int depth)
         alpha_white = 0;
     }
 
-    while (true)
+    int move_counter = 0;
+
+    while (move_counter < 1000)
     {
         if (spGames.at(0)->game->m_Board->get_side() == alpha_white)
         {
@@ -638,9 +647,12 @@ int AlphaZeroV2::AlphaEval(int thread_id, int depth)
             spGames.erase(spGames.begin());
             return res;
         }
+        move_counter++;
     }
 
-    return 0;
+    std::cerr << "Evatuation did not stop with the end of the game!\n";
+
+    return -1000;
 }
 
 void AlphaZeroV2::save_model(std::string path)
