@@ -7,8 +7,8 @@ import os
 sns.set_theme(style="whitegrid")
 
 # Folder containing your CSV files
-folder_path = '../models/slearn/model15'
-# folder_path = '../models/alpha/model27'
+# folder_path = '../models/slearn/model16'
+folder_path = '../models/alpha/model28'
 
 # Iterate through each CSV file in the folder
 for filename in os.listdir(folder_path):

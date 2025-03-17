@@ -211,13 +211,13 @@ float get_prob_uni()
 void load_Resnet(std::string path, std::shared_ptr<ResNetChess> m_ResNetChess, std::shared_ptr<torch::Device> m_Device)
 {
     std::vector<int64_t> shape = {1, 19, 8, 8};
-    torch::Tensor encoded_state = torch::rand(shape, torch::kFloat32).to(*m_Device); // Initialize the tensor with zeros
+    torch::Tensor encoded_state = torch::rand(shape, m_ResNetChess->parameters()[0].dtype()).to(*m_Device); // Initialize the tensor with zeros
     torch::load(m_ResNetChess, path + "model.pt", *m_Device);
     m_ResNetChess->eval();
 
     auto output1= m_ResNetChess->forward(encoded_state);
     
-    m_ResNetChess->to(*m_Device, torch::kFloat32);
+    m_ResNetChess->to(*m_Device);
 
     // clamp_small_weights(*m_ResNetChess, 1e-15);
 
