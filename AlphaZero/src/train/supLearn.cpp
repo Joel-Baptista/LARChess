@@ -9,6 +9,7 @@ SupervisedLearning::SupervisedLearning(
     std::string& dataset_path,
     int num_epochs, 
     float learning_rate,
+    float learning_rate_final,
     int batch_size,
     float train_split,
     float weight_decay,
@@ -16,6 +17,8 @@ SupervisedLearning::SupervisedLearning(
     float dropout,
     int num_resblocks,
     int num_channels,
+    float input_noise,
+    float output_noise,
     std::string device,
     std::string model_name,
     std::string precision_type,
@@ -84,7 +87,10 @@ SupervisedLearning::SupervisedLearning(
     this->device = device;
     this->model_name = model_name;
     this->learning_rate = learning_rate;
+    this->learning_rate_final = learning_rate_final;
     this->dataset_path = dataset_path;
+    this->input_noise = input_noise;
+    this->output_noise = output_noise;
 
     logConfig();
 }
@@ -98,6 +104,8 @@ void SupervisedLearning::learn()
 
 
     float min_eval_loss = 100000000.0f;
+
+    float decay_rate = (learning_rate - learning_rate_final) / num_epochs;
 
     for (int epoch = 0; epoch < num_epochs; epoch++)
     {
@@ -137,9 +145,16 @@ void SupervisedLearning::learn()
             encoded_states = encoded_states.to(*m_Device);
             encoded_actions = encoded_actions.to(*m_Device);
             values = values.to(*m_Device);
+
+            torch::Tensor input_noise_tensor = torch::rand_like(encoded_states);
+            input_noise_tensor = (input_noise_tensor * 2 - 1) * input_noise;
+            encoded_states = torch::clamp(encoded_states + input_noise_tensor, 0, 1);
+
+            torch::Tensor output_noise_tensor = torch::rand_like(values);
+            output_noise_tensor = (output_noise_tensor * 2 - 1) * output_noise;
+            values = torch::clamp(values + output_noise_tensor, -1, 1);
             
             auto output = m_ResNetChess->forward(encoded_states);
-            
             
             torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
             // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
@@ -237,6 +252,15 @@ void SupervisedLearning::learn()
             logMessage("Saved best model!!!", log_file);
         }
 
+        float new_learning_rate = learning_rate - decay_rate * epoch;
+
+        for (auto &param_group : m_Optimizer->param_groups())
+        {
+            static_cast<torch::optim::AdamOptions &>(param_group.options()).lr(new_learning_rate);
+        }
+
+        std::cout << "Epoch: " << std::to_string(epoch) << "  rate: " << std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()) << std::endl;
+
         logMessage("<------------------------------------------------------------------------------>", log_file);
     }
 }
@@ -274,10 +298,14 @@ void SupervisedLearning::logConfig()
     logMessage("    \"num_epochs\": \"" + std::to_string(num_epochs) + "\",", model_path + "/config.json");
     logMessage("    \"batch_size\": \"" + std::to_string(batch_size) + "\",", model_path + "/config.json");
     logMessage("    \"learning_rate\": \"" + std::to_string(learning_rate) + "\",", model_path + "/config.json");
+    logMessage("    \"learning_rate_final\": \"" + std::to_string(learning_rate_final) + "\",", model_path + "/config.json");
     logMessage("    \"weight_decay\": \"" + std::to_string(weight_decay) + "\",", model_path + "/config.json");
     logMessage("    \"policy_coef\": \"" + std::to_string(policy_coef) + "\",", model_path + "/config.json");
     logMessage("    \"dropout\": \"" + std::to_string(dropout) + "\",", model_path + "/config.json");
     logMessage("    \"num_resblocks\": \"" + std::to_string(num_resblocks) + "\",", model_path + "/config.json");
+    logMessage("    \"num_channels\": \"" + std::to_string(num_channels) + "\",", model_path + "/config.json");
+    logMessage("    \"input_noise\": \"" + std::to_string(input_noise) + "\",", model_path + "/config.json");
+    logMessage("    \"output_noise\": \"" + std::to_string(output_noise) + "\",", model_path + "/config.json");
     logMessage("    \"num_channels\": \"" + std::to_string(num_channels) + "\",", model_path + "/config.json");
     logMessage("    \"device\": \"" + device + "\",", model_path + "/config.json");
     logMessage("    \"dataset_path\": \"" + dataset_path + "\",", model_path + "/config.json");
@@ -310,12 +338,15 @@ int main()
     int num_epochs = config.value("num_epochs", 0);
     int batch_size = config.value("batch_size", 0);
     double learning_rate = config.value("learning_rate", 0.0);
+    double learning_rate_final = config.value("learning_rate_final", 0.0);
     double train_split = config.value("train_split", 0.0);
     double weight_decay = config.value("weight_decay", 0.0);
     double policy_coef = config.value("policy_coef", 0.0);
     double dropout = config.value("dropout", 0.0);
     int num_resblocks = config.value("num_resblocks", 0);
     int num_channels = config.value("num_channels", 0);
+    float input_noise = config.value("input_noise", 0.0);
+    float output_noise = config.value("output_noise", 0.0);
     std::string model_name = config.value("model_name", "default_model");
     std::string precision_type = config.value("precision", "float32");
     std::string device = config.value("device", "cpu");
@@ -325,6 +356,7 @@ int main()
         dataset_path,
         num_epochs,
         learning_rate,
+        learning_rate_final,
         batch_size,
         train_split,
         weight_decay,
@@ -332,6 +364,8 @@ int main()
         dropout,
         num_resblocks,
         num_channels,
+        input_noise,
+        output_noise,
         device,
         model_name,
         precision_type

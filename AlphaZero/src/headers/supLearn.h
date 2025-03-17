@@ -8,6 +8,7 @@ class SupervisedLearning {
                 std::string& dataset_path, 
                 int num_epochs,
                 float learning_rate,
+                float learning_rate_final,
                 int batch_size,
                 float train_split,
                 float weight_decay,
@@ -15,6 +16,8 @@ class SupervisedLearning {
                 float dropout,
                 int num_resblocks,
                 int num_channels,
+                float input_noise,
+                float output_noise,
                 std::string device, 
                 std::string model_name,
                 std::string precision_type,
@@ -49,11 +52,14 @@ class SupervisedLearning {
 
         std::string dataset_path; 
         float learning_rate;
+        float learning_rate_final;
         float weight_decay;
         float policy_coef;
         float dropout;
         int num_resblocks;
         int num_channels;
+        float input_noise;
+        float output_noise;
         std::string device;
         c10::ScalarType precision;
         bool hasHeaders;

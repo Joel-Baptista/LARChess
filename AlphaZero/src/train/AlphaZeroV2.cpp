@@ -385,12 +385,12 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
     auto st_aux = get_time_ms();
 
     torch::cuda::synchronize();
-
-    m_logger->log("Synchronize mode: " + std::to_string(get_time_ms() - st_aux) + " ms");
+// 
+    // m_logger->log("Synchronize mode: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
     m_ResNetChess->train();
     torch::cuda::synchronize();
-    m_logger->log("Change to train mode: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Change to train mode: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     float running_loss = 0.0;
@@ -398,7 +398,7 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
 
     auto samples = m_Buffer->sample(batch_size, max_state_per_game);
 
-    m_logger->log("Sample from batch: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Sample from batch: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     global_state.copy_(samples.states);
@@ -406,12 +406,12 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
     global_value.copy_(samples.values);
     torch::cuda::synchronize();
 
-    m_logger->log("To device: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("To device: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     auto output = m_ResNetChess->forward(global_state);
     torch::cuda::synchronize();
-    m_logger->log("Forward Pass: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Forward Pass: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     if (torch::any(torch::isnan(global_action)).item<bool>() || torch::any(torch::isnan(output.policy)).item<bool>())
@@ -420,7 +420,7 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
         throw std::runtime_error("NaN detected in encoded_actions or output.");
     }
     torch::cuda::synchronize();
-    m_logger->log("Isnan verifictiaon: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Isnan verifictiaon: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, global_action);
@@ -429,27 +429,27 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
 
     auto loss = policy_loss + value_loss;
     torch::cuda::synchronize();
-    m_logger->log("Loss Calculation: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Loss Calculation: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     m_Optimizer->zero_grad();
 
     loss.backward();
     torch::cuda::synchronize();
-    m_logger->log("Backpropagation: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Backpropagation: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
-    m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
+    // m_logger->logGrad(std::to_string(train_iter) + "," + std::to_string(grad_norm));
 
     torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), gradient_clip);
     torch::cuda::synchronize();
-    m_logger->log("Grad Clipping: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Grad Clipping: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     m_Optimizer->step();
     torch::cuda::synchronize();
-    m_logger->log("Optimizer time: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Optimizer time: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     // running_loss += loss.mean().cpu().item<float>();
@@ -464,7 +464,7 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
     m_logger->logMessage(std::to_string(train_iter) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
     train_iter++;
     torch::cuda::synchronize();
-    m_logger->log("Log info: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Log info: " + std::to_string(get_time_ms() - st_aux) + " ms");
     st_aux = get_time_ms();
 
     if (train_iter % swarm_update_freq == 0)
@@ -482,7 +482,7 @@ void AlphaZeroV2::train(torch::Tensor global_state, torch::Tensor global_action,
 
     update_learning_rate();
     torch::cuda::synchronize();
-    m_logger->log("Auxiliar Updates: " + std::to_string(get_time_ms() - st_aux) + " ms");
+    // m_logger->log("Auxiliar Updates: " + std::to_string(get_time_ms() - st_aux) + " ms");
 
     m_logger->log(" Loss: " + std::to_string(running_loss / (float)batch_count) + " Time: " + std::to_string((float)(get_time_ms() - st) / 1000.0f) + " seconds");
     m_logger->log("-------------------------------------------------------------");
@@ -626,9 +626,13 @@ int AlphaZeroV2::AlphaEval(int thread_id, int depth)
             {
                 res = 1;
             }
-            else
+            else if (fState.value == 0.0)
             {
                 res = 0;
+            }
+            else
+            {
+                res = -1000;
             }
             delete spGames.at(0);
             spGames.erase(spGames.begin());
