@@ -39,7 +39,7 @@ class SupervisedLearning {
         std::shared_ptr<Dataset> m_dataset;
 
         std::shared_ptr<ResNetChess> m_ResNetChess;
-        std::unique_ptr<torch::optim::Adam> m_Optimizer;
+        std::unique_ptr<torch::optim::SGD> m_Optimizer;
         std::shared_ptr<torch::Device> m_Device;
 
         std::string log_file;

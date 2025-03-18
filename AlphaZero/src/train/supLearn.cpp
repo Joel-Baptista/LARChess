@@ -5,6 +5,7 @@
 
 using json = nlohmann::json;
 
+
 SupervisedLearning::SupervisedLearning(
     std::string& dataset_path,
     int num_epochs, 
@@ -23,8 +24,10 @@ SupervisedLearning::SupervisedLearning(
     std::string model_name,
     std::string precision_type,
     bool hasHeaders = true
-    ) 
+) 
 {
+    // torch::manual_seed(40);
+    // torch::cuda::manual_seed_all(40);
     this->model_path = initLogFiles("../models/slearn");
     log_file = model_path + "/log.txt";
 
@@ -75,7 +78,12 @@ SupervisedLearning::SupervisedLearning(
     m_ResNetChess = std::make_shared<ResNetChess>(num_resblocks, num_channels, dropout,*m_Device);
     m_ResNetChess->to(precision);
     
-    m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
+    // m_Optimizer = std::make_unique<torch::optim::Adam>(m_ResNetChess->parameters(), torch::optim::AdamOptions(learning_rate).weight_decay(weight_decay));
+    
+    m_Optimizer = std::make_unique<torch::optim::SGD>(
+        m_ResNetChess->parameters(), 
+        torch::optim::SGDOptions(learning_rate).momentum(0.9).weight_decay(weight_decay)
+    );
 
     this->num_epochs = num_epochs;
     this->batch_size = batch_size;
@@ -107,13 +115,13 @@ void SupervisedLearning::learn()
 
     float min_eval_loss = 100000000.0f;
 
-    // float decay_rate = (learning_rate - learning_rate_final) / num_epochs;
+    float decay_rate = (learning_rate - learning_rate_final) / num_epochs;
 
     for (int epoch = 0; epoch < num_epochs; epoch++)
     {
         logMessage("Epoch: " + std::to_string(epoch + 1), log_file);
 
-        m_ResNetChess->train(true);
+        m_ResNetChess->train();
         float running_loss = 0.0;
         float running_policy_loss = 0.0;
         float running_value_loss = 0.0;
@@ -149,38 +157,23 @@ void SupervisedLearning::learn()
             encoded_actions = encoded_actions.to(*m_Device);
             values = values.to(*m_Device);
             
-            // auto encoded_states1 = encoded_states;
-
-            // torch::Tensor input_noise_tensor = torch::rand_like(encoded_states);
-            // input_noise_tensor = (input_noise_tensor * 2 - 1) * input_noise;
+            auto encoded_states1 = encoded_states;
             
-            // // std::cout << "Mean states 1: " << torch::mean(encoded_states) << std::endl; 
-            // // std::cout << "Min states 1: " << torch::min(encoded_states) << std::endl; 
-            // // std::cout << "Max states 1: " << torch::max(encoded_states) << std::endl; 
-            // encoded_states = torch::clamp(encoded_states + input_noise_tensor, 0, 1);
-            // // std::cout << "Mean states 2: " << torch::mean(encoded_states) << std::endl; 
-            // // std::cout << "Min states 2: " << torch::min(encoded_states) << std::endl; 
-            // // std::cout << "Max states 2: " << torch::max(encoded_states) << std::endl; 
-            // // std::cout << "Is equal: " << torch::allclose(encoded_states, encoded_states1) << std::endl;
+            torch::Tensor input_noise_tensor = torch::rand_like(encoded_states);
+            input_noise_tensor = (input_noise_tensor * 2 - 1) * input_noise;
             
-            // torch::Tensor output_noise_tensor = torch::rand_like(values);
-            // output_noise_tensor = (output_noise_tensor * 2 - 1) * output_noise;
-            // // std::cout << "Mean value 1: " << torch::mean(values) << std::endl; 
-            // // std::cout << "Min value 1: " << torch::min(values) << std::endl; 
-            // // std::cout << "Max value 1: " << torch::max(values) << std::endl; 
-            // values = torch::clamp(values + output_noise_tensor, -1, 1);
-            // // std::cout << "Mean value 2: " << torch::mean(values) << std::endl; 
-            // // std::cout << "Min value 2: " << torch::min(values) << std::endl; 
-            // // std::cout << "Max value 2: " << torch::max(values) << std::endl; 
-
-            // // std::cout << "-----------------------------------------" << std::endl;
+            encoded_states = torch::clamp(encoded_states + input_noise_tensor, 0, 1);
+       
+            auto values1 = values;
+            torch::Tensor output_noise_tensor = torch::rand_like(values);
+            output_noise_tensor = (output_noise_tensor * 2 - 1) * output_noise;
+            values = torch::clamp(values + output_noise_tensor, -1, 1);
+            
             
             auto output = m_ResNetChess->forward(encoded_states);
-            
+
             torch::Tensor policy_loss = torch::nn::functional::cross_entropy(output.policy, encoded_actions);
-            // torch::Tensor policy_loss = torch::nn::functional::kl_div(policy.log(), encoded_actions);
-            // torch::Tensor policy_loss = - torch::mean(encoded_actions * torch::log(policy));
-            
+
             auto value_loss = torch::nn::functional::mse_loss(output.value, values);
             
             auto loss = policy_loss + value_loss;
@@ -191,8 +184,6 @@ void SupervisedLearning::learn()
 
             double grad_norm = calculate_gradient_norm(m_ResNetChess->parameters());
             
-
-            // torch::nn::utils::clip_grad_norm_(m_ResNetChess->parameters(), 1.0);
 
             running_loss += loss.cpu().item<float>();
             running_policy_loss += policy_loss.cpu().item<float>();
@@ -275,12 +266,12 @@ void SupervisedLearning::learn()
             logMessage("Saved best model!!!", log_file);
         }
 
-        // float new_learning_rate = learning_rate - decay_rate * epoch;
+        float new_learning_rate = learning_rate - decay_rate * epoch;
 
-        // for (auto &param_group : m_Optimizer->param_groups())
-        // {
-        //     static_cast<torch::optim::AdamOptions &>(param_group.options()).lr(new_learning_rate);
-        // }
+        for (auto &param_group : m_Optimizer->param_groups())
+        {
+            static_cast<torch::optim::AdamOptions &>(param_group.options()).lr(new_learning_rate);
+        }
 
         // std::cout << "Epoch: " << std::to_string(epoch) << "  rate: " << std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()) << std::endl;
         logMessage(std::to_string(epoch) + "," + std::to_string(m_Optimizer->param_groups().at(0).options().get_lr()), model_path + "/lr.csv");
@@ -374,8 +365,9 @@ int main()
     std::string model_name = config.value("model_name", "default_model");
     std::string precision_type = config.value("precision", "float32");
     std::string device = config.value("device", "cpu");
+    std::string dataset = config.value("dataset", "dataset");
     
-    std::string dataset_path = "../datasets/debug_dataset.csv";
+    std::string dataset_path = "../datasets/" + dataset + ".csv";
     SupervisedLearning sl(
         dataset_path,
         num_epochs,
