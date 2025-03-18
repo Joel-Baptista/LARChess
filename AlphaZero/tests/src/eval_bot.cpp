@@ -3,13 +3,40 @@
 
 #include "../../../BBChessEngine/src/bit_board.h"
 #include "../../src/include/json.hpp"
+#include <fstream>
 #include <omp.h>
 
 using json = nlohmann::json; 
 
+
+
+// Function to write chess positions to a CSV file
+void saveToCSV(const std::vector<std::pair<std::string, std::string>>& gameData, const std::string& filename) {
+    std::ofstream file(filename);
+
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    // Write CSV headers
+    file << "Move Number,FEN,Move\n";
+
+    // Write each position and move to CSV
+    int moveNumber = 1;
+    for (const auto& entry : gameData) {
+        file << moveNumber << "," << entry.first << "," << entry.second << "\n";
+        moveNumber++;
+    }
+
+    file.close();
+    std::cout << "Game saved to " << filename << std::endl;
+}
+
+
 std::vector<std::string> alphazero_predict(std::vector<SPG*>* spGames, std::shared_ptr<MCTS> mcts, c10::ScalarType precision)
 {
-    auto results = mcts->predict(spGames);
+    auto results = mcts->predict(spGames, true);
     
     std::vector<std::string> move_results;
 
@@ -97,6 +124,7 @@ int main()
     std::string model_path = config.value("model_path", "");
     std::string device = config.value("device", "cpu");
     std::string precision_type = config.value("precision_type", "float32");
+    std::string log_path = config.value("log_path", "");
 
     c10::ScalarType precision;    
 
@@ -168,10 +196,12 @@ int main()
 
     int move_counter = 0;
 
+    spGamesW.at(0)->game->m_Board->print_board();
+
     while (spGamesW.size() > 0) // AlphaZero is white - MinMax is black
     {
         std::vector<std::string> moves;
-        std::cout << "Move " << std::to_string(move_counter + 1) << " Num Games: " << std::to_string(spGamesW.size()) <<std::endl; 
+        // std::cout << "Move " << std::to_string(move_counter + 1) << " Num Games: " << std::to_string(spGamesW.size()) <<std::endl; 
         if (move_counter % 2 == 0) // First Player
         {
             // std::cout << "AlphaZero Search" << std::endl;        
@@ -234,6 +264,22 @@ int main()
             {
                 spGamesW.at(i)->current_state = fs.board_state;
                 spGamesW.at(i)->game->set_state(fs.board_state);
+                
+
+                if (i == 0)
+                {
+                    if (move_counter % 2 == 0)
+                    {
+                        std::cout << "----------- Alpha Play -----------------" << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "----------- MinMax Play -----------------" << std::endl;
+                    }
+                    
+                    spGamesW.at(0)->game->m_Board->print_board();
+                    std::cout << moves.at(0) << std::endl;
+                }
             }
 
         }
@@ -247,7 +293,7 @@ int main()
     while (spGamesB.size() > 0) // AlphaZero is black - MinMax is white
     {
         std::vector<std::string> moves;
-        std::cout << "Move " << std::to_string(move_counter + 1) << " Num Games: " << std::to_string(spGamesB.size()) <<std::endl; 
+        // std::cout << "Move " << std::to_string(move_counter + 1) << " Num Games: " << std::to_string(spGamesB.size()) <<std::endl; 
        
         if (move_counter % 2 == 0) 
         {

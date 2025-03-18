@@ -1,8 +1,8 @@
 {
     "initial_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     "human_player": "w",
-    "num_searches": 600,
-    "dichirlet_alpha": 0.3,
+    "num_searches": 1000,
+    "dichirlet_alpha": 0.1,
     "dichirlet_epsilon": 0.1,
     "C": 1.41,
     "temperature": 1.0,
@@ -11,6 +11,7 @@
     "depth": 2,
     "n_games": 8,
     "model_path": "/home/jbaptista/projects/LARChess/AlphaZero/models/alpha/model28/",
+    "log_path": "/home/jbaptista/alpha_results/model28/",
     "device": "cuda:0",
     "precision_type": "float16"
 }
