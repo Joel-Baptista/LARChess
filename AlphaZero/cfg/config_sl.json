@@ -7,7 +7,7 @@
     "input_noise": 0.01,
     "output_noise": 0.05,
     "dropout": 0.2,
-    "weight_decay": 0.1,
+    "weight_decay": 0.0001,
     "policy_coef": 0.5,
     "num_resblocks": 10,
     "num_channels": 256,
