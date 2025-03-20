@@ -37,3 +37,19 @@ add_executable(eval_bot
 target_link_libraries(eval_bot "${TORCH_LIBRARIES}" pthread)
 
 set_property(TARGET eval_bot PROPERTY CXX_STANDARD 17)
+
+add_executable(test_game
+        
+        ${PROJECT_ROOT}/AlphaZero/tests/src/encoding_decoding.cpp
+        
+        ${PROJECT_ROOT}/BBChessEngine/src/bit_board.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/utils/utils.cpp
+        ${PROJECT_ROOT}/AlphaZero/src/agent/mcts.cpp
+
+        ${PROJECT_ROOT}/AlphaZero/src/game/game.cpp
+        
+)
+target_link_libraries(test_game "${TORCH_LIBRARIES}" pthread)
+
+set_property(TARGET test_game PROPERTY CXX_STANDARD 17)

@@ -126,6 +126,49 @@ class Game
 
 };
 
+
+// struct state
+// {
+//     U64 bitboards[12]; // 12 bitboards for each piece type (6 for white and 6 for black)
+//     U64 occupancies[3]; // occupancy bitboards for each color and all pieces
+//     int side; // side to move
+//     int en_passant_square = 64;
+//     int castle_rights; 
+//     int halfmove;
+//     int fullmove;
+// };
+
+inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state)
+{
+    if (encoded_state[0][0][0][0].item<int>() == 0)
+    {
+        current_state.side = 0;
+    }
+    else
+    {
+        current_state.side = 1;
+    }
+
+    int castle_rights = 0;
+
+    if (encoded_state[0][0][1][0].item<int>() == 1)
+        castle_rights |= 1;
+
+    if (encoded_state[0][0][2][0].item<int>() == 1)
+        castle_rights |= 2;
+
+    if (encoded_state[0][0][3][0].item<int>() == 1)
+        castle_rights |= 4;
+
+    if (encoded_state[0][0][4][0].item<int>() == 1)
+        castle_rights |= 8;
+
+
+    current_state.castle_rights = castle_rights;
+    if (encoded_state[0][0][4][0].item<int>() == 1)
+        current_state.halfmove = 101;
+}
+
 inline void get_encoded_state(torch::Tensor& encoded_state, state& current_state)
 {
     if (current_state.side == 0) // White to move

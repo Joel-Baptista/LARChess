@@ -540,6 +540,91 @@ void BitBoard::print_attacked_square(int side)
 <=========================================================================================>
 */
 
+std::string BitBoard::get_fen()
+{
+    std::string fen;
+    
+    for (int rank = 0; rank < 8; ++rank) 
+    { // Iterate from rank 1 (row 0) to rank 8 (row 7)
+        int emptyCount = 0;
+        
+        for (int file = 0; file < 8; ++file) 
+        { // Iterate from file 'a' (column 0) to file 'h' (column 7)
+            int square = rank * 8 + file; // Corrected: Now squares go from bottom-left (a1) to top-right (h8)
+            char piece = ' ';
+
+            // Find which piece is at the given square
+            for (int i = 0; i < 12; ++i) {
+                if (bitboards[i] & (1ULL << square)) {
+                    piece = ascii_pieces[i];
+                    break;
+                }
+            }
+
+            if (piece == ' ')
+            {
+                emptyCount++; // Count empty squares
+            } else 
+            {
+                if (emptyCount > 0) {
+                    fen += std::to_string(emptyCount); // Append empty squares count before piece
+                    emptyCount = 0;
+                }
+                fen += piece; // Append piece
+            }
+        }
+
+        if (emptyCount > 0) 
+        {
+            fen += std::to_string(emptyCount); // Append remaining empty squares
+        }
+
+        if (rank < 7) 
+        {
+            fen += "/"; // Separate ranks
+        }
+    }
+
+    // Append additional FEN fields (assuming defaults, can be updated if needed)
+    if (side == 0)
+    {
+        fen += " w ";
+    }
+    else
+    {
+        fen += " b ";
+
+    }
+
+    if (castle_rights & wk)
+        fen += "K";
+    if (castle_rights & wq)
+        fen += "Q";
+
+    if (castle_rights & bk)
+        fen += "k";
+    if (castle_rights & bq)
+        fen += "q";
+
+    if (castle_rights == 0)
+        fen += "-";
+
+    fen += " ";
+
+    if (en_passant_square != no_sq)
+        fen += square_to_coords[en_passant_square];
+    else
+        fen += "-";
+
+    fen += " ";
+
+    fen += std::to_string(halfmove);
+    fen += " ";
+    fen += std::to_string(fullmove);
+
+    return fen;
+}
+
 void BitBoard::parse_fen(const char *fen)
 {   
     // Reset the board

@@ -163,6 +163,7 @@ class BitBoard {
         void print_bitboard(U64 bitboard);
         void print_board();
         void parse_fen(const char *fen);
+        std::string get_fen();
         void print_move(int move);
         void print_move_list(moves* move_list);
 
