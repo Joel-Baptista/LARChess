@@ -165,8 +165,65 @@ inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state
 
 
     current_state.castle_rights = castle_rights;
-    if (encoded_state[0][0][4][0].item<int>() == 1)
+    if (encoded_state[0][0][5][0].item<int>() == 1)
         current_state.halfmove = 101;
+    
+    int idxsP[12];
+
+    if (current_state.side == 0)
+    {
+        idxsP[0] = 0; idxsP[1] = 1; idxsP[2] = 2; idxsP[3] = 3; idxsP[4] = 4; idxsP[5] = 5;
+        idxsP[6] = 6; idxsP[7] = 7; idxsP[8] = 8; idxsP[9] = 9; idxsP[10] = 10; idxsP[11] = 11; 
+    }
+    else
+    {
+        idxsP[0] = 6; idxsP[1] = 7; idxsP[2] = 8; idxsP[3] = 9; idxsP[4] = 10; idxsP[5] = 11;
+        idxsP[6] = 0; idxsP[7] = 1; idxsP[8] = 2; idxsP[9] = 3; idxsP[10] = 4; idxsP[11] = 5; 
+    }
+
+
+    for (int rank = 0; rank < 8; rank++)
+    {
+        for (int file = 0; file < 8; file++)
+        {
+            int square = 0;
+            if (current_state.side == 0)
+            {
+                int square = rank * 8 + file;
+            }
+            else
+            {
+                int square = (7 - rank) * 8 + file;
+            }
+
+            std::cout << encoded_state.index({0}).slice(0, 5, 19).index({rank, file}) << std::endl;
+
+            torch::Tensor index = torch::nonzero(encoded_state.index({0}).slice(0, 5, 19).index({rank, file})).squeeze(1);
+
+            std::cout << "Index: " << index.item<int>() << std::endl;
+            
+            if (index.item<int>() > -1) 
+            {
+                set_bit(current_state.bitboards[index.item<int>() - 6], square);
+            }
+
+
+        }
+    }
+
+    torch::Tensor en_passant_square = torch::nonzero(encoded_state[0][18]).squeeze(1);
+
+    if (en_passant_square.item<int>() != -1)
+    {
+        int file = en_passant_square.item<int>() % 8;
+        int rank = en_passant_square.item<int>() / 8;
+
+        if (current_state.side == 0)
+            current_state.en_passant_square = rank * 8 + file;
+        else
+            current_state.en_passant_square = (7 - rank) * 8 + file;
+    }
+    
 }
 
 inline void get_encoded_state(torch::Tensor& encoded_state, state& current_state)

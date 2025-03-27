@@ -5,7 +5,7 @@ int main()
     std::vector<std::vector<std::string>> data_csv;
     std::vector<std::string> headers;
     bool hasHeaders = true;
-    std::ifstream file("/home/jbaptista/projects/LARChess/AlphaZero/datasets/dataset.csv");
+    std::ifstream file("/home/joel/projects/LARChess/AlphaZero/datasets/dataset.csv");
     if (!file.is_open())
     {
         throw std::runtime_error("Could not open file");
@@ -51,9 +51,43 @@ int main()
         
         std::string fen2 = game->m_Board->get_fen();
 
+        torch::Tensor encoded_state = torch::zeros({1, 19, 8, 8});
+        state game_state = game->get_state();
+        get_encoded_state(encoded_state, game_state);
+
+        state current_state;
+        get_decoded_state(current_state, encoded_state);
+        
+
+        if (current_state.side != game_state.side)
+        {
+            std::cout << "Found error in mapping in side: " << fen1 << std::endl;
+        }
+        if (current_state.castle_rights != game_state.castle_rights)
+        {
+            std::cout << "Found error in mapping in castle_rights: " << fen1 << std::endl;
+        }
+        if (current_state.halfmove != game_state.halfmove)
+        {
+            std::cout << "Found error in mapping in halfmove: " << fen1 << std::endl;
+        }
+        if (current_state.en_passant_square != game_state.en_passant_square)
+        {
+            std::cout << "Found error in mapping in en_passant_square: " << fen1 << std::endl;
+        }
+        if (current_state.bitboards != game_state.bitboards)
+        {
+            std::cout << "Found error in mapping in bitboards: " << fen1 << std::endl;
+        }
+
+
         if (fen1 != fen2)
         {
             std::cout << "Found error in mapping in fen: " << fen1 << std::endl;
+        }
+        else
+        {
+            std::cout << "Same Fen" << std::endl;
         }
 
     }
