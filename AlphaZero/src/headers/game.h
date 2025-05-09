@@ -140,7 +140,7 @@ class Game
 
 inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state)
 {
-    if (encoded_state[0][0][0][0].item<int>() == 0)
+    if (encoded_state[0][15][0][0].item<int>() == 0)
     {
         current_state.side = 0;
     }
@@ -151,22 +151,39 @@ inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state
 
     int castle_rights = 0;
 
-    if (encoded_state[0][0][1][0].item<int>() == 1)
-        castle_rights |= 1;
+    if (current_state.side == 0)
+    {
+        if (encoded_state[0][17][0][0].item<int>() == 1)
+            castle_rights |= 1;
+        
+        if (encoded_state[0][18][0][0].item<int>() == 1)
+            castle_rights |= 2;
+        
+        if (encoded_state[0][19][0][0].item<int>() == 1)
+            castle_rights |= 4;
+        
+        if (encoded_state[0][20][0][0].item<int>() == 1)
+            castle_rights |= 8;
+    }
+    else
+    {
+        if (encoded_state[0][19][0][0].item<int>() == 1)
+            castle_rights |= 1;
 
-    if (encoded_state[0][0][2][0].item<int>() == 1)
-        castle_rights |= 2;
+        if (encoded_state[0][20][0][0].item<int>() == 1)
+            castle_rights |= 2;
 
-    if (encoded_state[0][0][3][0].item<int>() == 1)
-        castle_rights |= 4;
+        if (encoded_state[0][17][0][0].item<int>() == 1)
+            castle_rights |= 4;
 
-    if (encoded_state[0][0][4][0].item<int>() == 1)
-        castle_rights |= 8;
-
+        if (encoded_state[0][18][0][0].item<int>() == 1)
+            castle_rights |= 8;
+    }
 
     current_state.castle_rights = castle_rights;
-    if (encoded_state[0][0][5][0].item<int>() == 1)
-        current_state.halfmove = 101;
+   
+    current_state.fullmove = encoded_state[0][16][0][0].item<int>();
+    current_state.halfmove = encoded_state[0][21][0][0].item<int>();
     
     int idxsP[12];
 
@@ -181,7 +198,7 @@ inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state
         idxsP[6] = 0; idxsP[7] = 1; idxsP[8] = 2; idxsP[9] = 3; idxsP[10] = 4; idxsP[11] = 5; 
     }
 
-
+    
     for (int rank = 0; rank < 8; rank++)
     {
         for (int file = 0; file < 8; file++)
@@ -189,63 +206,47 @@ inline void get_decoded_state(state& current_state, torch::Tensor& encoded_state
             int square = 0;
             if (current_state.side == 0)
             {
-                int square = rank * 8 + file;
+                square = rank * 8 + file;
             }
             else
             {
-                int square = (7 - rank) * 8 + file;
+                square = (7 - rank) * 8 + file;
             }
 
-            std::cout << encoded_state.index({0}).slice(0, 5, 19).index({rank, file}) << std::endl;
-
-            torch::Tensor index = torch::nonzero(encoded_state.index({0}).slice(0, 5, 19).index({rank, file})).squeeze(1);
-
-            std::cout << "Index: " << index.item<int>() << std::endl;
+            int index = -1;
             
-            if (index.item<int>() > -1) 
+            for (int i = 0; i < 12; i++)
             {
-                set_bit(current_state.bitboards[index.item<int>() - 6], square);
+                // std::cout << encoded_state[0][i][rank][file].item<int>() << " "; 
+                if (encoded_state[0][i][rank][file].item<int>() == 1)
+                {
+                    index = i;
+                }
             }
-
-
+            // std::cout << " -> " << index << " -> " << std::to_string(square) << std::endl;
+            
+            if (index > -1) 
+            {
+                set_bit(current_state.bitboards[idxsP[index]], square);
+            }
         }
     }
 
-    torch::Tensor en_passant_square = torch::nonzero(encoded_state[0][18]).squeeze(1);
-
-    if (en_passant_square.item<int>() != -1)
+    auto nonzero_indices = torch::nonzero(encoded_state[0][14]);
+    if (nonzero_indices.size(0) > 0)
     {
-        int file = en_passant_square.item<int>() % 8;
-        int rank = en_passant_square.item<int>() / 8;
-
+        int x = nonzero_indices[0][0].item<int>();
+        int y = nonzero_indices[0][1].item<int>();
         if (current_state.side == 0)
-            current_state.en_passant_square = rank * 8 + file;
+            current_state.en_passant_square = x * 8 + y;
         else
-            current_state.en_passant_square = (7 - rank) * 8 + file;
+            current_state.en_passant_square = (7 - x) * 8 + y;
     }
     
 }
 
 inline void get_encoded_state(torch::Tensor& encoded_state, state& current_state)
-{
-    if (current_state.side == 0) // White to move
-        encoded_state[0][0].fill_(1);
-
-    if (current_state.castle_rights & 1) // White can castle kingside
-        encoded_state[0][1].fill_(1);
-
-    if (current_state.castle_rights & 2) // White can castle queenside
-        encoded_state[0][2].fill_(1);
-
-    if (current_state.castle_rights & 4) // Black can castle kingside
-        encoded_state[0][3].fill_(1);
-
-    if (current_state.castle_rights & 8) // Black can castle queenside
-        encoded_state[0][4].fill_(1);
-
-    if (current_state.halfmove > 100)
-        encoded_state[0][5].fill_(1);
-    
+{   
     int idxsP[12];
 
     if (current_state.side == 0)
@@ -279,12 +280,15 @@ inline void get_encoded_state(torch::Tensor& encoded_state, state& current_state
             if (piece != -1)
             {
                 if (current_state.side == 0)
-                    encoded_state[0][idxsP[piece] + 6][rank][file] = 1;
+                    encoded_state[0][idxsP[piece]][rank][file] = 1;
                 else
-                    encoded_state[0][idxsP[piece] + 6][7 - rank][file] = 1;
+                    encoded_state[0][idxsP[piece]][7 - rank][file] = 1;
             }
         }
     }
+
+    encoded_state[0][12].fill_(0);
+    encoded_state[0][13].fill_(0);
 
     if (current_state.en_passant_square != 64)
     {
@@ -292,24 +296,49 @@ inline void get_encoded_state(torch::Tensor& encoded_state, state& current_state
         int rank = current_state.en_passant_square / 8;
 
         if (current_state.side == 0)
-            encoded_state[0][18][rank][file] = 1;
+            encoded_state[0][14][rank][file] = 1;
         else
-            encoded_state[0][18][7 - rank][file] = 1;
+            encoded_state[0][14][7 - rank][file] = 1;
     }
 
-    // for (int i = 0; i < 19; i++)
-    // {
-    //     std::cout << "New Plane " << i  << std::endl;
-    //     for (int j = 0; j < 8; j++)
-    //     {
-    //         for (int k = 0; k < 8; k++)
-    //         {
-    //             std::cout << encoded_state[0][i][j][k].item() << " ";
-    //         }
-    //         std::cout << std::endl;
-    //     }
-    //     getchar();
-    // }
+    if (current_state.side == 0) // White to move
+        encoded_state[0][15].fill_(0);
+    else
+        encoded_state[0][15].fill_(1);
+    
+    encoded_state[0][16].fill_(current_state.fullmove);
+
+    if (current_state.side == 0)
+    {
+        if (current_state.castle_rights & 1) // White can castle kingside
+            encoded_state[0][17].fill_(1);
+            
+        if (current_state.castle_rights & 2) // White can castle queenside
+            encoded_state[0][18].fill_(1);
+            
+        if (current_state.castle_rights & 4) // Black can castle kingside
+            encoded_state[0][19].fill_(1);
+            
+        if (current_state.castle_rights & 8) // Black can castle queenside
+            encoded_state[0][20].fill_(1);
+    }
+    else
+    {
+        if (current_state.castle_rights & 1) // White can castle kingside
+            encoded_state[0][19].fill_(1);
+            
+        if (current_state.castle_rights & 2) // White can castle queenside
+            encoded_state[0][20].fill_(1);
+            
+        if (current_state.castle_rights & 4) // Black can castle kingside
+            encoded_state[0][17].fill_(1);
+            
+        if (current_state.castle_rights & 8) // Black can castle queenside
+            encoded_state[0][18].fill_(1);
+    }
+
+
+    encoded_state[0][21].fill_(current_state.halfmove);
 
 }
 

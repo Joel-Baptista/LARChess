@@ -3,6 +3,7 @@ import os
 import math
 import time
 import tqdm
+import random
 
 folder_path = "../datasets/"
 filename = "tactic_evals.csv"
@@ -64,12 +65,33 @@ def main():
             value = math.atan(centipawns / A1) / A2 + B1
         
         
+        # # Check for pawn promotion
+        # def expand_fen(fen_part):
+        #     expanded = ""
+        #     for char in fen_part:
+        #         if char.isdigit():
+        #             expanded += " " * int(char)
+        #         else:
+        #             expanded += char
+        #     return expanded
+
+        # board = expand_fen(df["FEN"][i].split(" ")[0])
+        # start_col = ord(action[0]) - ord('a')
+        # start_row = 8 - int(action[1])
+
+        # piece = board.split("/")[start_row][start_col]
+
+        # if (piece == 'P' and player == 'w' and action[1] == '7' and action[3] == '8') or \
+        #    (piece == 'p' and player == 'b' and action[1] == '2' and action[3] == '1'):
+        #     promotion = random.choice(['q', 'r', 'n', 'b'])
+        #     action += promotion
+        
         processed_data['fen'].append(df["FEN"][i])
         processed_data['move'].append(action)
         processed_data['value'].append(value)
 
     pd_processed = pd.DataFrame(processed_data)
-    pd_processed.to_csv(f"{folder_path}processed_{filename}")
+    pd_processed.to_csv(f"{folder_path}processed_{filename}", index=False)
 
 if __name__ == "__main__":
     main()

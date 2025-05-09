@@ -1,47 +1,103 @@
 #include "../headers/game.h"
 
 const char *square_to_coordinates[] = {
-    "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
-    "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
-    "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
-    "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
-    "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4",
-    "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3",
-    "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2",
-    "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
+    "a8",
+    "b8",
+    "c8",
+    "d8",
+    "e8",
+    "f8",
+    "g8",
+    "h8",
+    "a7",
+    "b7",
+    "c7",
+    "d7",
+    "e7",
+    "f7",
+    "g7",
+    "h7",
+    "a6",
+    "b6",
+    "c6",
+    "d6",
+    "e6",
+    "f6",
+    "g6",
+    "h6",
+    "a5",
+    "b5",
+    "c5",
+    "d5",
+    "e5",
+    "f5",
+    "g5",
+    "h5",
+    "a4",
+    "b4",
+    "c4",
+    "d4",
+    "e4",
+    "f4",
+    "g4",
+    "h4",
+    "a3",
+    "b3",
+    "c3",
+    "d3",
+    "e3",
+    "f3",
+    "g3",
+    "h3",
+    "a2",
+    "b2",
+    "c2",
+    "d2",
+    "e2",
+    "f2",
+    "g2",
+    "h2",
+    "a1",
+    "b1",
+    "c1",
+    "d1",
+    "e1",
+    "f1",
+    "g1",
+    "h1",
 };
 
 int knight_jumps[5][5] =
-{
-    {-1,  0, -1,  1, -1},
-    { 7, -1, -1, -1,  2},
-    {-1, -1, -1, -1, -1},
-    { 6, -1, -1, -1,  3},
-    {-1,  5, -1,  4, -1},
+    {
+        {-1, 0, -1, 1, -1},
+        {7, -1, -1, -1, 2},
+        {-1, -1, -1, -1, -1},
+        {6, -1, -1, -1, 3},
+        {-1, 5, -1, 4, -1},
 };
 
 int kj_row[8] =
-{
-     2, // 0 -> [4][1]
-     2, // 1 -> [4][3]
-     1, // 2 -> [3][4]
-    -1, // 3 -> [1][4]
-    -2, // 4 -> [0][3]
-    -2, // 5 -> [0][1]
-    -1, // 6 -> [1][0]
-     1  // 7 -> [3][0]
+    {
+        2,  // 0 -> [4][1]
+        2,  // 1 -> [4][3]
+        1,  // 2 -> [3][4]
+        -1, // 3 -> [1][4]
+        -2, // 4 -> [0][3]
+        -2, // 5 -> [0][1]
+        -1, // 6 -> [1][0]
+        1   // 7 -> [3][0]
 };
 
 int kj_cols[8] =
-{
-    -1, // 0 -> [4][1]
-     1, // 1 -> [4][3]
-     2, // 2 -> [3][4]
-     2, // 3 -> [1][4]
-     1, // 4 -> [0][3]
-    -1, // 5 -> [0][1]
-    -2, // 6 -> [1][0]
-    -2  // 7 -> [3][0]
+    {
+        -1, // 0 -> [4][1]
+        1,  // 1 -> [4][3]
+        2,  // 2 -> [3][4]
+        2,  // 3 -> [1][4]
+        1,  // 4 -> [0][3]
+        -1, // 5 -> [0][1]
+        -2, // 6 -> [1][0]
+        -2  // 7 -> [3][0]
 };
 
 Game::Game()
@@ -82,7 +138,7 @@ state Game::get_next_state(state current_state, std::string action)
     copy_alpha_board(m_Board);
 
     int move = m_Board->parse_move(action.c_str());
-    
+
     if (m_Board->make_move(move))
     {
         copy_state_from_board(new_state, m_Board);
@@ -112,27 +168,26 @@ state Game::get_next_state(state current_state, std::string action)
 
 //     if (current_state.halfmove > 100)
 //         encoded_state[0][5].fill_(1);
-    
+
 //     int idxsP[12];
 
 //     if (current_state.side == 0)
 //     {
 //         idxsP[0] = 0; idxsP[1] = 1; idxsP[2] = 2; idxsP[3] = 3; idxsP[4] = 4; idxsP[5] = 5;
-//         idxsP[6] = 6; idxsP[7] = 7; idxsP[8] = 8; idxsP[9] = 9; idxsP[10] = 10; idxsP[11] = 11; 
+//         idxsP[6] = 6; idxsP[7] = 7; idxsP[8] = 8; idxsP[9] = 9; idxsP[10] = 10; idxsP[11] = 11;
 //     }
 //     else
 //     {
 //         idxsP[0] = 6; idxsP[1] = 7; idxsP[2] = 8; idxsP[3] = 9; idxsP[4] = 10; idxsP[5] = 11;
-//         idxsP[6] = 0; idxsP[7] = 1; idxsP[8] = 2; idxsP[9] = 3; idxsP[10] = 4; idxsP[11] = 5; 
+//         idxsP[6] = 0; idxsP[7] = 1; idxsP[8] = 2; idxsP[9] = 3; idxsP[10] = 4; idxsP[11] = 5;
 //     }
-
 
 //     for (int rank = 0; rank < 8; rank++)
 //     {
 //         for (int file = 0; file < 8; file++)
 //         {
 //             int square = rank * 8 + file;
-           
+
 //             int piece = -1;
 //             for (int i = 0; i <= 11; i++)
 //             {
@@ -186,7 +241,7 @@ state Game::get_next_state(state current_state, std::string action)
 
 //     moves move_list;
 //     m_Board->get_alpha_moves(&move_list);
-    
+
 //     // std::cout << "Number of moves: " << move_list.count << std::endl;
 
 //     for (int i = 0; i < move_list.count; i++)
@@ -210,7 +265,6 @@ state Game::get_next_state(state current_state, std::string action)
 //             encoded_valid_moves[row][col][64 + (underpromote - 1)] = 1.0f;
 //         else
 //             encoded_valid_moves[row][col][index_plane] = 1.0f;
-
 
 //         // std::cout << "Source Square: " << square_to_coordinates[source_square] << std::endl;
 //         // std::cout << "Direction: " << direction << std::endl;
@@ -260,10 +314,10 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
 
     // Make move player agnostic
 
-    int source_row = (side == 0) ? 7 - (move[1] - '0' - 1) : (move[1] - '0' - 1); 
+    int source_row = (side == 0) ? 7 - (move[1] - '0' - 1) : (move[1] - '0' - 1);
     int dest_row = (side == 0) ? 7 - (move[3] - '0' - 1) : (move[3] - '0' - 1);
-    int source_col =  (int)(move[0] - 'a');
-    int dest_col =  (int)(move[2] - 'a');
+    int source_col = (int)(move[0] - 'a');
+    int dest_col = (int)(move[2] - 'a');
 
     char promotion = ' ';
     if (move.size() == 5)
@@ -277,35 +331,35 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     if (promotion == 'r' || promotion == 'n' || promotion == 'b') // just underpromotions
     {
         if (delta_col == 1)
-        {   
+        {
             if (promotion == 'n')
-                encoded_move[source_row][source_col][64] =1.0f;
+                encoded_move[source_row][source_col][64] = 1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][67] =1.0f;
+                encoded_move[source_row][source_col][67] = 1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][70] =1.0f;
+                encoded_move[source_row][source_col][70] = 1.0f;
 
             return encoded_move;
         }
         if (delta_col == 0)
-        {   
+        {
             if (promotion == 'n')
-                encoded_move[source_row][source_col][65] =1.0f;
+                encoded_move[source_row][source_col][65] = 1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][68] =1.0f;
+                encoded_move[source_row][source_col][68] = 1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][71] =1.0f;
+                encoded_move[source_row][source_col][71] = 1.0f;
 
             return encoded_move;
         }
         if (delta_col == -1)
-        {   
+        {
             if (promotion == 'n')
-                encoded_move[source_row][source_col][66] =1.0f;
+                encoded_move[source_row][source_col][66] = 1.0f;
             else if (promotion == 'b')
-                encoded_move[source_row][source_col][69] =1.0f;
+                encoded_move[source_row][source_col][69] = 1.0f;
             else if (promotion == 'r')
-                encoded_move[source_row][source_col][72] =1.0f;
+                encoded_move[source_row][source_col][72] = 1.0f;
 
             return encoded_move;
         }
@@ -315,11 +369,11 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
     {
         if (delta_col > 0)
         {
-            encoded_move[source_row][source_col][2 * 7 + (abs(delta_col) - 1)] =1.0f;
+            encoded_move[source_row][source_col][2 * 7 + (abs(delta_col) - 1)] = 1.0f;
         }
         else
         {
-            encoded_move[source_row][source_col][6 * 7 + (abs(delta_col) - 1)] =1.0f;
+            encoded_move[source_row][source_col][6 * 7 + (abs(delta_col) - 1)] = 1.0f;
         }
 
         return encoded_move;
@@ -341,7 +395,7 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
 
     if (abs(delta_col) != abs(delta_row)) // Knight jumps
     {
-        int knight_plane = knight_jumps[delta_row+2][delta_col+2];
+        int knight_plane = knight_jumps[delta_row + 2][delta_col + 2];
 
         encoded_move[source_row][source_col][56 + knight_plane] = 1;
         return encoded_move;
@@ -376,10 +430,9 @@ torch::Tensor Game::get_encoded_action(std::string move, int side)
 
     std::cout << "Error in encoding move" << std::endl;
     return encoded_move;
-
 }
 
-final_state Game::get_next_state_and_value(state current_state, std::string action, std::unordered_map<BitboardKey, int, BitboardHash>& state_counter)
+final_state Game::get_next_state_and_value(state current_state, std::string action, std::unordered_map<BitboardKey, int, BitboardHash> &state_counter)
 {
     state new_state;
     final_state sFinal;
@@ -390,7 +443,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     copy_alpha_board(m_Board);
 
     int move = m_Board->parse_move(action.c_str());
-    
+
     if (m_Board->make_move(move))
     {
         copy_state_from_board(new_state, m_Board);
@@ -426,7 +479,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     if (valid_state_count == 0)
     {
         int side = m_Board->get_side();
-        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
+        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)), side ^ 1);
 
         if (is_check)
         {
@@ -438,11 +491,10 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
 
         sFinal.value = 0.0f;
         sFinal.terminated = true;
-        
+
         restore_alpha_board(m_Board);
 
         return sFinal;
-
     }
 
     restore_alpha_board(m_Board);
@@ -450,7 +502,7 @@ final_state Game::get_next_state_and_value(state current_state, std::string acti
     return sFinal;
 }
 
-final_state Game::get_value_and_terminated(state current_state, std::unordered_map<BitboardKey, int, BitboardHash>& state_counter)
+final_state Game::get_value_and_terminated(state current_state, std::unordered_map<BitboardKey, int, BitboardHash> &state_counter)
 {
     set_state(current_state);
     final_state sFinal;
@@ -483,7 +535,7 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
     if (valid_state_count == 0)
     {
         int side = m_Board->get_side();
-        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)) , side ^ 1);
+        int is_check = m_Board->get_is_square_attacked(get_least_significant_bit((side == 0) ? m_Board->get_bitboard(5) : m_Board->get_bitboard(11)), side ^ 1);
 
         if (is_check)
         {
@@ -494,36 +546,50 @@ final_state Game::get_value_and_terminated(state current_state, std::unordered_m
 
         sFinal.value = 0.0f;
         sFinal.terminated = true;
-        
-        return sFinal;
 
+        return sFinal;
     }
 
     return sFinal;
 }
 
 std::string Game::decode_action(state current_state, torch::Tensor action)
-{   
-    float maximum = -1;
-    int max_row = 0;
-    int max_col = 0;
-    int max_plane = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            for (int k = 0; k < 73; k++)
-            {
-                if (action[i][j][k].item<float>() > maximum)
-                {
-                    maximum = action[i][j][k].item<float>();
-                    max_row = i;
-                    max_col = j;
-                    max_plane = k;
-                }
-            }
-        }
-    }
+{
+    // float maximum = -1;
+    // int max_row = 0;
+    // int max_col = 0;
+    // int max_plane = 0;
+    // for (int i = 0; i < 8; i++)
+    // {
+    //     for (int j = 0; j < 8; j++)
+    //     {
+    //         for (int k = 0; k < 73; k++)
+    //         {
+    //             if (action[i][j][k].item<float>() > maximum)
+    //             {
+    //                 maximum = action[i][j][k].item<float>();
+    //                 max_row = i;
+    //                 max_col = j;
+    //                 max_plane = k;
+    //             }
+    //         }
+    //     }
+    // }
+
+    auto flattened_index = action.argmax().item<int>();
+
+    // Convert flat index back to (i, j, k)
+    auto sizes = action.sizes();  // should be {8, 8, 73}
+    int dim0 = sizes[0];
+    int dim1 = sizes[1];
+    int dim2 = sizes[2];
+
+    int max_row = flattened_index / (dim1 * dim2);
+    int remainder = flattened_index % (dim1 * dim2);
+    int max_col = remainder / dim2;
+    int max_plane = remainder % dim2;
+
+    float maximum = action[max_row][max_col][max_plane].item<float>();
 
     // std::cout << "Maximum: " << maximum << " in position (" << max_row << ", " << max_col << ", " << max_plane << ") for player " << current_state.side << std::endl;
 
@@ -536,98 +602,87 @@ std::string Game::decode_action(state current_state, torch::Tensor action)
     std::string move = square_to_coordinates[source_square];
     std::string dest_square;
 
+    int piece_type = -1;
+    for (int i = 0; i < 12; i++)
+    {
+        if (get_bit(current_state.bitboards[i], source_square))
+        {
+            piece_type = i;
+            break;
+        }
+    }
+
     if (index_dir == 0)
-    {  
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (max_row - index_length) * 8 + max_col : 
-                    (7 - max_row + index_length) * 8 + max_col];
-        
-        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-            dest_square += "q"; 
+    {
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - index_length) * 8 + max_col : (7 - max_row + index_length) * 8 + max_col];
+
+    
+        if ((dest_square[1] == '1' && current_state.side == 1 && piece_type == 6) || (dest_square[1] == '8' && current_state.side == 0 && piece_type == 0))
+            dest_square += "q";
     }
     else if (index_dir == 1)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                        (max_row - index_length) * 8 + (max_col + index_length) : 
-                        (7 - max_row + index_length) * 8 + (max_col + index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - index_length) * 8 + (max_col + index_length) : (7 - max_row + index_length) * 8 + (max_col + index_length)];
 
-        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+        if ((dest_square[1] == '1' && current_state.side == 1 && piece_type == 6) || (dest_square[1] == '8' && current_state.side == 0 && piece_type == 0))
             dest_square += "q";
     }
     else if (index_dir == 2)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row) * 8 + (max_col + index_length) : 
-            (7 - max_row) * 8 + (max_col + index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row) * 8 + (max_col + index_length) : (7 - max_row) * 8 + (max_col + index_length)];
     }
     else if (index_dir == 3)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row + index_length) * 8 + (max_col + index_length) : 
-            (7 - max_row - index_length) * 8 + (max_col + index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row + index_length) * 8 + (max_col + index_length) : (7 - max_row - index_length) * 8 + (max_col + index_length)];
     }
     else if (index_dir == 4)
     {
-        
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row + index_length) * 8 + (max_col) : 
-            (7 - max_row - index_length) * 8 + (max_col)];
+
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row + index_length) * 8 + (max_col) : (7 - max_row - index_length) * 8 + (max_col)];
     }
     else if (index_dir == 5)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row + index_length) * 8 + (max_col - index_length) : 
-            (7 - max_row - index_length) * 8 + (max_col - index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row + index_length) * 8 + (max_col - index_length) : (7 - max_row - index_length) * 8 + (max_col - index_length)];
     }
     else if (index_dir == 6)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row) * 8 + (max_col - index_length) : 
-            (7 - max_row) * 8 + (max_col - index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row) * 8 + (max_col - index_length) : (7 - max_row) * 8 + (max_col - index_length)];
     }
     else if (index_dir == 7)
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row - index_length) * 8 + (max_col - index_length) : 
-            (7 - max_row + index_length) * 8 + (max_col - index_length)];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - index_length) * 8 + (max_col - index_length) : (7 - max_row + index_length) * 8 + (max_col - index_length)];
 
-        if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+        if ((dest_square[1] == '1' && current_state.side == 1 && piece_type == 6) || (dest_square[1] == '8' && current_state.side == 0 && piece_type == 0))
             dest_square += "q";
     }
-    else if ( max_plane >= 56 && max_plane < 64) // Knights Jumps
+    else if (max_plane >= 56 && max_plane < 64) // Knights Jumps
     {
-        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-            (max_row - kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight]) : 
-            (7 - max_row + kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight])];
+        dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight]) : (7 - max_row + kj_row[index_knight]) * 8 + (max_col + kj_cols[index_knight])];
     }
-    else // Underpromotion
+    else if (piece_type == 0 || piece_type == 6)// Underpromotion
     {
         int underpromote = max_plane - 64;
 
         if (underpromote % 3 == 0)
-            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (max_row - 1) * 8 + (max_col + 1) : 
-                    (7 - max_row + 1) * 8 + (max_col + 1)];
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - 1) * 8 + (max_col + 1) : (7 - max_row + 1) * 8 + (max_col + 1)];
 
         if (underpromote % 3 == 1)
-            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (max_row - 1) * 8 + max_col : 
-                    (7 - max_row + 1) * 8 + max_col];
-        
-        if (underpromote % 3 == 2)
-            dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                (max_row - 1) * 8 + (max_col - 1) : 
-                (7 - max_row + 1) * 8 + (max_col - 1)];
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - 1) * 8 + max_col : (7 - max_row + 1) * 8 + max_col];
 
-        if (underpromote >=0 && underpromote < 3) dest_square += "n";
-        if (underpromote >=3 && underpromote < 6) dest_square += "b";
-        if (underpromote >=6 && underpromote < 9) dest_square += "r";
+        if (underpromote % 3 == 2)
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (max_row - 1) * 8 + (max_col - 1) : (7 - max_row + 1) * 8 + (max_col - 1)];
+
+        if (underpromote >= 0 && underpromote < 3)
+            dest_square += "n";
+        if (underpromote >= 3 && underpromote < 6)
+            dest_square += "b";
+        if (underpromote >= 6 && underpromote < 9)
+            dest_square += "r";
     }
 
     move += dest_square;
 
     return move;
-
 }
 
 std::vector<decoded_action> Game::decode_actions(state current_state, torch::Tensor action, torch::Tensor valid_moves)
@@ -644,7 +699,8 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
         dAction.action = "";
         dAction.probability = 0.0f;
 
-        if (action_indexs.sizes()[1] < 3) {
+        if (action_indexs.sizes()[1] < 3)
+        {
             std::cerr << "Invalid action tensor indices with size: " << action_indexs.sizes() << std::endl;
             continue;
         }
@@ -662,113 +718,93 @@ std::vector<decoded_action> Game::decode_actions(state current_state, torch::Ten
         std::string move = square_to_coordinates[source_square];
         std::string dest_square;
 
-        if (!(source_square >= 0 && source_square < 64)) {
+        if (!(source_square >= 0 && source_square < 64))
+        {
             std::cerr << "Invalid source square" << std::endl;
             continue;
         }
 
         switch (index_dir)
         {
-            case 0:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row - index_length) * 8 + col : 
-                            (7 - row + index_length) * 8 + col];
-                
-                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                    dest_square += "q"; 
-                break;
-            }   
-            case 1:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                (row - index_length) * 8 + (col + index_length) : 
-                                (7 - row + index_length) * 8 + (col + index_length)];
+        case 0:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row - index_length) * 8 + col : (7 - row + index_length) * 8 + col];
 
-                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                    dest_square += "q";
-                break;
-            }
-            case 2:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row) * 8 + (col + index_length) : 
-                    (7 - row) * 8 + (col + index_length)];
-                break;
-            }
-            case 3:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row + index_length) * 8 + (col + index_length) : 
-                    (7 - row - index_length) * 8 + (col + index_length)];
-                break;
-            }
-            case 4:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row + index_length) * 8 + (col) : 
-                    (7 - row - index_length) * 8 + (col)];
-                break;
-            }
-            case 5:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row + index_length) * 8 + (col - index_length) : 
-                    (7 - row - index_length) * 8 + (col - index_length)];
-                break;
-            }
-                
-            case 6:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row) * 8 + (col - index_length) : 
-                    (7 - row) * 8 + (col - index_length)];
-                break;
-            }
-            case 7:
-            {
-                dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                    (row - index_length) * 8 + (col - index_length) : 
-                    (7 - row + index_length) * 8 + (col - index_length)];
+            if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                dest_square += "q";
+            break;
+        }
+        case 1:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row - index_length) * 8 + (col + index_length) : (7 - row + index_length) * 8 + (col + index_length)];
 
-                if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
-                    dest_square += "q";
-                break;
-            }
-                
-            default:
+            if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                dest_square += "q";
+            break;
+        }
+        case 2:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row) * 8 + (col + index_length) : (7 - row) * 8 + (col + index_length)];
+            break;
+        }
+        case 3:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row + index_length) * 8 + (col + index_length) : (7 - row - index_length) * 8 + (col + index_length)];
+            break;
+        }
+        case 4:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row + index_length) * 8 + (col) : (7 - row - index_length) * 8 + (col)];
+            break;
+        }
+        case 5:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row + index_length) * 8 + (col - index_length) : (7 - row - index_length) * 8 + (col - index_length)];
+            break;
+        }
+
+        case 6:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row) * 8 + (col - index_length) : (7 - row) * 8 + (col - index_length)];
+            break;
+        }
+        case 7:
+        {
+            dest_square = square_to_coordinates[(current_state.side == 0) ? (row - index_length) * 8 + (col - index_length) : (7 - row + index_length) * 8 + (col - index_length)];
+
+            if ((dest_square[1] == '1' && current_state.side == 1) || (dest_square[1] == '8' && current_state.side == 0))
+                dest_square += "q";
+            break;
+        }
+
+        default:
+        {
+            if (plane >= 56 && plane < 64) // Knights Jumps
             {
-                if ( plane >= 56 && plane < 64) // Knights Jumps
-                {
-                    dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                        (row - kj_row[index_knight]) * 8 + (col + kj_cols[index_knight]) : 
-                        (7 - row + kj_row[index_knight]) * 8 + (col + kj_cols[index_knight])];
-                }
-                else // Underpromotion
-                {
-                    int underpromote = plane - 64;
-
-                    if (underpromote % 3 == 0)
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                (row - 1) * 8 + (col + 1) : 
-                                (7 - row + 1) * 8 + (col + 1)];
-
-                    if (underpromote % 3 == 1)
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                                (row - 1) * 8 + col : 
-                                (7 - row + 1) * 8 + col];
-                    
-                    if (underpromote % 3 == 2)
-                        dest_square = square_to_coordinates[(current_state.side == 0) ? 
-                            (row - 1) * 8 + (col - 1) : 
-                            (7 - row + 1) * 8 + (col - 1)];
-
-                    if (underpromote >=0 && underpromote < 3) dest_square += "n";
-                    if (underpromote >=3 && underpromote < 6) dest_square += "b";
-                    if (underpromote >=6 && underpromote < 9) dest_square += "r";
-                }
-                break;
+                dest_square = square_to_coordinates[(current_state.side == 0) ? (row - kj_row[index_knight]) * 8 + (col + kj_cols[index_knight]) : (7 - row + kj_row[index_knight]) * 8 + (col + kj_cols[index_knight])];
             }
+            else // Underpromotion
+            {
+                int underpromote = plane - 64;
+
+                if (underpromote % 3 == 0)
+                    dest_square = square_to_coordinates[(current_state.side == 0) ? (row - 1) * 8 + (col + 1) : (7 - row + 1) * 8 + (col + 1)];
+
+                if (underpromote % 3 == 1)
+                    dest_square = square_to_coordinates[(current_state.side == 0) ? (row - 1) * 8 + col : (7 - row + 1) * 8 + col];
+
+                if (underpromote % 3 == 2)
+                    dest_square = square_to_coordinates[(current_state.side == 0) ? (row - 1) * 8 + (col - 1) : (7 - row + 1) * 8 + (col - 1)];
+
+                if (underpromote >= 0 && underpromote < 3)
+                    dest_square += "n";
+                if (underpromote >= 3 && underpromote < 6)
+                    dest_square += "b";
+                if (underpromote >= 6 && underpromote < 9)
+                    dest_square += "r";
+            }
+            break;
+        }
         }
 
         move += dest_square;
@@ -797,7 +833,7 @@ bool Game::insufficient_material(state current_state)
 
     for (int i = 0; i < 12; i++)
     {
-        for (int j = 0; j < 64 ; j++)
+        for (int j = 0; j < 64; j++)
         {
             if (get_bit(current_state.bitboards[i], j))
             {
@@ -809,18 +845,24 @@ bool Game::insufficient_material(state current_state)
                     black_knight_count++;
                 if (i == 8)
                     black_bishop_count++;
-                if (i == 3 || i == 9) return false;; // There is a rook
-                if (i == 0 || i == 6) return false; // Threre is a pawn
-                if (i == 4 || i == 10) return false; // There is a queen
+                if (i == 3 || i == 9)
+                    return false;
+                ; // There is a rook
+                if (i == 0 || i == 6)
+                    return false; // Threre is a pawn
+                if (i == 4 || i == 10)
+                    return false; // There is a queen
             }
         }
     }
 
-    if (white_bishop_count > 1 || black_bishop_count > 1) return false; // 2 Bishops vs King
-    if ((white_bishop_count >= 1 && white_knight_count >= 1) || (black_bishop_count >= 1 && black_knight_count >= 1)) return false; // Bishop and Knight vs King
-    if ((white_knight_count == 2 && (black_bishop_count >= 1 || black_knight_count >= 1)) || 
-        (black_knight_count == 2 && (white_bishop_count >= 1 || white_knight_count >= 1))) return false; // 2 Knights vs King and minor piece
+    if (white_bishop_count > 1 || black_bishop_count > 1)
+        return false; // 2 Bishops vs King
+    if ((white_bishop_count >= 1 && white_knight_count >= 1) || (black_bishop_count >= 1 && black_knight_count >= 1))
+        return false; // Bishop and Knight vs King
+    if ((white_knight_count == 2 && (black_bishop_count >= 1 || black_knight_count >= 1)) ||
+        (black_knight_count == 2 && (white_bishop_count >= 1 || white_knight_count >= 1)))
+        return false; // 2 Knights vs King and minor piece
 
     return true;
-
 }
