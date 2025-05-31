@@ -7,6 +7,8 @@
 #include <sys/time.h>
 #include <array>
 #include <cmath>
+#include <omp.h>
+#include <memory>
 
 // Macros
 #define U64 unsigned long long
@@ -171,6 +173,7 @@ class BitBoard {
 
         // Testing
         void perft_driver(int depth);
+        void perft_driver(int depth, moves* move_list);
         void perft_test(int depth);
         void reset_leaf_nodes() { leaf_nodes = 0; }
         long get_leaf_nodes() { return leaf_nodes; }
@@ -179,6 +182,7 @@ class BitBoard {
 
         std::string move_to_uci(int move);
         float alpha_beta(int depth, float alpha, float beta, bool quien = false);
+        float alpha_beta(moves* move_list, int depth, float alpha, float beta, bool quien);
         std::array<std::array<int, 8>, 8> bitboard_to_board();
         int make_player_move(const char *move);
         int make_bot_move(int move);
@@ -214,7 +218,7 @@ class BitBoard {
         void set_castle_rights(int new_castle_rights) { castle_rights = new_castle_rights; }
         void set_halfmove(int new_halfmove) { halfmove = new_halfmove; }
         void set_fullmove(int new_fullmove) { fullmove = new_fullmove; }
-    
+
 
     private:
         // Board state variables
@@ -1031,11 +1035,10 @@ class BitBoard {
         inline void generate_moves(moves* move_list) // provides the pseudo-legals moves
         {
             move_list->count = 0;
-
+            
             int source_square, target_square;
-
+            
             U64 bitboard, attacks;
-
             for (int piece=P; piece <= k; piece++)
             {
                 bitboard = bitboards[piece];
@@ -1373,7 +1376,9 @@ class BitBoard {
                         clear_bit(bitboard, source_square);
                     }
                 }
+
             }
+
         }   
 
 

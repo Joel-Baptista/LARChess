@@ -31,152 +31,19 @@ void BitBoard::test_bitboard()
 {   
     // parse_fen("8/3R4/8/1q1B4/8/8/8/8 w - -");
     // parse_fen(tricky_position);
-    parse_fen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+    // parse_fen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
     // parse_fen("r3k2r/pPppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
-    // parse_fen(start_position);
+    parse_fen(start_position);
+    // parse_fen("rnbqkbnr/pppppppp/8/8/8/N7/PPPPPPPP/R1BQKBNR b KQkq - 1 1");
     // parse_fen(killer_position);  
 
-    // std::vector<std::string> starting_states = {
-    //     "rnbq1rk1/pppp1ppp/4pn2/8/1bPP4/2N1P3/PP3PPP/R1BQKBNR w KQ - 1 5", // Nimzo-Indian
-    //     "r1bqkbnr/pp1ppppp/2n5/2p5/3PP3/5N2/PPP2PPP/RNBQKB1R b KQkq d3 0 3", // Sicilian
-    //     "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3", // Caro-Kann
-    //     "rnbqkb1r/ppp2ppp/4pn2/3p4/3PP3/2N5/PPP2PPP/R1BQKBNR w KQkq - 2 4", // French Defense
-    //     "r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3", // Italian Game
-    //     "r1bqkbnr/pppp1ppp/2n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R b KQkq - 3 3", // Ruy Lopez
-    //     "rnbqkb1r/pppp1ppp/5n2/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3", // Pretov's Defense
-    //     "rn1qkb1r/pp2pppp/2p2n2/3p1b2/2PP4/4PN2/PP3PPP/RNBQKB1R w KQkq - 3 5", // Queen's Gambit
-    //     "rnbqkbnr/ppp1pppp/8/3p4/3P1B2/8/PPP1PPPP/RN1QKBNR b KQkq - 1 2", // London System
-    //     "rnbqkb1r/ppppp1pp/5n2/6B1/3Pp3/2N5/PPP2PPP/R2QKBNR b KQkq - 3 4", // Dutch Defense
-    // };
+    bitboard_to_board();
 
+    int start = get_time_ms();
+
+    perft_test(6);
     
-    // bool game_end = false;
-    // int vanilla_alpha = 0;
-    // int offset = 0;
-
-    // int vanilla_alpha_wins = 0;
-    // int quien_alpha_wins = 0;
-
-    // int depth = 4;
-
-    // for (int i=0; i < starting_states.size() * 2; i++)
-    // {
-    //     std::cout << "Game " << i + 1 << std::endl;
-    //     if (vanilla_alpha == 0 && i >= starting_states.size())
-    //     {
-    //         offset = starting_states.size();
-    //         vanilla_alpha = 1;
-    //     }
-
-    //     parse_fen(starting_states[i - offset].c_str());
-    //     game_end = false;
-
-    //     while (!game_end)
-    //     {
-
-    //         // print_board();
-    //         bot_best_move = 0;
-    //         if (side == vanilla_alpha)
-    //         {
-    //             alpha_beta(depth, -1000000, 1000000);
-    //         }
-    //         else
-    //         {
-    //             alpha_beta(depth, -1000000, 1000000, true);
-    //         }
-    //         // print_move(bot_best_move);
-    //         if (bot_best_move == 0)
-    //         {
-    //             game_end = true;
-    //             std::cout << "Game Over" << std::endl;
-
-    //             if (is_square_attacked(get_least_significant_bit((side == white) ? bitboards[K] : bitboards[k]) , side^1))
-    //             {
-    //                 std::cout << ((side == white) ? "Black" : "White") << " Wins!" << std::endl;
-
-    //                 if ((side == white && vanilla_alpha == 1) || (side == black && vanilla_alpha == 0))
-    //                 {
-    //                     vanilla_alpha_wins++;
-    //                 }
-    //                 else
-    //                 {
-    //                     quien_alpha_wins++;
-    //                 }
-
-    //                 break;
-    //             }
-    //             else
-    //             {
-    //                 std::cout << "Stalemate" << std::endl;
-    //             }
-
-
-    //             break;
-    //         }
-    //         else
-    //         {
-    //             make_move(bot_best_move, all_moves);
-
-    //             if (halfmove > 100)
-    //             {
-    //                 game_end = true;
-    //                 std::cout << "Game Over" << std::endl;
-    //                 std::cout << "Stalemate" << std::endl;
-    //                 break;
-    //             }
-            
-    //         }
-
-    //     }
-    // }
-
-    
-    // std::cout << "Vanilla Alpha: " << vanilla_alpha_wins << std::endl;
-    // std::cout << "Quien Alpha: " << quien_alpha_wins << std::endl;
-    // std::cout << "Draws: " << (2 * starting_states.size()) - vanilla_alpha_wins - quien_alpha_wins << std::endl;
-    // std::cout << "Total Games: " << (2 * starting_states.size()) << std::endl;
-
-
-    // int input_move = parse_move("c3b5");
-
-    // std::cout << move_to_uci(input_move) << std::endl;
-
-    // print_board();
-    // if (input_move)
-    // {
-    //     make_move(input_move, all_moves);
-    //     print_board();
-    // }
-    // else
-    // {
-    //     std::cout << "Invalid move" << std::endl;
-    // }
-
-    // bitboard_to_board();
-
-    // int start = get_time_ms();
-
-    // perft_test(4);
-    
-    // int end = get_time_ms();
-
-    moves move_list_original;
-    moves move_list;
-    moves move_list_alpha;
-
-    generate_moves(&move_list_original);
-    generate_alpha_moves(&move_list, &move_list_alpha);
-
-
-    std::cout << "Legal Moves Original: " << move_list_original.count << std::endl;
-    std::cout << "Legal Moves: " << move_list.count << std::endl;
-    std::cout << "Legal Moves Alpha: " << move_list_alpha.count << std::endl;
-
-    moves mov;
-    get_alpha_moves(&mov);
-
-    std::cout << "Full Legal Moves Alpha: " << mov.count << std::endl;
-
+    int end = get_time_ms();
 
 }
 
@@ -217,11 +84,10 @@ int BitBoard::make_player_move(const char *move)
     int input_move = parse_move(move);
     if (input_move)
     {
-
         copy_board();
 
         if (make_move(input_move, all_moves))
-        {
+        {   
             return 1;
         }
         else
@@ -1000,6 +866,35 @@ inline void BitBoard::perft_driver(int depth)
         restore_board();
     }   
 
+}
+
+void BitBoard::perft_driver(int depth, moves* move_list)
+{
+    if (depth == 0)
+    {
+        leaf_nodes++;
+        return;
+    }
+
+    // print_move_list(move_list);
+
+    for (int i = 0; i < move_list->count; i++)
+    {
+        copy_board();
+    
+        if (!make_move(move_list->moves[i], all_moves)) continue;
+
+        perft_driver(depth - 1);
+        
+        if (get_move_capture(move_list->moves[i])) perf_captures++;
+        if (get_move_enpassant(move_list->moves[i])) perf_enpassant++;
+        if (get_move_castling(move_list->moves[i])) perf_castlings++;
+        if (get_move_promoted(move_list->moves[i])) perf_promotions++;
+
+        if (is_square_attacked(get_least_significant_bit((side == white) ? bitboards[K] : bitboards[k]), side ^1)) perf_checks++;
+
+        restore_board();
+    }   
 
 }
 
@@ -1009,11 +904,12 @@ void BitBoard::perft_test(int depth)
 
     int start = get_time_ms();
     moves move_list[1]; 
-    
+
     generate_moves(move_list);
 
     // print_move_list(move_list);
 
+    #pragma omp parallel for num_threads(8) shared(move_list)
     for (int i = 0; i < move_list->count; i++)
     {
         copy_board();
@@ -1401,6 +1297,117 @@ float BitBoard::alpha_beta(int depth, float alpha, float beta, bool quien)
     }
     return best_eval;
 }
+
+float BitBoard::alpha_beta(moves* move_list, int depth, float alpha, float beta, bool quien)
+{
+            
+    // std::cout << "Depth: " << depth << std::endl;
+    if (depth == 0) 
+    {
+        leaf_nodes++;   
+        if (quien)
+            return quiescence(alpha, beta);
+   
+        return board_evaluation();
+    }
+
+
+    int legal_movel_cntr = 0;
+    int is_king_in_check = is_square_attacked((side == white) ? get_least_significant_bit(bitboards[K]) : get_least_significant_bit(bitboards[k]), side ^ 1);
+
+    // print_board();
+    float best_eval = (side == white) ? -1000000.0f : 1000000.0f;
+
+    if (side == white)
+    {
+        for (int i = 0; i < move_list->count; i++)
+        {
+            copy_board();
+
+            ply++;
+
+            if (!make_move(move_list->moves[i], all_moves)) 
+            {
+                ply--;
+                continue;
+            }
+
+            legal_movel_cntr++;
+
+            float eval = alpha_beta(depth - 1, alpha, beta, quien);
+            ply--;
+            if (eval > best_eval)
+            {
+                best_eval = eval;
+
+                if (ply == 0)
+                    bot_best_move = move_list->moves[i];
+            }
+            alpha = std::max(alpha, eval);
+
+            if (alpha >= beta)
+            {
+                restore_board();
+                break;
+            }
+
+            restore_board();
+        }
+    }
+    else
+    {
+
+    for (int i = 0; i < move_list->count; i++)
+        {
+            copy_board();
+
+            ply++;
+        
+            if (!make_move(move_list->moves[i], all_moves)) 
+            {
+                ply--;
+                continue;
+            }
+
+            legal_movel_cntr++;
+
+            float eval = alpha_beta(depth - 1, alpha, beta, quien);
+            ply--;
+            if (eval < best_eval)
+            {
+                best_eval = eval;
+
+                if (ply == 0)
+                    bot_best_move = move_list->moves[i];
+            }
+
+            beta = std::min(beta, eval);
+
+            if (alpha >= beta)
+            {
+                restore_board();
+                break;
+            }
+
+            restore_board();
+        }
+
+    }
+
+    if (legal_movel_cntr == 0)
+    {
+        if (is_king_in_check)
+        {
+            return (side == white) ? -49000 - ply : 49000 + ply;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    return best_eval;
+}
+
 
 void BitBoard::get_alpha_moves(moves* move_list)
 {
